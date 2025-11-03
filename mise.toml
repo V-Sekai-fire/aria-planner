@@ -1,0 +1,22 @@
+[tools]
+erlang = "25"
+elixir = "1.14.0"
+sqlite3 = "3.45.2"
+postgres = "18"
+
+[tasks.postgres_init]
+description = "Initialize PostgreSQL data directory"
+run = """
+if [ ! -d ~/.local/share/mise/postgres/data ]; then
+  mkdir -p ~/.local/share/mise/postgres/data
+  initdb -D ~/.local/share/mise/postgres/data --auth-local=trust
+fi
+"""
+
+[tasks.postgres_start]
+description = "Start PostgreSQL server using socket"
+run = "postgres -D ~/.local/share/mise/postgres/data -k /tmp"
+
+[tasks.postgres_stop]
+description = "Stop PostgreSQL server"
+run = "pkill -f 'postgres -D'"

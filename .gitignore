@@ -1,0 +1,69 @@
+# The directory Mix will write compiled artifacts to.
+/_build/
+
+# If you run "mix test --cover", coverage assets end up here.
+/cover/
+
+# The directory Mix downloads your dependencies sources to.
+/deps/
+
+# Per-app build and dependency directories
+apps/**/_build/
+apps/**/deps/
+
+# Where third-party dependencies like ExDoc output generated docs.
+/doc/
+
+# Temporary files, for example, from tests.
+/tmp/
+
+# If the VM crashes, it generates a dump, let's ignore it too.
+erl_crash.dump
+
+# Also ignore archive artifacts (built via "mix archive.build").
+*.ez
+
+# Ignore package tarball (built via "mix hex.build").
+mcp_test_client-*.tar
+
+.DS_Store
+
+priv/repo/mcp_aria_forge.db*
+priv/repo/mcp_aria_forge.db
+priv/repo/mcp_aria_forge.db-shm
+priv/repo/mcp_aria_forge.db-wal
+priv/repo/mcp_aria_forge.db
+priv/repo/mcp_aria_forge.db-shm
+priv/repo/mcp_aria_forge.db-wal
+aria_storage.db-shm
+aria_storage.db-wal
+aria_storage.db
+apps/mcp_aria_forge/priv/repo/mcp_aria_forge.db
+apps/mcp_aria_forge/priv/repo/mcp_aria_forge.db-shm
+apps/mcp_aria_forge/priv/repo/mcp_aria_forge.db-wal
+aria_planner_test.db
+aria_planner_test.db-shm
+aria_planner_test.db-wal
+aria_planner.db
+aria_planner.db-shm
+aria_planner.db-wal
+aria_planner_dev.db
+.DS_Store
+aria_planner_dev.db-shm
+aria_planner_dev.db-wal
+bench/spmd_scaling.benchee
+bench/spmd_scaling.benchee
+
+cover
+
+# Compiled NIF libraries and object files
+c_src/*.o
+priv/**/*.so
+priv/**/*.dylib
+priv/**/*.dll
+*_build/**/*.so
+*_build/**/*.dylib
+*_build/**/*.dll
+
+# Escript executables
+aria_dungeon_optimizer
