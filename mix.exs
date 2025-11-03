@@ -42,11 +42,11 @@ defmodule AriaPlanner.MixProject do
       {:timex, "~> 3.7"},
       {:uuidv7, "~> 1.0"},
       {:nx, "~> 0.10"},
-      {:torchx, "~> 0.10"},
-      {:aria_math, in_umbrella: true},
+      {:torchx, "~> 0.10", optional: true},
+      {:aria_math, git: "https://github.com/V-Sekai-fire/aria-math.git"},
       {:exqlite, "~> 0.33.1"}, # Added for SQLite3 adapter
       {:ecto_sqlite3, "~> 0.22.0"}, # Added for SQLite3 Ecto adapter
-      {:aria_core, in_umbrella: true},
+      {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
       {:aria_storage, git: "https://github.com/V-Sekai-fire/aria-storage.git"},
       # Dev/test dependencies
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},

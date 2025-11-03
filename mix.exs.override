@@ -1,0 +1,9 @@
+# Override file to remove umbrella dependencies when used standalone
+# This allows aria_planner to be used as a dependency without the full umbrella setup
+
+# Note: This is a workaround. The ideal solution would be to extract aria_math and aria_core
+# as standalone packages, or make aria_planner's dependencies optional.
+
+# For now, we'll comment out the umbrella dependencies and add them as optional
+# The planning module will gracefully degrade when these modules aren't available
+
