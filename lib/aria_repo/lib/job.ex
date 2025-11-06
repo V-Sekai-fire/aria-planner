@@ -6,7 +6,7 @@ defmodule AriaRepo.Job do
   Ecto schema for background jobs processed by the GenServer-based job system.
 
   Replaces Oban with a simpler, custom job processing system that integrates
-  directly with Ecto and PostgreSQL.
+  directly with Ecto and SQLite.
   """
 
   use Ecto.Schema

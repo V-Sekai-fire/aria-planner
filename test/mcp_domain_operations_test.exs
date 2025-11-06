@@ -240,7 +240,7 @@ defmodule AriaPlanner.MCPDomainOperationsTest do
       assert is_map(result)
       assert Map.has_key?(result, :content)
       [content] = result.content
-      assert String.contains?(content["text"], "pending")
+      assert String.contains?(content.text, "pending")
     end
 
     test "element resource URI is created", %{state: state} do
@@ -255,7 +255,7 @@ defmodule AriaPlanner.MCPDomainOperationsTest do
       )
 
       [content] = result.content
-      response_data = Jason.decode!(content["text"])
+      response_data = Jason.decode!(content.text)
       resource_uri = response_data["resource_uri"]
 
       assert String.starts_with?(resource_uri, "aria://domain_elements/")

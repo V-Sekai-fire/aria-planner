@@ -582,9 +582,9 @@ The codebase includes several example domains:
 - Predicates: `task_duration`, `task_dependency`, `task_status`
 - Commands: `c_add_task`, `c_add_dependency`, `c_start_task`, `c_complete_task`
 
-**Thirdparty Domains** (`test/domains/thirdparty/`):
+**MiniZinc Domains** (`lib/domains/`):
 
-- Test-only domains for MiniZinc problems
+- Domains based on MiniZinc problems
 - Examples: Fox-Geese-Corn, Neighbours, Tiny-CVRP
 
 ## Summary

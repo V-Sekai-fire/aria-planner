@@ -25,9 +25,14 @@ defmodule AriaCore.ExecutionState do
           spawn_animals: boolean(),
           spawn_npcs: boolean(),
           temperature: float(),
+          weather_type: String.t(),
+          is_raining: boolean(),
+          is_thundering: boolean(),
           discovered_locations: MapSet.t(String.t()),
           entities: %{optional(String.t()) => AriaCore.Execution.Entity.t()},
+          players: %{optional(String.t()) => AriaCore.Execution.Entity.t()},
           total_entities: integer(),
+          total_players: integer(),
           total_mobs_killed: integer(),
           total_entity_deaths: integer()
         }
@@ -43,9 +48,14 @@ defmodule AriaCore.ExecutionState do
             spawn_animals: true,
             spawn_npcs: true,
             temperature: 20.0,
+            weather_type: "clear",
+            is_raining: false,
+            is_thundering: false,
             discovered_locations: MapSet.new(),
             entities: %{},
+            players: %{},
             total_entities: 0,
+            total_players: 0,
             total_mobs_killed: 0,
             total_entity_deaths: 0
 
@@ -82,7 +92,14 @@ defmodule AriaCore.ExecutionState do
   """
   @spec add_player(t(), String.t(), AriaCore.Entity.t()) :: t()
   def add_player(%__MODULE__{} = state, player_id, player) do
-    add_entity(state, player_id, player)
+    updated_players = Map.put(state.players, player_id, player)
+    updated_entities = Map.put(state.entities, player_id, player)
+    %{state | 
+      players: updated_players, 
+      entities: updated_entities, 
+      total_players: map_size(updated_players),
+      total_entities: map_size(updated_entities)
+    }
   end
 
   @doc """
@@ -168,6 +185,34 @@ defmodule AriaCore.ExecutionState do
     new_time_of_day = if rem(new_world_time, 24_000) < 12_000, do: "day", else: "night"
 
     %{state | world_time: new_world_time, day_count: new_day_count, time_of_day: new_time_of_day}
+  end
+
+  @doc """
+  Update weather state.
+  """
+  @spec update_weather(t(), String.t()) :: t()
+  def update_weather(%__MODULE__{} = state, weather_type) do
+    case weather_type do
+      "clear" ->
+        %{state | weather_type: "clear", is_raining: false, is_thundering: false}
+
+      "rain" ->
+        %{state | weather_type: "rain", is_raining: true, is_thundering: false}
+
+      "thunderstorm" ->
+        %{state | weather_type: "thunderstorm", is_raining: true, is_thundering: true}
+
+      _ ->
+        state
+    end
+  end
+
+  @doc """
+  Check if it's safe to be outside (not raining, not thundering, and reasonable temperature).
+  """
+  @spec safe_outside?(t()) :: boolean()
+  def safe_outside?(%__MODULE__{} = state) do
+    not state.is_raining and not state.is_thundering and state.temperature > 0.0 and state.temperature < 40.0
   end
 
 end

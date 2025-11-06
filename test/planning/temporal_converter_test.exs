@@ -70,8 +70,8 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
       durative_action = %{
         name: :test_action,
         duration: "PT30M",
-        conditions: %{at_start: [{"oven", "temperature", {:>=, 350}}]},
-        effects: %{at_end: [{"meal", "quality", {:>=, 8}}]}
+        conditions: %{at_start: [{"temperature", "oven", {:>=, 350}}]},
+        effects: %{at_end: [{"quality", "meal", {:>=, 8}}]}
       }
 
       simple_action = TemporalConverter.extract_simple_action(durative_action)
@@ -85,13 +85,13 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
         name: :complex_action,
         duration: "PT1H",
         conditions: %{
-          at_start: [{"oven", "temperature", {:>=, 350}}],
-          over_all: [{"oven", "power", {:==, "on"}}],
-          at_end: [{"meal", "cooked", true}]
+          at_start: [{"temperature", "oven", {:>=, 350}}],
+          over_all: [{"power", "oven", {:==, "on"}}],
+          at_end: [{"cooked", "meal", true}]
         },
         effects: %{
-          at_start: [{"oven", "in_use", true}],
-          at_end: [{"meal", "quality", 8}]
+          at_start: [{"in_use", "oven", true}],
+          at_end: [{"quality", "meal", 8}]
         }
       }
 
@@ -144,7 +144,7 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
         name: :cook_meal,
         duration: "PT1H",
         conditions: %{
-          at_start: [{"oven", "temperature", {:>=, 350}}]
+          at_start: [{"temperature", "oven", {:>=, 350}}]
         },
         effects: %{}
       }
@@ -152,7 +152,7 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
       method_fn = TemporalConverter.build_method_decomposition(durative_action)
       {:ok, todo_items, _metadata} = method_fn.(%{}, [])
 
-      assert {:unigoal, "oven", ["temperature", {:>=, 350}]} in todo_items
+      assert {"temperature", ["oven", {:>=, 350}]} in todo_items
     end
 
     test "converts over_all conditions to monitoring unigoals" do
@@ -160,7 +160,7 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
         name: :cook_meal,
         duration: "PT1H",
         conditions: %{
-          over_all: [{"oven", "power", {:==, "on"}}]
+          over_all: [{"power", "oven", {:==, "on"}}]
         },
         effects: %{}
       }
@@ -168,7 +168,7 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
       method_fn = TemporalConverter.build_method_decomposition(durative_action)
       {:ok, todo_items, _metadata} = method_fn.(%{}, [])
 
-      assert {:unigoal, "oven", ["power", {:==, "on"}]} in todo_items
+      assert {"power", ["oven", {:==, "on"}]} in todo_items
     end
 
     test "converts at_end conditions to verification unigoals" do
@@ -176,7 +176,7 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
         name: :cook_meal,
         duration: "PT1H",
         conditions: %{
-          at_end: [{"meal", "cooked", true}]
+          at_end: [{"cooked", "meal", true}]
         },
         effects: %{}
       }
@@ -184,7 +184,7 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
       method_fn = TemporalConverter.build_method_decomposition(durative_action)
       {:ok, todo_items, _metadata} = method_fn.(%{}, [])
 
-      assert {:unigoal, "meal", ["cooked", true]} in todo_items
+      assert {"cooked", ["meal", true]} in todo_items
     end
 
     test "converts at_end effects to cleanup unigoals" do
@@ -193,14 +193,14 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
         duration: "PT1H",
         conditions: %{},
         effects: %{
-          at_end: [{"meal", "quality", 8}]
+          at_end: [{"quality", "meal", 8}]
         }
       }
 
       method_fn = TemporalConverter.build_method_decomposition(durative_action)
       {:ok, todo_items, _metadata} = method_fn.(%{}, [])
 
-      assert {:unigoal, "meal", ["quality", 8]} in todo_items
+      assert {"quality", ["meal", 8]} in todo_items
     end
   end
 

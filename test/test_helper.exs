@@ -7,6 +7,3 @@ Application.ensure_all_started(:tzdata)
 Ecto.Migrator.run(AriaPlanner.Repo, :up, all: true)
 
 ExUnit.start()
-
-# Configure Ecto for testing
-Ecto.Adapters.SQL.Sandbox.mode(AriaPlanner.Repo, :shared)

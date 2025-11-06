@@ -28,10 +28,11 @@ mcp_test_client-*.tar
 
 .DS_Store
 
+# SQLite database files
+priv/*.db
+priv/*.db-shm
+priv/*.db-wal
 priv/repo/mcp_aria_forge.db*
-priv/repo/mcp_aria_forge.db
-priv/repo/mcp_aria_forge.db-shm
-priv/repo/mcp_aria_forge.db-wal
 priv/repo/mcp_aria_forge.db
 priv/repo/mcp_aria_forge.db-shm
 priv/repo/mcp_aria_forge.db-wal

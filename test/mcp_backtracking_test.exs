@@ -67,7 +67,7 @@ defmodule AriaPlanner.MCPBacktrackingTest do
       )
 
       [content1] = result1.content
-      response1 = Jason.decode!(content1["text"])
+      response1 = Jason.decode!(content1.text)
       assert response1["execution_status"] == "pending"
 
       # Simulate plan execution failure and create retry plan
@@ -84,7 +84,7 @@ defmodule AriaPlanner.MCPBacktrackingTest do
       )
 
       [content2] = result2.content
-      response2 = Jason.decode!(content2["text"])
+      response2 = Jason.decode!(content2.text)
       assert response2["execution_status"] == "pending"
 
       # Verify retry plan is tracked
@@ -176,7 +176,7 @@ defmodule AriaPlanner.MCPBacktrackingTest do
       )
 
       [content1] = result1.content
-      response1 = Jason.decode!(content1["text"])
+      response1 = Jason.decode!(content1.text)
       assert response1["execution_status"] == "pending"
 
       # Backtrack: create alternative lazy plan
@@ -192,7 +192,7 @@ defmodule AriaPlanner.MCPBacktrackingTest do
       )
 
       [content2] = result2.content
-      response2 = Jason.decode!(content2["text"])
+      response2 = Jason.decode!(content2.text)
       assert response2["execution_status"] == "pending"
 
       # Backtrack: create eager plan (non-lazy)

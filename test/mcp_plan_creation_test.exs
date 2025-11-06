@@ -73,7 +73,7 @@ defmodule AriaPlanner.MCPPlanCreationTest do
       assert is_map(result)
       assert Map.has_key?(result, :content)
       [content] = result.content
-      assert String.contains?(content["text"], "pending")
+      assert String.contains?(content.text, "pending")
     end
 
     test "creates plan with multiple objectives", %{state: state} do
@@ -109,7 +109,7 @@ defmodule AriaPlanner.MCPPlanCreationTest do
       )
 
       [content] = result.content
-      response_data = Jason.decode!(content["text"])
+      response_data = Jason.decode!(content.text)
       resource_uri = response_data["resource_uri"]
 
       assert String.starts_with?(resource_uri, "aria://plans/")
@@ -131,7 +131,7 @@ defmodule AriaPlanner.MCPPlanCreationTest do
       )
 
       [content] = result.content
-      response = Jason.decode!(content["text"])
+      response = Jason.decode!(content.text)
       assert response["execution_status"] == "pending"
       assert response["run_lazy"] == true
     end
@@ -149,7 +149,7 @@ defmodule AriaPlanner.MCPPlanCreationTest do
       )
 
       [content] = result.content
-      response = Jason.decode!(content["text"])
+      response = Jason.decode!(content.text)
       assert response["execution_status"] == "planned"
       assert response["run_lazy"] == false
     end

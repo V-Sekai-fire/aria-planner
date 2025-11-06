@@ -26,7 +26,8 @@ defmodule AriaRepo.MixProject do
   defp deps do
     [
       {:ecto_sql, "~> 3.13"},
-      {:postgrex, "~> 0.19"},
+      {:exqlite, "~> 0.33.1"},
+      {:ecto_sqlite3, "~> 0.22.0"},
       {:jason, "~> 1.4"}
     ]
   end

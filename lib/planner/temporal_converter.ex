@@ -33,9 +33,9 @@ defmodule AriaPlanner.Planner.TemporalConverter do
     name: :cook_meal,
     duration: "PT30M",
     conditions: %{
-      at_start: [{"oven", "temperature", {:>=, 350}}],
-      over_all: [{"kitchen", "ventilated", true}],
-      at_end: [{"meal", "ready", true}]
+      at_start: [{"temperature", "oven", {:>=, 350}}],
+      over_all: [{"ventilated", "kitchen", true}],
+      at_end: [{"ready", "meal", true}]
     }
   }
 
@@ -67,7 +67,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
 
   ## Example
 
-      iex> durative_action = %{name: :cook_meal, duration: "PT1H", conditions: %{at_start: [{"oven", "temperature", {:>=, 350}}]}, effects: %{at_end: [{"meal", "quality", {:>=, 8}}]}}
+      iex> durative_action = %{name: :cook_meal, duration: "PT1H", conditions: %{at_start: [{"temperature", "oven", {:>=, 350}}]}, effects: %{at_end: [{"quality", "meal", {:>=, 8}}]}}
       iex> {simple_action, method} = convert_durative_action(durative_action)
       iex> simple_action.name
       :cook_meal
@@ -252,7 +252,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
     prerequisite_unigoals =
       Enum.map(at_start_conditions, fn condition ->
         case condition do
-          {pred, subj, val} -> {String.to_atom(pred), [subj, val]}
+          {pred, subj, val} -> {pred, [subj, val]}
           _ -> nil
         end
       end)
@@ -266,7 +266,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
     monitoring_unigoals =
       Enum.map(over_all_conditions, fn condition ->
         case condition do
-          {pred, subj, val} -> {String.to_atom(pred), [subj, val]}
+          {pred, subj, val} -> {pred, [subj, val]}
           _ -> nil
         end
       end)
@@ -275,7 +275,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
     todo_items = todo_items ++ monitoring_unigoals
 
     # Add the main action
-    main_action = {durative_action[:name], []}
+    main_action = {:action, durative_action[:name], []}
     todo_items = todo_items ++ [main_action]
 
     # Add verification unigoals for at_end conditions
@@ -284,7 +284,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
     verification_unigoals =
       Enum.map(at_end_conditions, fn condition ->
         case condition do
-          {pred, subj, val} -> {String.to_atom(pred), [subj, val]}
+          {pred, subj, val} -> {pred, [subj, val]}
           _ -> nil
         end
       end)
@@ -298,7 +298,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
     cleanup_unigoals =
       Enum.map(at_end_effects, fn effect ->
         case effect do
-          {pred, subj, val} -> {String.to_atom(pred), [subj, val]}
+          {pred, subj, val} -> {pred, [subj, val]}
           _ -> nil
         end
       end)
