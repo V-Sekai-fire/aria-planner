@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.FoxGeeseCornTest do
   @moduledoc """
   Test-only domain for Fox-Geese-Corn transportation problem.
-  
+
   This is a classic river crossing puzzle where:
   - Fox cannot be left alone with geese (fox eats geese)
   - Geese cannot be left alone with corn (geese eats corn)

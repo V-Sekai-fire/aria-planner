@@ -20,11 +20,14 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
   alias AriaPlanner.Domains.AircraftDisassembly
   alias AriaPlanner.Domains.AircraftDisassembly.Predicates.{
     ActivityStart,
-    ActivityStatus
+    ActivityStatus,
+    ActivityDuration
   }
+  alias AriaPlanner.Planner.PlannerMetadata
+  alias AriaPlanner.Planner.MetadataHelpers
 
   @spec c_start_activity(state :: map(), activity :: integer(), current_time :: integer()) ::
-          {:ok, map()} | {:error, String.t()}
+          {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}
   def c_start_activity(state, activity, current_time) do
     with :ok <- check_activity_not_started(state, activity),
          :ok <- check_predecessors_completed(state, activity) do
@@ -34,7 +37,18 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
         |> ActivityStart.set(activity, current_time)
         |> Map.put(:current_time, current_time)
 
-      {:ok, new_state}
+      # Return planner metadata with entity requirements
+      # Activity requires a worker entity with disassembly capabilities
+      duration = ActivityDuration.get(state, activity)
+      duration_iso = "PT#{duration}S"
+      
+      metadata = MetadataHelpers.command_metadata(
+        duration_iso,
+        "worker",
+        [:disassembly, :mechanical]
+      )
+
+      {:ok, new_state, metadata}
     else
       error -> error
     end

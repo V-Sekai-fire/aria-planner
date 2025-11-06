@@ -14,8 +14,8 @@ defmodule AriaPlanner.Domains.NeighboursTest do
 
   alias AriaPlanner.Domains.Neighbours
   alias AriaPlanner.Domains.Neighbours.Commands.AssignValue
-  alias AriaPlanner.Domains.Neighbours.Tasks.MaximizeGrid
   alias AriaPlanner.Domains.Neighbours.Predicates.GridValue
+  alias AriaPlanner.Domains.Neighbours.Tasks.MaximizeGrid
 
   describe "domain creation" do
     test "creates planning domain with correct structure" do
@@ -180,4 +180,3 @@ defmodule AriaPlanner.Domains.NeighboursTest do
     end
   end
 end
-

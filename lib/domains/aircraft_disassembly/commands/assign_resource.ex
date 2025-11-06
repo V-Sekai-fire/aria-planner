@@ -17,13 +17,19 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
   """
 
   alias AriaPlanner.Domains.AircraftDisassembly.Predicates.ResourceAssigned
+  alias AriaPlanner.Planner.PlannerMetadata
+  alias AriaPlanner.Planner.MetadataHelpers
 
   @spec c_assign_resource(state :: map(), activity :: integer(), resource :: integer()) ::
-          {:ok, map()} | {:error, String.t()}
+          {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}
   def c_assign_resource(state, activity, resource) do
     with :ok <- check_resource_not_assigned(state, activity, resource) do
       new_state = ResourceAssigned.set(state, activity, resource, true)
-      {:ok, new_state}
+      
+      # Return planner metadata - resource assignment is instant
+      metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
+      
+      {:ok, new_state, metadata}
     else
       error -> error
     end

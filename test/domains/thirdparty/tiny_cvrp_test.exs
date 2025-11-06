@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.TinyCvrpTest do
   @moduledoc """
   Test-only domain for Tiny CVRP (Capacitated Vehicle Routing Problem).
-  
+
   Vehicle routing problem where:
   - Multiple vehicles start at a depot
   - Each vehicle has a capacity
@@ -16,7 +16,7 @@ defmodule AriaPlanner.Domains.TinyCvrpTest do
   use ExUnit.Case, async: true
 
   alias AriaPlanner.Domains.TinyCvrp
-  alias AriaPlanner.Domains.TinyCvrp.Commands.{VisitCustomer, ReturnToDepot}
+  alias AriaPlanner.Domains.TinyCvrp.Commands.{ReturnToDepot, VisitCustomer}
   alias AriaPlanner.Domains.TinyCvrp.Tasks.RouteVehicles
   alias AriaPlanner.Domains.TinyCvrp.Predicates.{
     VehicleAt,
@@ -167,4 +167,3 @@ defmodule AriaPlanner.Domains.TinyCvrpTest do
     end
   end
 end
-

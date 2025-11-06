@@ -16,13 +16,19 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
   """
 
   alias AriaPlanner.Domains.AircraftDisassembly.Predicates.ActivityStatus
+  alias AriaPlanner.Planner.PlannerMetadata
+  alias AriaPlanner.Planner.MetadataHelpers
 
   @spec c_complete_activity(state :: map(), activity :: integer()) ::
-          {:ok, map()} | {:error, String.t()}
+          {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}
   def c_complete_activity(state, activity) do
     with :ok <- check_activity_in_progress(state, activity) do
       new_state = ActivityStatus.set(state, activity, "completed")
-      {:ok, new_state}
+      
+      # Return planner metadata - completion is instant
+      metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
+      
+      {:ok, new_state, metadata}
     else
       error -> error
     end
