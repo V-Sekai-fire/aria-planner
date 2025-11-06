@@ -48,6 +48,7 @@ defmodule AriaPlanner.MixProject do
       {:ecto_sqlite3, "~> 0.22.0"}, # Added for SQLite3 Ecto adapter
       {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
       {:aria_storage, git: "https://github.com/V-Sekai-fire/aria-storage.git"},
+      {:abnf_parsec, "~> 2.1"},
       # Dev/test dependencies
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

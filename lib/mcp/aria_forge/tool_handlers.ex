@@ -336,6 +336,7 @@ defmodule MCP.AriaForge.ToolHandlers do
   defp get_domain_tasks("tiny_cvrp"), do: ["route_vehicles"]
   defp get_domain_tasks("fox_geese_corn"), do: ["transport_all"]
   defp get_domain_tasks("neighbours"), do: ["maximize_grid"]
+  defp get_domain_tasks("aircraft_disassembly"), do: ["schedule_activities"]
   defp get_domain_tasks("navigation"), do: ["navigate", "reach_destination"]
   defp get_domain_tasks("tactical"), do: ["secure_perimeter", "establish_communication"]
   defp get_domain_tasks(_), do: []
@@ -344,6 +345,7 @@ defmodule MCP.AriaForge.ToolHandlers do
   defp get_domain_actions("tiny_cvrp"), do: ["a_visit_customer", "a_return_to_depot"]
   defp get_domain_actions("fox_geese_corn"), do: ["a_cross_east", "a_cross_west"]
   defp get_domain_actions("neighbours"), do: ["a_assign_value"]
+  defp get_domain_actions("aircraft_disassembly"), do: ["a_start_activity", "a_assign_resource", "a_complete_activity"]
   defp get_domain_actions("tactical"), do: ["move", "attack", "defend"]
   defp get_domain_actions(_), do: []
 
@@ -353,12 +355,14 @@ defmodule MCP.AriaForge.ToolHandlers do
   defp get_domain_multigoals("tiny_cvrp"), do: ["route_vehicles"]
   defp get_domain_multigoals("fox_geese_corn"), do: ["transport_all"]
   defp get_domain_multigoals("neighbours"), do: ["maximize_grid"]
+  defp get_domain_multigoals("aircraft_disassembly"), do: ["schedule_activities"]
   defp get_domain_multigoals(_), do: []
 
   defp get_domain_commands(nil), do: []
   defp get_domain_commands("tiny_cvrp"), do: ["c_visit_customer", "c_return_to_depot"]
   defp get_domain_commands("fox_geese_corn"), do: ["c_cross_east", "c_cross_west"]
   defp get_domain_commands("neighbours"), do: ["c_assign_value"]
+  defp get_domain_commands("aircraft_disassembly"), do: ["c_start_activity", "c_assign_resource", "c_complete_activity"]
   defp get_domain_commands(_), do: []
 
   defp get_domain_elements(_domain_type, _element_type), do: []

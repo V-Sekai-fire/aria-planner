@@ -1,4 +1,5 @@
 %{
+  "abnf_parsec": {:hex, :abnf_parsec, "2.1.0", "c4e88d5d089f1698297c0daced12be1fb404e6e577ecf261313ebba5477941f9", [:mix], [{:nimble_parsec, "~> 1.4", [hex: :nimble_parsec, repo: "hexpm", optional: false]}], "hexpm", "e0ed6290c7cc7e5020c006d1003520390c9bdd20f7c3f776bd49bfe3c5cd362a"},
   "aria_core": {:git, "https://github.com/V-Sekai-fire/aria-core.git", "abcbc4cd2bb0ed8bf7755ffad779c5dc3938deb4", []},
   "aria_math": {:git, "https://github.com/V-Sekai-fire/aria-math.git", "68cffe8af023aff720f7f55cd64b36057e69058d", []},
   "aria_storage": {:git, "https://github.com/V-Sekai-fire/aria-storage.git", "d026ba34a9e11cea74eedf2a82fbb27765046116", []},
