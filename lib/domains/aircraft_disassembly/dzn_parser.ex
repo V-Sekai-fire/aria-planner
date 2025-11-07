@@ -41,37 +41,21 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.DznParser do
     case File.read(path) do
       {:ok, content} ->
         case parse(content) do
-          {:ok, parsed_result, _, _, _, _} ->
-            params = extract_assignments(parsed_result)
-            # If ABNF parsing didn't extract enough fields, fall back to regex
-            if map_size(params) < 3 do
-              # Fallback to regex-based parsing
-              params = %{}
-              params = parse_dzn_int(content, "nActs", params, :num_activities)
-              params = parse_dzn_int(content, "nResources", params, :num_resources)
-              params = parse_dzn_int(content, "nPrecs", params, :nPrecs)
-              params = parse_dzn_int(content, "nLocations", params, :nLocations)
-              params = parse_dzn_array(content, "dur", params, :durations)
-              params = parse_dzn_array(content, "loc", params, :locations)
-              params = parse_dzn_array(content, "loc_cap", params, :location_capacities)
-              params = parse_dzn_precedence(content, params)
-              {:ok, params}
-            else
-              {:ok, post_process(params)}
-            end
-          
-          {:error, _reason, _, _, _, _} ->
-            # Fallback to regex-based parsing if ABNF parsing fails
-            params = %{}
-            params = parse_dzn_int(content, "nActs", params, :num_activities)
-            params = parse_dzn_int(content, "nResources", params, :num_resources)
-            params = parse_dzn_int(content, "nPrecs", params, :nPrecs)
-            params = parse_dzn_int(content, "nLocations", params, :nLocations)
-            params = parse_dzn_array(content, "dur", params, :durations)
-            params = parse_dzn_array(content, "loc", params, :locations)
-            params = parse_dzn_array(content, "loc_cap", params, :location_capacities)
-            params = parse_dzn_precedence(content, params)
-            {:ok, params}
+                  {:ok, parsed_result, _, _, _, _} ->
+                    params = extract_assignments(parsed_result)
+                    # If ABNF parsing didn't extract enough fields, fall back to regex
+                    if map_size(params) < 3 do
+                      # Fallback to regex-based parsing
+                      params = parse_all_fields_regex(content)
+                      {:ok, params}
+                    else
+                      {:ok, post_process_all(params)}
+                    end
+                  
+                  {:error, _reason, _, _, _, _} ->
+                    # Fallback to regex-based parsing if ABNF parsing fails
+                    params = parse_all_fields_regex(content)
+                    {:ok, params}
         end
       
       {:error, reason} ->
@@ -249,8 +233,15 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.DznParser do
   end
   defp normalize_value(value), do: value
 
-  # Post-process to create precedence pairs
-  defp post_process(params) do
+  # Post-process to create precedence pairs and handle all fields
+  defp post_process_all(params) do
+    params
+    |> post_process_precedence()
+    |> post_process_unrelated()
+    |> post_process_array2d()
+  end
+
+  defp post_process_precedence(params) do
     case {Map.get(params, :pred), Map.get(params, :succ)} do
       {pred_list, succ_list} when is_list(pred_list) and is_list(succ_list) ->
         precedences = Enum.zip(pred_list, succ_list)
@@ -261,6 +252,172 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.DznParser do
       
       _ ->
         Map.put(params, :precedences, [])
+    end
+  end
+
+  defp post_process_unrelated(params) do
+    case {Map.get(params, :unpred), Map.get(params, :unsucc)} do
+      {unpred_list, unsucc_list} when is_list(unpred_list) and is_list(unsucc_list) ->
+        unrelated = Enum.zip(unpred_list, unsucc_list)
+        params
+        |> Map.put(:unrelated, unrelated)
+        |> Map.delete(:unpred)
+        |> Map.delete(:unsucc)
+      
+      _ ->
+        Map.put(params, :unrelated, [])
+    end
+  end
+
+  defp post_process_array2d(params) do
+    # Handle array2d fields that need special processing
+    # For now, just return params as-is (array2d parsing handled in regex fallback)
+    params
+  end
+
+  # Comprehensive regex-based parsing for all fields
+  defp parse_all_fields_regex(content) do
+    params = %{}
+    # Basic counts
+    params = parse_dzn_int(content, "nActs", params, :num_activities)
+    params = parse_dzn_int(content, "nResources", params, :num_resources)
+    params = parse_dzn_int(content, "nSkills", params, :nSkills)
+    params = parse_dzn_int(content, "nPrecs", params, :nPrecs)
+    params = parse_dzn_int(content, "nUnavailable", params, :nUnavailable)
+    params = parse_dzn_int(content, "nUnrels", params, :nUnrels)
+    params = parse_dzn_int(content, "nLocations", params, :nLocations)
+    params = parse_dzn_int(content, "maxt", params, :maxt)
+    
+    # Arrays
+    params = parse_dzn_array(content, "dur", params, :durations)
+    params = parse_dzn_array(content, "loc", params, :locations)
+    params = parse_dzn_array(content, "loc_cap", params, :location_capacities)
+    params = parse_dzn_array(content, "mass", params, :mass)
+    params = parse_dzn_array(content, "maxDiff", params, :maxDiff)
+    params = parse_dzn_array(content, "occupancy", params, :occupancy)
+    params = parse_dzn_array(content, "resource_cost", params, :resource_cost)
+    params = parse_dzn_array(content, "unavailable_resource", params, :unavailable_resource)
+    params = parse_dzn_array(content, "unavailable_start", params, :unavailable_start)
+    params = parse_dzn_array(content, "unavailable_end", params, :unavailable_end)
+    
+    # Precedence
+    params = parse_dzn_precedence(content, params)
+    
+    # Unrelated activities
+    params = parse_dzn_unrelated(content, params)
+    
+    # Sets and complex arrays
+    params = parse_dzn_set_array(content, "USEFUL_RES", params, :useful_res)
+    params = parse_dzn_set_array(content, "POTENTIAL_ACT", params, :potential_act)
+    params = parse_dzn_set(content, "M", params, :M)
+    
+    # Array2D fields
+    params = parse_dzn_array2d(content, "sreq", params, :sreq, "ACT", "SKILL")
+    params = parse_dzn_array2d(content, "mastery", params, :mastery, "RESOURCE", "SKILL")
+    params = parse_dzn_array2d(content, "comp_prod", params, :comp_prod, "M", "1..2")
+    
+    params
+  end
+
+  defp parse_dzn_unrelated(content, params) do
+    unpred_regex = ~r/unpred\s*=\s*\[([^\]]*)\];/
+    unsucc_regex = ~r/unsucc\s*=\s*\[([^\]]*)\];/
+    
+    unpred_list = case Regex.run(unpred_regex, content) do
+      [_, values] when values != "" ->
+        values
+        |> String.split(",")
+        |> Enum.map(&String.trim/1)
+        |> Enum.map(&String.to_integer/1)
+      _ -> []
+    end
+    
+    unsucc_list = case Regex.run(unsucc_regex, content) do
+      [_, values] when values != "" ->
+        values
+        |> String.split(",")
+        |> Enum.map(&String.trim/1)
+        |> Enum.map(&String.to_integer/1)
+      _ -> []
+    end
+    
+    unrelated = Enum.zip(unpred_list, unsucc_list)
+    Map.put(params, :unrelated, unrelated)
+  end
+
+  defp parse_dzn_set_array(content, key, params, param_key) do
+    # Parse array of sets like: USEFUL_RES=[{1,2,3}, {4,5}]
+    regex = ~r/#{key}\s*=\s*\[([^\]]+)\];/
+    case Regex.run(regex, content) do
+      [_, values] ->
+        # Parse sets within array: {1,2,3}, {4,5}
+        sets = values
+        |> String.split("}, {")
+        |> Enum.map(fn set_str ->
+          set_str
+          |> String.replace("{", "")
+          |> String.replace("}", "")
+          |> String.split(",")
+          |> Enum.map(&String.trim/1)
+          |> Enum.map(&String.to_integer/1)
+          |> MapSet.new()
+        end)
+        Map.put(params, param_key, sets)
+      nil ->
+        params
+    end
+  end
+
+  defp parse_dzn_set(content, key, params, param_key) do
+    # Parse set like: M = {1, 2}
+    regex = ~r/#{key}\s*=\s*\{([^}]+)\};/
+    case Regex.run(regex, content) do
+      [_, values] ->
+        set = values
+        |> String.split(",")
+        |> Enum.map(&String.trim/1)
+        |> Enum.map(&String.to_integer/1)
+        |> MapSet.new()
+        Map.put(params, param_key, set)
+      nil ->
+        params
+    end
+  end
+
+  defp parse_dzn_array2d(content, key, params, param_key, _dim1, _dim2) do
+    # Parse array2d like: sreq=array2d(ACT, SKILL, [1,1,0,1,1,0,...])
+    # More flexible regex to handle nested structures
+    regex = ~r/#{key}\s*=\s*array2d\s*\([^,]+,\s*[^,]+,\s*\[([^\]]+)\]\s*\)/
+    case Regex.run(regex, content) do
+      [_, values] ->
+        # Handle values that might contain nested structures or just simple values
+        array_values = values
+        |> String.split(",")
+        |> Enum.map(&String.trim/1)
+        |> Enum.reject(&(&1 == ""))
+        |> Enum.map(fn val ->
+          val_trimmed = String.trim(val)
+          case val_trimmed do
+            "true" -> true
+            "false" -> false
+            "" -> nil
+            _ ->
+              # Try to parse as integer, if it fails, skip it
+              case Integer.parse(val_trimmed) do
+                {int, ""} -> int
+                _ -> nil
+              end
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+        
+        if length(array_values) > 0 do
+          Map.put(params, param_key, array_values)
+        else
+          params
+        end
+      nil ->
+        params
     end
   end
 end

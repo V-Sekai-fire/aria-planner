@@ -37,6 +37,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
 
   # Private helper functions
 
+  @spec check_resource_not_assigned(map(), integer(), integer()) :: :ok | {:error, String.t()}
   defp check_resource_not_assigned(state, activity, resource) do
     if ResourceAssigned.get(state, activity, resource) do
       {:error, "Resource #{resource} is already assigned to activity #{activity}"}

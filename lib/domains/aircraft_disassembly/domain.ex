@@ -13,44 +13,29 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
   - Goal: Schedule all activities respecting precedence and resource constraints
   """
 
-  alias AriaPlanner.Domains.AircraftDisassembly.Predicates.{
-    ActivityStart,
-    ActivityDuration,
-    ActivityStatus,
-    Precedence,
-    ResourceAssigned,
-    LocationCapacity
-  }
 
   @doc """
   Creates and registers the aircraft-disassembly planning domain.
   """
-  @spec create_domain() :: {:ok, map()} | {:error, String.t()}
+  @spec create_domain() :: {:ok, map()}
   def create_domain do
-    case create_planning_domain() do
-      {:ok, domain} ->
-        domain = register_actions(domain)
-        domain = register_task_methods(domain)
-        domain = register_goal_methods(domain)
-        {:ok, domain}
-
-      error ->
-        error
-    end
+    {:ok, domain} = create_planning_domain()
+    domain = register_actions(domain)
+    domain = register_task_methods(domain)
+    domain = register_goal_methods(domain)
+    {:ok, domain}
   end
 
   @doc """
   Creates the base planning domain structure.
   """
-  @spec create_planning_domain() :: {:ok, map()} | {:error, String.t()}
+  @spec create_planning_domain() :: {:ok, map()}
   def create_planning_domain do
     {:ok,
      %{
        type: "aircraft_disassembly",
        predicates: [
-         "activity_start",
-         "activity_duration",
-         "activity_status",
+         "activity_status",  # Uses planner's state facts system
          "precedence",
          "resource_assigned",
          "location_capacity"
@@ -62,6 +47,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
      }}
   end
 
+  @spec register_actions(map()) :: map()
   defp register_actions(domain) do
     actions = [
       %{
@@ -74,7 +60,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
         ],
         effects: [
           "activity_status[activity] = 'in_progress'",
-          "activity_start[activity] = current_time"
+          "temporal constraints set via PlannerMetadata"
         ]
       },
       %{
@@ -94,7 +80,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
         arity: 1,
         preconditions: [
           "activity_status[activity] == 'in_progress'",
-          "activity_duration elapsed",
+          "temporal duration elapsed (via PlannerMetadata)",
           "all required resources assigned"
         ],
         effects: [
@@ -106,6 +92,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
     Map.put(domain, :actions, actions)
   end
 
+  @spec register_task_methods(map()) :: map()
   defp register_task_methods(domain) do
     methods = [
       %{
@@ -119,6 +106,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
     Map.update(domain, :methods, methods, &(&1 ++ methods))
   end
 
+  @spec register_goal_methods(map()) :: map()
   defp register_goal_methods(domain) do
     goal_methods = [
       %{
@@ -138,67 +126,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
   """
   @spec initialize_state(params :: map()) :: {:ok, map()} | {:error, String.t()}
   def initialize_state(params) do
-    try do
-      num_activities = params.num_activities || params.nActs || 0
-      num_resources = params.num_resources || params.nResources || 0
-      durations = params.durations || params.dur || []
-      precedences = params.precedences || []
-      locations = params.locations || params.loc || []
-      location_capacities = params.location_capacities || params.loc_cap || []
-
-      # Initialize activity states
-      activity_start = for activity <- 1..num_activities, into: %{} do
-        {activity, 0}
-      end
-
-      activity_duration = for {activity, idx} <- Enum.with_index(1..num_activities, 0), into: %{} do
-        duration = Enum.at(durations, idx, 0)
-        {activity, duration}
-      end
-
-      activity_status = for activity <- 1..num_activities, into: %{} do
-        {activity, "not_started"}
-      end
-
-      # Initialize precedence relationships
-      precedence = for {pred, succ} <- precedences, into: %{} do
-        key = {pred, succ}
-        {key, true}
-      end
-
-      # Initialize resource assignments (all false initially)
-      resource_assigned = for activity <- 1..num_activities,
-                              resource <- 1..num_resources,
-                              into: %{} do
-        {{activity, resource}, false}
-      end
-
-      # Initialize location capacities
-      location_capacity = for {location, idx} <- Enum.with_index(1..(length(location_capacities)), 0), into: %{} do
-        capacity = Enum.at(location_capacities, idx, 1)
-        {location, capacity}
-      end
-
-      state = %{
-        num_activities: num_activities,
-        durations: durations,
-        precedences: precedences,
-        num_resources: num_resources,
-        locations: locations,
-        num_locations: length(location_capacities),
-        activity_start: activity_start,
-        activity_duration: activity_duration,
-        activity_status: activity_status,
-        precedence: precedence,
-        resource_assigned: resource_assigned,
-        location_capacity: location_capacity,
-        current_time: 0
-      }
-
-      {:ok, state}
-    rescue
-      e -> {:error, "Failed to initialize state: #{inspect(e)}"}
-    end
+    alias AriaPlanner.Domains.AircraftDisassembly.StateInitialization
+    StateInitialization.initialize_state(params)
   end
 
   @doc """
@@ -215,9 +144,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
   """
   @spec all_activities_completed?(state :: map()) :: boolean()
   def all_activities_completed?(state) do
-    Enum.all?(1..state.num_activities, fn activity ->
-      ActivityStatus.get(state, activity) == "completed"
-    end)
+    alias AriaPlanner.Domains.AircraftDisassembly.StateHelpers
+    StateHelpers.all_activities_completed?(state)
   end
 
   @doc """
@@ -225,9 +153,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
   """
   @spec get_predecessors(state :: map(), activity :: integer()) :: [integer()]
   def get_predecessors(state, activity) do
-    state.precedences
-    |> Enum.filter(fn {_pred, succ} -> succ == activity end)
-    |> Enum.map(fn {pred, _succ} -> pred end)
+    alias AriaPlanner.Domains.AircraftDisassembly.StateHelpers
+    StateHelpers.get_predecessors(state, activity)
   end
 
   @doc """
@@ -235,9 +162,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
   """
   @spec get_successors(state :: map(), activity :: integer()) :: [integer()]
   def get_successors(state, activity) do
-    state.precedences
-    |> Enum.filter(fn {pred, _succ} -> pred == activity end)
-    |> Enum.map(fn {_pred, succ} -> succ end)
+    alias AriaPlanner.Domains.AircraftDisassembly.StateHelpers
+    StateHelpers.get_successors(state, activity)
   end
 
   @doc """
@@ -245,10 +171,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
   """
   @spec all_predecessors_completed?(state :: map(), activity :: integer()) :: boolean()
   def all_predecessors_completed?(state, activity) do
-    predecessors = get_predecessors(state, activity)
-    Enum.all?(predecessors, fn pred ->
-      ActivityStatus.get(state, pred) == "completed"
-    end)
+    alias AriaPlanner.Domains.AircraftDisassembly.StateHelpers
+    StateHelpers.all_predecessors_completed?(state, activity)
   end
 end
 

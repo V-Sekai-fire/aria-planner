@@ -10,7 +10,6 @@ defmodule AriaPlanner.Domains.AircraftDisassemblyTest do
 
   alias AriaPlanner.Domains.AircraftDisassembly
   alias AriaPlanner.Domains.AircraftDisassembly.Commands.{CompleteActivity, StartActivity}
-  alias AriaPlanner.Domains.AircraftDisassembly.Predicates.ActivityStatus
 
   @problem_files [
     "B737NG-600-01-Anon.json.dzn",
@@ -53,13 +52,15 @@ defmodule AriaPlanner.Domains.AircraftDisassemblyTest do
 
         if startable_activity do
           # Start the activity
-          {:ok, state_after_start, _metadata} = StartActivity.c_start_activity(
-            state,
-            startable_activity,
-            0
-          )
+                  {:ok, state_after_start, _metadata} = StartActivity.c_start_activity(
+                    state,
+                    startable_activity,
+                    0,
+                    []
+                  )
 
-          assert ActivityStatus.get(state_after_start, startable_activity) == "in_progress"
+          activity_id = "activity_#{startable_activity}"
+          assert get_activity_status(state_after_start, activity_id) == "in_progress"
 
           # Complete the activity
           {:ok, state_after_complete, _metadata} = CompleteActivity.c_complete_activity(
@@ -67,14 +68,29 @@ defmodule AriaPlanner.Domains.AircraftDisassemblyTest do
             startable_activity
           )
 
-          assert ActivityStatus.get(state_after_complete, startable_activity) == "completed"
+          assert get_activity_status(state_after_complete, activity_id) == "completed"
         end
 
         # Verify domain structure
         {:ok, domain} = AircraftDisassembly.create_domain()
         assert domain.type == "aircraft_disassembly"
-        assert length(domain.predicates) >= 6
+        assert length(domain.predicates) >= 4
       end
+    end
+  end
+
+  # Helper function to get activity status from state facts
+  defp get_activity_status(state, activity_id) do
+    case Map.get(state, :facts, %{}) do
+      facts when is_map(facts) ->
+        case Map.get(facts, "activity_status", %{}) do
+          status_map when is_map(status_map) ->
+            Map.get(status_map, activity_id, "not_started")
+          _ ->
+            "not_started"
+        end
+      _ ->
+        "not_started"
     end
   end
 
@@ -83,10 +99,9 @@ defmodule AriaPlanner.Domains.AircraftDisassemblyTest do
       {:ok, domain} = AircraftDisassembly.create_domain()
 
       assert domain.type == "aircraft_disassembly"
-      assert "activity_start" in domain.predicates
-      assert "activity_duration" in domain.predicates
       assert "activity_status" in domain.predicates
       assert "precedence" in domain.predicates
+      assert "resource_assigned" in domain.predicates
       assert length(domain.actions) >= 3
     end
   end
@@ -128,22 +143,22 @@ defmodule AriaPlanner.Domains.AircraftDisassemblyTest do
 
     test "c_start_activity starts activity with no predecessors", %{initial_state: state} do
       # Activity 1 has no predecessors
-      {:ok, new_state, _metadata} = StartActivity.c_start_activity(state, 1, 0)
+      {:ok, new_state, _metadata} = StartActivity.c_start_activity(state, 1, 0, [])
 
-      assert ActivityStatus.get(new_state, 1) == "in_progress"
-      assert ActivityStatus.get(new_state, 2) == "not_started"
+      assert get_activity_status(new_state, "activity_1") == "in_progress"
+      assert get_activity_status(new_state, "activity_2") == "not_started"
     end
 
     test "c_start_activity fails if predecessors not completed", %{initial_state: state} do
       # Activity 2 requires activity 1 to be completed
-      assert {:error, _} = StartActivity.c_start_activity(state, 2, 0)
+      assert {:error, _} = StartActivity.c_start_activity(state, 2, 0, [])
     end
 
     test "c_complete_activity completes in-progress activity", %{initial_state: state} do
-      {:ok, state_after_start, _metadata1} = StartActivity.c_start_activity(state, 1, 0)
+      {:ok, state_after_start, _metadata1} = StartActivity.c_start_activity(state, 1, 0, [])
       {:ok, state_after_complete, _metadata2} = CompleteActivity.c_complete_activity(state_after_start, 1)
 
-      assert ActivityStatus.get(state_after_complete, 1) == "completed"
+      assert get_activity_status(state_after_complete, "activity_1") == "completed"
     end
   end
 end
