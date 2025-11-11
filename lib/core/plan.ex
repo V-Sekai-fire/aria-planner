@@ -90,7 +90,6 @@ defmodule AriaCore.Plan do
 
   @doc """
   Creates new plan with UUIDv7 ID.
-  Uses ETS storage with changeset validation.
   """
   @spec create(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
   def create(attrs) do
@@ -102,40 +101,19 @@ defmodule AriaCore.Plan do
         Map.put(attrs, :id, id)
       end
 
-    changeset = %__MODULE__{}
+    %__MODULE__{}
     |> changeset(attrs)
-
-    # Use ETS storage with changeset validation
-    case Ecto.Changeset.apply_action(changeset, :insert) do
-      {:ok, plan} ->
-        # Store in ETS
-        plan_map = Map.from_struct(plan)
-        AriaPlanner.Storage.EtsStorage.insert(:plans, plan.id, plan_map)
-        {:ok, plan}
-      error ->
-        error
-    end
+    |> AriaPlanner.Repo.insert()
   end
 
   @doc """
   Updates existing plan.
-  Uses ETS storage with changeset validation.
   """
   @spec update(plan :: %__MODULE__{}, attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
   def update(plan, attrs) do
-    changeset = plan
+    plan
     |> changeset(attrs)
-
-    # Use ETS storage with changeset validation
-    case Ecto.Changeset.apply_action(changeset, :update) do
-      {:ok, updated_plan} ->
-        # Update in ETS
-        plan_map = Map.from_struct(updated_plan)
-        AriaPlanner.Storage.EtsStorage.insert(:plans, updated_plan.id, plan_map)
-        {:ok, updated_plan}
-      error ->
-        error
-    end
+    |> AriaPlanner.Repo.update()
   end
 
   # UUID v7 validation
@@ -151,35 +129,4 @@ defmodule AriaCore.Plan do
   end
 
   # UUID entries are generated using UUIDv7.generate()
-
-  @doc """
-  Gets a plan by ID from ETS storage.
-  """
-  @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
-  def get(id) do
-    case AriaPlanner.Storage.EtsStorage.get(:plans, id) do
-      {:ok, plan_map} ->
-        plan = struct(__MODULE__, plan_map)
-        {:ok, plan}
-      error ->
-        error
-    end
-  end
-
-  @doc """
-  Gets all plans from ETS storage.
-  """
-  @spec all() :: [%__MODULE__{}]
-  def all do
-    AriaPlanner.Storage.EtsStorage.all(:plans)
-    |> Enum.map(&struct(__MODULE__, &1))
-  end
-
-  @doc """
-  Deletes a plan from ETS storage.
-  """
-  @spec delete(%__MODULE__{}) :: :ok | {:error, term()}
-  def delete(%__MODULE__{id: id}) do
-    AriaPlanner.Storage.EtsStorage.delete(:plans, id)
-  end
 end

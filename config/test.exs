@@ -5,7 +5,6 @@ import Config
 
 # Configure the database for tests - use in-memory database
 config :aria_planner, AriaPlanner.Repo,
-  database: :memory,
-  pool_size: 10,
-  show_sensitive_data_on_connection_error: true
+  database: ":memory:",
+  pool_size: 10
 
