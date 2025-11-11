@@ -3,15 +3,11 @@
 
 Application.ensure_all_started(:tzdata)
 
-# Run migrations for the test database
-# Gracefully handle missing dependencies that may fail compilation
-try do
-  Ecto.Migrator.run(AriaPlanner.Repo, :up, all: true)
-rescue
-  e ->
-    # If migrations fail due to missing dependencies, log and continue
-    # Tests that don't need the database will still run
-    IO.puts("Warning: Database migrations skipped due to: #{inspect(e)}")
-end
-
+# ETS storage is initialized by the application
+# Clear ETS tables before each test run for clean state
 ExUnit.start()
+
+# Setup callback to clear ETS storage between tests if needed
+ExUnit.after_suite(fn _ ->
+  AriaPlanner.Storage.EtsStorage.clear_all()
+end)
