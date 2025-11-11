@@ -1,0 +1,8 @@
+% Simple test problem for Chuffed
+% Find two variables x and y such that x + y = 10
+
+var 1..10: x;
+var 1..10: y;
+constraint x + y = 10;
+solve satisfy;
+
