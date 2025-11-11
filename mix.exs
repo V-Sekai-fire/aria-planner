@@ -50,6 +50,7 @@ defmodule AriaPlanner.MixProject do
       {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
       {:aria_storage, git: "https://github.com/V-Sekai-fire/aria-storage.git", ref: "2ae9d51537a7272d489663c56206731312c961aa"},
       {:abnf_parsec, "~> 2.1"},
+      {:sourceror, "~> 1.10"},
       # Using built-in :zstd module from Erlang/OTP 28+ (no external dependency needed)
       # Dev/test dependencies
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
