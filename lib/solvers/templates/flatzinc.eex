@@ -1,17 +1,17 @@
 % Generated FlatZinc for AriaPlanner
 % Variables
 <%= for var <- @variables do %>
-<%= format_variable(var) %>
+<%= @format_variable.(var) %>
 <% end %>
 
 % Constraints
 <%= for constraint <- @constraints do %>
-<%= format_constraint(constraint) %>
+<%= @format_constraint.(constraint) %>
 <% end %>
 
 % Objective
 <%= if @objective do %>
-<%= format_objective(@objective) %>
+<%= @format_objective.(@objective) %>
 <% else %>
 solve satisfy;
 <% end %>

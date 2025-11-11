@@ -47,13 +47,14 @@ defmodule AriaPlanner.Solvers.FlatZincGenerator do
       objective: objective
     ]
 
-    EEx.eval_file(@template_path, assigns: assigns,
-      functions: [
-        {__MODULE__, :format_variable, 1},
-        {__MODULE__, :format_constraint, 1},
-        {__MODULE__, :format_objective, 1}
-      ]
-    )
+    # Add format functions to assigns so template can access them
+    assigns_with_functions = assigns ++ [
+      format_variable: &format_variable/1,
+      format_constraint: &format_constraint/1,
+      format_objective: &format_objective/1
+    ]
+
+    EEx.eval_file(@template_path, assigns: assigns_with_functions)
   end
 
   def generate(_), do: "% Empty constraints\nsolve satisfy;"

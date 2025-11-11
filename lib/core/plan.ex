@@ -24,7 +24,7 @@ defmodule AriaCore.Plan do
     # Ego-centric planning data (persona perspective)
     # tactical, navigation, social, etc.
     field(:domain_type, :string)
-    field(:objectives, {:array, :string}, default: [])
+    field(:objectives, AriaCore.Types.JsonArray, default: [])
     field(:constraints, :map, default: %{})
     field(:temporal_constraints, :map, default: %{})
     field(:entity_capabilities, :map, default: %{})
@@ -84,7 +84,7 @@ defmodule AriaCore.Plan do
     |> validate_inclusion(:execution_status, ["planned", "executing", "completed", "failed"])
     |> validate_number(:success_probability, greater_than_or_equal_to: 0.0, less_than_or_equal_to: 1.0)
     |> validate_number(:planning_duration_ms, greater_than: 0)
-    |> put_change(:updated_at, DateTime.utc_now())
+    |> put_change(:updated_at, NaiveDateTime.utc_now())
   end
 
 
@@ -103,7 +103,7 @@ defmodule AriaCore.Plan do
 
     %__MODULE__{}
     |> changeset(attrs)
-    |> apply_action(:insert)
+    |> AriaPlanner.Repo.insert()
   end
 
   @doc """
@@ -113,7 +113,7 @@ defmodule AriaCore.Plan do
   def update(plan, attrs) do
     plan
     |> changeset(attrs)
-    |> apply_action(:update)
+    |> AriaPlanner.Repo.update()
   end
 
   # UUID v7 validation

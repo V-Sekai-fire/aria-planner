@@ -5,87 +5,20 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolverTest do
   use ExUnit.Case, async: false
 
   alias AriaPlanner.Solvers.AriaChuffedSolver
-  alias AriaPlanner.Solvers.ChuffedSolverNif
 
   @moduletag :chuffed_solver
 
-  # Helper to check if Chuffed is available (Windows-compatible)
-  defp chuffed_available? do
-    case :os.type() do
-      {:win32, _} ->
-        # Windows: use where command
-        case System.cmd("where", ["chuffed"], stderr_to_stdout: true) do
-          {_output, 0} -> true
-          _ -> false
-        end
-
+  # Helper to check if MiniZinc with Chuffed is available
+  defp minizinc_chuffed_available? do
+    case System.cmd("minizinc", ["--solvers"], stderr_to_stdout: true, timeout: 5000) do
+      {output, 0} ->
+        String.contains?(output, "chuffed") or String.contains?(output, "Chuffed")
       _ ->
-        # Unix/Linux/Mac: use which command
-        case System.cmd("which", ["chuffed"], stderr_to_stdout: true) do
-          {_output, 0} -> true
-          _ -> false
-        end
+        false
     end
-  end
-
-  # Helper to check if NIF is loaded
-  defp nif_loaded? do
-    case ChuffedSolverNif.solve_flatzinc("", "") do
-      :nif_not_loaded -> false
-      _ -> true
-    end
-  end
-
-  describe "ChuffedSolverNif" do
-    test "NIF loads correctly" do
-      # Test that the NIF module exists and can be called
-      # It will return :nif_not_loaded if NIF isn't compiled, which is expected
-      result = ChuffedSolverNif.solve_flatzinc("", "")
-      
-      # Either the NIF is loaded and returns an error (expected for empty input)
-      # or it returns :nif_not_loaded if not compiled (also acceptable for testing)
-      assert result == :nif_not_loaded or is_tuple(result)
-    end
-
-    test "solve_flatzinc with simple problem" do
-      # Skip if NIF not loaded or Chuffed not available
-      unless nif_loaded?() and chuffed_available?() do
-        :ok
-      else
-        # Simple FlatZinc problem: find two variables that sum to 10
-        flatzinc = """
-        var 1..10: x;
-        var 1..10: y;
-        constraint x + y = 10;
-        solve satisfy;
-        """
-
-        case ChuffedSolverNif.solve_flatzinc(flatzinc, "{}") do
-          {:ok, result_binary} ->
-            result = to_string(result_binary)
-            # Chuffed should return a solution
-            assert String.contains?(result, "x =") or String.contains?(result, "y =") or
-                   String.contains?(result, "==========") or
-                   String.contains?(result, "UNSATISFIABLE")
-
-          :nif_not_loaded ->
-            # NIF not compiled - skip test
-            :ok
-
-          {:error, reason} ->
-            # Check if it's because Chuffed isn't installed
-            reason_str = to_string(reason)
-            if String.contains?(reason_str, "chuffed") or 
-               String.contains?(reason_str, "not found") or
-               String.contains?(reason_str, "command") do
-              # Chuffed not installed - skip test
-              :ok
-            else
-              flunk("Unexpected error: #{inspect(reason)}")
-            end
-        end
-      end
-    end
+  rescue
+    _ ->
+      false
   end
 
   describe "AriaChuffedSolver" do
@@ -104,18 +37,18 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolverTest do
           # Solution should have variables or raw output
           assert map_size(solution) > 0
 
-        {:error, reason} ->
-          reason_str = to_string(reason)
-          # If Chuffed isn't available, that's okay for testing
-          if String.contains?(reason_str, "chuffed") or 
-             String.contains?(reason_str, "not found") or
-             String.contains?(reason_str, "command") or
-             reason == :nif_not_loaded do
-            # Chuffed not installed or NIF not compiled - skip test
-            :ok
-          else
-            flunk("Unexpected error: #{inspect(reason)}")
-          end
+          {:error, reason} ->
+            reason_str = to_string(reason)
+            # If MiniZinc/Chuffed isn't available, that's okay for testing
+            if String.contains?(reason_str, "chuffed") or 
+               String.contains?(reason_str, "minizinc") or
+               String.contains?(reason_str, "not found") or
+               String.contains?(reason_str, "command") do
+              # MiniZinc/Chuffed not installed - skip test
+              :ok
+            else
+              flunk("Unexpected error: #{inspect(reason)}")
+            end
       end
     end
 
@@ -171,9 +104,9 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolverTest do
         {:error, reason} ->
           reason_str = to_string(reason)
           if String.contains?(reason_str, "chuffed") or 
+             String.contains?(reason_str, "minizinc") or
              String.contains?(reason_str, "not found") or
-             String.contains?(reason_str, "command") or
-             reason == :nif_not_loaded do
+             String.contains?(reason_str, "command") do
             :ok
           else
             flunk("Unexpected error: #{inspect(reason)}")
@@ -197,20 +130,15 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolverTest do
           assert String.contains?(reason_str, "UNSAT") or 
                  String.contains?(reason_str, "unsatisfiable") or
                  String.contains?(reason_str, "chuffed") or
-                 String.contains?(reason_str, "not found") or
-                 reason == :nif_not_loaded
+                 String.contains?(reason_str, "minizinc") or
+                 String.contains?(reason_str, "not found")
 
         {:ok, solution} ->
           # Some solvers might return empty solution
           assert is_map(solution)
 
         other ->
-          # If Chuffed isn't available, that's okay
-          if other == :nif_not_loaded do
-            :ok
-          else
-            flunk("Unexpected result: #{inspect(other)}")
-          end
+          flunk("Unexpected result: #{inspect(other)}")
       end
     end
   end
@@ -228,10 +156,6 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolverTest do
           # Some solvers might return error in solution
           :ok
 
-        :nif_not_loaded ->
-          # NIF not compiled
-          :ok
-
         other ->
           flunk("Unexpected result: #{inspect(other)}")
       end
@@ -241,11 +165,7 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolverTest do
       case AriaChuffedSolver.solve_flatzinc_file("nonexistent_file.fzn") do
         {:error, reason} ->
           assert String.contains?(to_string(reason), "No such file") or
-                 String.contains?(to_string(reason), "not found") or
-                 reason == :nif_not_loaded
-
-        :nif_not_loaded ->
-          :ok
+                 String.contains?(to_string(reason), "not found")
 
         other ->
           flunk("Expected error for missing file, got: #{inspect(other)}")

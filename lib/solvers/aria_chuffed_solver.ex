@@ -11,7 +11,8 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
   ## Features
   
   - Solves constraint programming problems using Chuffed
-  - Supports FlatZinc format only (no MiniZinc)
+  - Uses MiniZinc with Chuffed solver
+  - Supports both MiniZinc (.mzn) and FlatZinc (.fzn) files
   - Integrates with planning domains
   - Returns structured solutions
   
@@ -24,9 +25,22 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
       {:ok, solution} = AriaChuffedSolver.solve_flatzinc_file("problem.fzn")
   """
 
-  alias AriaPlanner.Solvers.ChuffedSolverNif
+  alias AriaPlanner.Solvers.ChuffedMiniZinc
   alias AriaPlanner.Solvers.FlatZincGenerator
   alias AriaPlanner.Planner.State
+
+  @doc """
+  Checks if Chuffed solver is available via MiniZinc.
+
+  ## Returns
+
+  - `true` if MiniZinc with Chuffed solver is available
+  - `false` if Chuffed is not available
+  """
+  @spec available?() :: boolean()
+  def available? do
+    ChuffedMiniZinc.available?()
+  end
 
   @doc """
   Solves constraints using Chuffed solver directly with FlatZinc format.
@@ -77,9 +91,7 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
   end
 
   @doc """
-  Solves a FlatZinc file directly using Chuffed (no MiniZinc required).
-  
-  This is the preferred method as Chuffed works directly with FlatZinc format.
+  Solves a FlatZinc file using Chuffed via MiniZinc.
   
   ## Parameters
   
@@ -93,13 +105,12 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
   """
   @spec solve_flatzinc_file(String.t(), keyword()) :: {:ok, map()} | {:error, String.t()}
   def solve_flatzinc_file(flatzinc_path, opts \\ []) do
-    solver_options = Keyword.get(opts, :options, "{}")
-    flatzinc_content = File.read!(flatzinc_path)
+    timeout = Keyword.get(opts, :timeout, 60_000)
+    solver_options = Keyword.get(opts, :solver_options, [])
 
-    case ChuffedSolverNif.solve_flatzinc(flatzinc_content, solver_options) do
-      {:ok, result_binary} ->
-        result = to_string(result_binary)
-        parse_chuffed_output(result)
+    case ChuffedMiniZinc.solve_flatzinc_file(flatzinc_path, timeout: timeout, solver_options: solver_options) do
+      {:ok, output} ->
+        parse_chuffed_output(output)
 
       error ->
         error
@@ -108,7 +119,9 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
 
 
   @doc """
-  Solves a FlatZinc problem using Chuffed.
+  Solves a FlatZinc problem using Chuffed via MiniZinc.
+  
+  Writes the FlatZinc content to a temporary file and solves it.
   
   ## Parameters
   
@@ -122,32 +135,21 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
   """
   @spec solve_flatzinc(String.t(), keyword()) :: {:ok, map()} | {:error, String.t()}
   def solve_flatzinc(flatzinc_content, opts \\ []) do
-    timeout = Keyword.get(opts, :timeout, 60_000)
-    solver_options = Keyword.get(opts, :options, "{}")
-
-    case ChuffedSolverNif.solve_flatzinc(flatzinc_content, solver_options) do
-      {:ok, result_binary} ->
-        result = to_string(result_binary)
-        parse_chuffed_output(result)
-
-      error ->
-        error
+    # Write to temporary file
+    tmp_file = System.tmp_dir!() |> Path.join("chuffed_#{:rand.uniform(1_000_000)}.fzn")
+    
+    try do
+      File.write!(tmp_file, flatzinc_content)
+      solve_flatzinc_file(tmp_file, opts)
+    after
+      File.rm(tmp_file)
     end
   end
 
   # Private helper functions
 
-  defp solve_flatzinc_file(flatzinc_path, solver_options, _timeout) do
-    flatzinc_content = File.read!(flatzinc_path)
-
-    case ChuffedSolverNif.solve_flatzinc(flatzinc_content, solver_options) do
-      {:ok, result_binary} ->
-        result = to_string(result_binary)
-        parse_chuffed_output(result)
-
-      error ->
-        error
-    end
+  defp solve_flatzinc_file(flatzinc_path, solver_options, timeout) do
+    solve_flatzinc_file(flatzinc_path, timeout: timeout, solver_options: solver_options)
   end
 
   defp solve_from_domain(domain_type, constraints, opts) do
@@ -161,18 +163,10 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
     end
   end
 
-  defp solve_from_constraints(constraints, solver_options, _timeout) do
+  defp solve_from_constraints(constraints, solver_options, timeout) do
     # Convert constraints to FlatZinc format using EEx template
     flatzinc = FlatZincGenerator.generate(constraints)
-
-    case ChuffedSolverNif.solve_flatzinc(flatzinc, solver_options) do
-      {:ok, result_binary} ->
-        result = to_string(result_binary)
-        parse_chuffed_output(result)
-
-      error ->
-        error
-    end
+    solve_flatzinc(flatzinc, timeout: timeout, solver_options: solver_options)
   end
 
   defp find_domain_flatzinc(domain_type) do
@@ -191,35 +185,80 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
 
 
   defp parse_chuffed_output(output) do
-    # Parse Chuffed output format
-    # Chuffed typically outputs solutions in FlatZinc format:
-    # variable_name = value;
+    # Parse MiniZinc JSON output (newline-delimited JSON)
+    # Each line is a JSON object with type: "solution", "status", "error", etc.
     
-    lines = String.split(output, "\n")
+    lines = String.split(output, "\n") |> Enum.filter(&(&1 != ""))
+    
+    # Try to parse as JSON first
     solution = %{}
-
-    solution =
-      Enum.reduce(lines, solution, fn line, acc ->
-        case Regex.run(~r/^(\w+)\s*=\s*([^;]+);/, line) do
-          [_, var_name, value] ->
-            parsed_value = parse_value(value)
-            Map.put(acc, String.to_atom(var_name), parsed_value)
-
-          _ ->
-            acc
+    status = nil
+    error = nil
+    
+    {solution, status, error} =
+      Enum.reduce(lines, {solution, status, error}, fn line, {sol_acc, stat_acc, err_acc} ->
+        case Jason.decode(line) do
+          {:ok, json} ->
+            case json do
+              %{"type" => "solution", "output" => output_text} ->
+                # Parse the output text which contains variable assignments
+                parsed = parse_flatzinc_output(output_text)
+                {Map.merge(sol_acc, parsed), stat_acc, err_acc}
+              
+              %{"type" => "solution", "json" => json_solution} ->
+                # Direct JSON solution
+                {Map.merge(sol_acc, json_solution), stat_acc, err_acc}
+              
+              %{"type" => "status", "status" => stat} ->
+                {sol_acc, stat, err_acc}
+              
+              %{"type" => "error", "message" => msg} ->
+                {sol_acc, stat_acc, msg}
+              
+              _ ->
+                {sol_acc, stat_acc, err_acc}
+            end
+          
+          {:error, _} ->
+            # Not JSON, try parsing as FlatZinc format
+            parsed = parse_flatzinc_output(line)
+            {Map.merge(sol_acc, parsed), stat_acc, err_acc}
         end
       end)
-
-    if map_size(solution) > 0 do
-      {:ok, solution}
-    else
-      # Check for error messages
-      if String.contains?(output, "UNSATISFIABLE") or String.contains?(output, "UNSAT") do
+    
+    # Return appropriate result
+    cond do
+      error ->
+        {:error, error}
+      
+      status in ["UNSATISFIABLE", "UNSAT"] ->
         {:error, "Problem is unsatisfiable"}
-      else
+      
+      map_size(solution) > 0 ->
+        {:ok, solution}
+      
+      status == "OPTIMAL_SOLUTION" or status == "SATISFIED" ->
+        {:ok, %{status: status, raw_output: output}}
+      
+      true ->
         {:ok, %{raw_output: output}}
-      end
     end
+  end
+
+  defp parse_flatzinc_output(output) do
+    # Parse FlatZinc format: variable_name = value;
+    lines = String.split(output, "\n")
+    
+    Enum.reduce(lines, %{}, fn line, acc ->
+      case Regex.run(~r/^(\w+)\s*=\s*([^;]+);/, line) do
+        [_, var_name, value] ->
+          parsed_value = parse_value(value)
+          Map.put(acc, String.to_atom(var_name), parsed_value)
+        
+        _ ->
+          acc
+      end
+    end)
   end
 
   defp parse_value(value) do
