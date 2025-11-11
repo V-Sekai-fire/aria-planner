@@ -322,19 +322,29 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
 
   defp convert_domain_from_maps(domain) do
     commands = Map.get(domain, :commands, []) || []
+    actions = Map.get(domain, :actions, []) || []
     tasks = Map.get(domain, :tasks, []) || []
     multigoals = Map.get(domain, :multigoals, []) || []
     predicates = Map.get(domain, :predicates, []) || []
     entities = Map.get(domain, :entities, []) || []
 
     domain_name = Map.get(domain, :name, "domain") || Map.get(domain, :domain_type, "domain")
+    
+    # Convert actions to commands format for processing
+    all_commands = commands ++ Enum.map(actions, fn action ->
+      %{
+        "name" => Map.get(action, "name") || Map.get(action, :name),
+        "preconditions" => Map.get(action, "preconditions", []) || Map.get(action, :preconditions, []),
+        "effects" => Map.get(action, "effects", []) || Map.get(action, :effects, [])
+      }
+    end)
 
     # Generate variable declarations from predicates
     variable_declarations = generate_variable_declarations(predicates, entities)
 
-    # Convert each element
+    # Convert each element (commands and actions)
     command_constraints =
-      Enum.map(commands, fn cmd ->
+      Enum.map(all_commands, fn cmd ->
         case convert_command_element(cmd) do
           {:ok, model} -> extract_constraints_from_model(model)
           _ -> []
@@ -706,54 +716,237 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
   end
 
   defp convert_precondition_to_constraint(prec) when is_binary(prec) do
-    # Try to parse common precondition patterns
-    cond do
-      # Pattern: "predicate[entity] == value"
-      Regex.match?(~r/(\w+)\[(\w+)\]\s*==\s*(\w+)/, prec) ->
-        [_, pred, entity, value] = Regex.run(~r/(\w+)\[(\w+)\]\s*==\s*(\w+)/, prec)
-        "constraint #{pred}_#{entity} = #{value};"
+    # Try to parse as an expression first
+    normalized = normalize_expression_string(prec)
+    
+    case Code.string_to_quoted(normalized) do
+      {:ok, ast} ->
+        convert_ast_to_minizinc_constraint(ast)
 
-      # Pattern: "predicate == value"
-      Regex.match?(~r/(\w+)\s*==\s*(\w+)/, prec) ->
-        [_, pred, value] = Regex.run(~r/(\w+)\s*==\s*(\w+)/, prec)
-        "constraint #{pred} = #{value};"
+      {:error, _} ->
+        # If parsing fails, try Sourceror
+        case Sourceror.parse_string(normalized) do
+          {:ok, ast} ->
+            convert_ast_to_minizinc_constraint(ast)
 
-      # Pattern: "predicate >= value"
-      Regex.match?(~r/(\w+)\s*>=\s*(\w+)/, prec) ->
-        [_, pred, value] = Regex.run(~r/(\w+)\s*>=\s*(\w+)/, prec)
-        "constraint #{pred} >= #{value};"
-
-      # Pattern: "predicate <= value"
-      Regex.match?(~r/(\w+)\s*<=\s*(\w+)/, prec) ->
-        [_, pred, value] = Regex.run(~r/(\w+)\s*<=\s*(\w+)/, prec)
-        "constraint #{pred} <= #{value};"
-
-      true ->
-        "% Precondition: #{prec}"
+          {:error, _} ->
+            "% Precondition (could not parse): #{prec}"
+        end
     end
+  end
+
+  defp convert_precondition_to_constraint(ast) when is_tuple(ast) do
+    convert_ast_to_minizinc_constraint(ast)
   end
 
   defp convert_precondition_to_constraint(_), do: ""
 
   defp convert_effect_to_minizinc(effect) when is_binary(effect) do
-    # Try to parse common effect patterns
-    cond do
-      # Pattern: "predicate[entity] = value"
-      Regex.match?(~r/(\w+)\[(\w+)\]\s*=\s*(\w+)/, effect) ->
-        [_, pred, entity, value] = Regex.run(~r/(\w+)\[(\w+)\]\s*=\s*(\w+)/, effect)
-        "% Effect: #{pred}_#{entity} = #{value}"
+    # Try to parse as an expression first
+    normalized = normalize_expression_string(effect)
+    
+    case Code.string_to_quoted(normalized) do
+      {:ok, ast} ->
+        convert_ast_to_minizinc_effect(ast)
 
-      # Pattern: "predicate = value"
-      Regex.match?(~r/(\w+)\s*=\s*(\w+)/, effect) ->
-        [_, pred, value] = Regex.run(~r/(\w+)\s*=\s*(\w+)/, effect)
-        "% Effect: #{pred} = #{value}"
+      {:error, _} ->
+        # If parsing fails, try Sourceror
+        case Sourceror.parse_string(normalized) do
+          {:ok, ast} ->
+            convert_ast_to_minizinc_effect(ast)
 
-      true ->
-        "% Effect: #{effect}"
+          {:error, _} ->
+            "% Effect (could not parse): #{effect}"
+        end
     end
   end
 
+  defp convert_effect_to_minizinc(ast) when is_tuple(ast) do
+    convert_ast_to_minizinc_effect(ast)
+  end
+
   defp convert_effect_to_minizinc(_), do: ""
+
+  # AST to MiniZinc conversion functions
+
+  defp convert_ast_to_minizinc_constraint(ast) do
+    case ast do
+      # Equality: ==
+      {:==, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "constraint #{left_str} = #{right_str};"
+
+      # Inequality: >=
+      {:>=, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "constraint #{left_str} >= #{right_str};"
+
+      # Inequality: <=
+      {:<=, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "constraint #{left_str} <= #{right_str};"
+
+      # Inequality: >
+      {:>, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "constraint #{left_str} > #{right_str};"
+
+      # Inequality: <
+      {:<, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "constraint #{left_str} < #{right_str};"
+
+      # Logical AND
+      {:and, _, [left, right]} ->
+        left_str = convert_ast_to_minizinc_constraint(left)
+        right_str = convert_ast_to_minizinc_constraint(right)
+        # Remove "constraint" and ";" from sub-constraints and combine
+        left_clean = remove_constraint_wrapper(left_str)
+        right_clean = remove_constraint_wrapper(right_str)
+        "constraint (#{left_clean}) /\ (#{right_clean});"
+
+      # Logical OR
+      {:or, _, [left, right]} ->
+        left_str = convert_ast_to_minizinc_constraint(left)
+        right_str = convert_ast_to_minizinc_constraint(right)
+        left_clean = remove_constraint_wrapper(left_str)
+        right_clean = remove_constraint_wrapper(right_str)
+        "constraint (#{left_clean}) \/ (#{right_clean});"
+
+      # Other expressions - convert to constraint
+      expr ->
+        expr_str = ast_to_minizinc_expr(expr)
+        "constraint #{expr_str};"
+    end
+  end
+
+  defp convert_ast_to_minizinc_effect(ast) do
+    case ast do
+      # Assignment: =
+      {:=, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "% Effect: #{left_str} = #{right_str}"
+
+      # Other expressions - convert to effect comment
+      expr ->
+        expr_str = ast_to_minizinc_expr(expr)
+        "% Effect: #{expr_str}"
+    end
+  end
+
+  defp ast_to_minizinc_expr(ast) do
+    case ast do
+      # Variable reference
+      name when is_atom(name) ->
+        Atom.to_string(name)
+
+      # Integer literal
+      n when is_integer(n) ->
+        Integer.to_string(n)
+
+      # String literal
+      s when is_binary(s) ->
+        "'#{s}'"
+
+      # Atom literal
+      {:__aliases__, _, [atom]} when is_atom(atom) ->
+        "'#{Atom.to_string(atom)}'"
+
+      # Binary operation: +
+      {:+, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "(#{left_str} + #{right_str})"
+
+      # Binary operation: -
+      {:-, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "(#{left_str} - #{right_str})"
+
+      # Binary operation: *
+      {:*, _, [left, right]} ->
+        left_str = ast_to_minizinc_expr(left)
+        right_str = ast_to_minizinc_expr(right)
+        "(#{left_str} * #{right_str})"
+
+      # Access operation: pred[entity] or pred.field
+      {{:., _, [left, :get]}, _, [arg]} ->
+        # Predicate.get(state, arg) -> pred_arg
+        pred_name = extract_predicate_name(left)
+        arg_str = ast_to_minizinc_expr(arg)
+        "#{pred_name}_#{arg_str}"
+
+      # Function call: Module.function(args)
+      {{:., _, [{:__aliases__, _, path}, fun]}, _, args} ->
+        module_str = path |> Enum.map(&Atom.to_string/1) |> Enum.join(".")
+        args_str = args |> Enum.map(&ast_to_minizinc_expr/1) |> Enum.join(", ")
+        "#{module_str}.#{fun}(#{args_str})"
+
+      # Access: map.field or map["key"]
+      {{:., _, [map, field]}, _, []} ->
+        map_str = ast_to_minizinc_expr(map)
+        field_str = if is_atom(field), do: Atom.to_string(field), else: to_string(field)
+        "#{map_str}.#{field_str}"
+
+      # List/tuple - convert to string representation
+      list when is_list(list) ->
+        items = list |> Enum.map(&ast_to_minizinc_expr/1) |> Enum.join(", ")
+        "[#{items}]"
+
+      # Tuple
+      {_, _, _} = tuple when is_tuple(tuple) ->
+        inspect(tuple)
+
+      # Other - convert to string
+      other ->
+        inspect(other)
+    end
+  end
+
+  defp normalize_expression_string(str) when is_binary(str) do
+    # Normalize string to be parseable as Elixir expression
+    # Replace single-quoted strings with double-quoted strings
+    # This handles cases like 'west' -> "west"
+    str
+    |> String.replace("'", "\"")
+  end
+
+  defp remove_constraint_wrapper(str) when is_binary(str) do
+    str
+    |> String.trim()
+    |> String.trim_leading("constraint")
+    |> String.trim()
+    |> String.trim_trailing(";")
+    |> String.trim()
+  end
+
+  defp extract_predicate_name(ast) do
+    case ast do
+      {:__aliases__, _, path} ->
+        # Get the last part of the path (e.g., WestFox -> west_fox)
+        last = path |> List.last() |> Atom.to_string()
+        # Convert CamelCase to snake_case without regex
+        last
+        |> String.to_charlist()
+        |> Enum.map(fn
+          char when char >= ?A and char <= ?Z -> [?_, char + 32]
+          char -> [char]
+        end)
+        |> List.flatten()
+        |> to_string()
+        |> String.trim_leading("_")
+
+      _ ->
+        "unknown"
+    end
+  end
 
   # Formatting functions
 
