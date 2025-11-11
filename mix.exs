@@ -60,44 +60,7 @@ defmodule AriaPlanner.MixProject do
   end
 
   defp aliases do
-    [
-      compile: [&compile_chuffed/1, "compile"]
-    ]
-  end
-
-  defp compile_chuffed(_) do
-    # Try to compile C++ NIF, but don't fail if build tools aren't available
-    case System.find_executable("make") do
-      nil ->
-        # Make not available - try Windows native build script
-        if match?({:win32, _}, :os.type()) do
-          case System.cmd("cmd.exe", ["/c", "c_src\\build_windows.bat"], stderr_to_stdout: true, cd: "c_src") do
-            {output, 0} ->
-              IO.puts(output)
-              :ok
-
-            {output, _exit_code} ->
-              IO.puts(output)
-              Mix.shell().info("Chuffed NIF compilation failed (this is OK if compiler/Chuffed isn't installed)")
-              :ok
-          end
-        else
-          Mix.shell().info("make not found, skipping Chuffed NIF compilation")
-          :ok
-        end
-
-      _make_path ->
-        case System.cmd("make", ["-C", "c_src"], stderr_to_stdout: true) do
-          {output, 0} ->
-            IO.puts(output)
-            :ok
-
-          {output, _exit_code} ->
-            IO.puts(output)
-            Mix.shell().info("Chuffed NIF compilation failed (this is OK if Chuffed isn't installed)")
-            :ok  # Don't fail the build, just warn
-        end
-    end
+    []
   end
 
   defp package do

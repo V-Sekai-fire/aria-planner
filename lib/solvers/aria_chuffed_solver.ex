@@ -25,7 +25,7 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
       {:ok, solution} = AriaChuffedSolver.solve_flatzinc_file("problem.fzn")
   """
 
-  alias AriaPlanner.Solvers.ChuffedMiniZinc
+  alias AriaPlanner.Solvers.MiniZincSolver
   alias AriaPlanner.Solvers.FlatZincGenerator
   alias AriaPlanner.Planner.State
 
@@ -39,7 +39,7 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
   """
   @spec available?() :: boolean()
   def available? do
-    ChuffedMiniZinc.available?()
+    MiniZincSolver.available?()
   end
 
   @doc """
@@ -106,11 +106,12 @@ defmodule AriaPlanner.Solvers.AriaChuffedSolver do
   @spec solve_flatzinc_file(String.t(), keyword()) :: {:ok, map()} | {:error, String.t()}
   def solve_flatzinc_file(flatzinc_path, opts \\ []) do
     timeout = Keyword.get(opts, :timeout, 60_000)
+    solver = Keyword.get(opts, :solver, "chuffed")
     solver_options = Keyword.get(opts, :solver_options, [])
 
-    case ChuffedMiniZinc.solve_flatzinc_file(flatzinc_path, timeout: timeout, solver_options: solver_options) do
-      {:ok, output} ->
-        parse_chuffed_output(output)
+    case MiniZincSolver.solve(flatzinc_path, nil, solver: solver, timeout: timeout, solver_options: solver_options) do
+      {:ok, solution} ->
+        {:ok, solution}
 
       error ->
         error

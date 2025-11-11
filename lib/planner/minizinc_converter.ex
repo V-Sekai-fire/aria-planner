@@ -45,7 +45,7 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
   Extracts preconditions, effects, and logic from the command's Elixir code
   and converts them to MiniZinc constraints and variable declarations.
   """
-  @spec convert_command(module() | String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @spec convert_command(module() | String.t() | map()) :: {:ok, String.t()} | {:error, String.t()}
   def convert_command(module) when is_atom(module) do
     case get_module_source(module) do
       {:ok, source} ->
@@ -66,12 +66,16 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
     end
   end
 
+  def convert_command(cmd) when is_map(cmd) do
+    convert_command_element(cmd)
+  end
+
   @doc """
   Converts a task module to MiniZinc format.
 
   Extracts task decomposition logic and converts it to MiniZinc constraints.
   """
-  @spec convert_task(module() | String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @spec convert_task(module() | String.t() | map()) :: {:ok, String.t()} | {:error, String.t()}
   def convert_task(module) when is_atom(module) do
     case get_module_source(module) do
       {:ok, source} ->
@@ -92,12 +96,16 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
     end
   end
 
+  def convert_task(task) when is_map(task) do
+    convert_task_element(task)
+  end
+
   @doc """
   Converts a multigoal module to MiniZinc format.
 
   Extracts goal generation logic and converts it to MiniZinc constraints.
   """
-  @spec convert_multigoal(module() | String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @spec convert_multigoal(module() | String.t() | map()) :: {:ok, String.t()} | {:error, String.t()}
   def convert_multigoal(module) when is_atom(module) do
     case get_module_source(module) do
       {:ok, source} ->
@@ -118,6 +126,10 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
     end
   end
 
+  def convert_multigoal(mg) when is_map(mg) do
+    convert_multigoal_element(mg)
+  end
+
   @doc """
   Converts an entire planning domain to MiniZinc format.
 
@@ -126,11 +138,89 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
   """
   @spec convert_domain(PlanningDomain.t() | map()) :: {:ok, String.t()} | {:error, String.t()}
   def convert_domain(%PlanningDomain{} = domain) do
-    convert_domain_from_maps(domain)
+    domain_map = %{
+      name: domain.name,
+      domain_type: domain.domain_type,
+      commands: domain.commands,
+      tasks: domain.tasks,
+      multigoals: domain.multigoals,
+      predicates: extract_predicates_from_domain(domain),
+      entities: domain.entities
+    }
+    convert_domain_from_maps(domain_map)
   end
 
   def convert_domain(domain_map) when is_map(domain_map) do
     convert_domain_from_maps(domain_map)
+  end
+
+  @doc """
+  Converts a domain to MiniZinc and saves it to a file.
+
+  ## Parameters
+
+  - `domain`: Planning domain to convert
+  - `output_path`: Path to save the .mzn file
+
+  ## Returns
+
+  - `{:ok, path}` - Path to saved file
+  - `{:error, reason}` - Error reason
+  """
+  @spec convert_domain_to_file(PlanningDomain.t() | map(), String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  def convert_domain_to_file(domain, output_path) do
+    case convert_domain(domain) do
+      {:ok, minizinc_code} ->
+        case File.write(output_path, minizinc_code) do
+          :ok -> {:ok, output_path}
+          {:error, reason} -> {:error, "Failed to write file: #{inspect(reason)}"}
+        end
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Converts a domain to MiniZinc and solves it using MiniZincSolver.
+
+  ## Parameters
+
+  - `domain`: Planning domain to convert and solve
+  - `data_path`: Optional path to .dzn data file
+  - `opts`: Options keyword list (passed to MiniZincSolver.solve)
+
+  ## Returns
+
+  - `{:ok, solution}` - Parsed solution
+  - `{:error, reason}` - Error reason
+  """
+  @spec convert_and_solve(PlanningDomain.t() | map(), String.t() | nil, keyword()) :: {:ok, map()} | {:error, String.t()}
+  def convert_and_solve(domain, data_path \\ nil, opts \\ []) do
+    case convert_domain(domain) do
+      {:ok, minizinc_code} ->
+        AriaPlanner.Solvers.MiniZincSolver.solve_string(minizinc_code, data_path, opts)
+
+      error ->
+        error
+    end
+  end
+
+  defp extract_predicates_from_domain(%PlanningDomain{} = domain) do
+    # Extract predicates from domain metadata or infer from commands/tasks
+    predicates = Map.get(domain.metadata || %{}, "predicates", [])
+    if predicates == [] do
+      # Try to infer from domain type
+      case domain.domain_type do
+        "aircraft_disassembly" -> ["activity_status", "precedence", "resource_assigned", "location_capacity"]
+        "tiny_cvrp" -> ["vehicle_at", "customer_visited", "vehicle_capacity"]
+        "neighbours" -> ["grid_value"]
+        "fox_geese_corn" -> ["boat_location", "east_fox", "east_geese", "east_corn", "west_fox", "west_geese", "west_corn"]
+        _ -> []
+      end
+    else
+      predicates
+    end
   end
 
   # Private helper functions
@@ -234,56 +324,101 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
     commands = Map.get(domain, :commands, []) || []
     tasks = Map.get(domain, :tasks, []) || []
     multigoals = Map.get(domain, :multigoals, []) || []
+    predicates = Map.get(domain, :predicates, []) || []
+    entities = Map.get(domain, :entities, []) || []
 
     domain_name = Map.get(domain, :name, "domain") || Map.get(domain, :domain_type, "domain")
 
+    # Generate variable declarations from predicates
+    variable_declarations = generate_variable_declarations(predicates, entities)
+
     # Convert each element
-    command_models =
+    command_constraints =
       Enum.map(commands, fn cmd ->
         case convert_command_element(cmd) do
-          {:ok, model} -> model
-          _ -> ""
+          {:ok, model} -> extract_constraints_from_model(model)
+          _ -> []
         end
       end)
-      |> Enum.filter(&(&1 != ""))
+      |> List.flatten()
 
-    task_models =
+    task_constraints =
       Enum.map(tasks, fn task ->
         case convert_task_element(task) do
-          {:ok, model} -> model
-          _ -> ""
+          {:ok, model} -> extract_constraints_from_model(model)
+          _ -> []
         end
       end)
-      |> Enum.filter(&(&1 != ""))
+      |> List.flatten()
 
-    multigoal_models =
+    multigoal_constraints =
       Enum.map(multigoals, fn mg ->
         case convert_multigoal_element(mg) do
-          {:ok, model} -> model
-          _ -> ""
+          {:ok, model} -> extract_constraints_from_model(model)
+          _ -> []
         end
       end)
-      |> Enum.filter(&(&1 != ""))
+      |> List.flatten()
+
+    all_constraints = command_constraints ++ task_constraints ++ multigoal_constraints
 
     # Combine into single MiniZinc model
     minizinc = """
     % MiniZinc model for domain: #{domain_name}
-    % Generated from planner elements
+    % Generated from planner elements using Sourceror
 
-    % Commands
-    #{Enum.join(command_models, "\n\n")}
+    % Variable declarations
+    #{if variable_declarations != "", do: variable_declarations, else: "% No variables declared"}
 
-    % Tasks
-    #{Enum.join(task_models, "\n\n")}
+    % Constraints from commands
+    #{if command_constraints != [], do: "% Commands\n" <> Enum.join(command_constraints, "\n"), else: "% No command constraints"}
 
-    % Multigoals
-    #{Enum.join(multigoal_models, "\n\n")}
+    % Constraints from tasks
+    #{if task_constraints != [], do: "% Tasks\n" <> Enum.join(task_constraints, "\n"), else: "% No task constraints"}
+
+    % Constraints from multigoals
+    #{if multigoal_constraints != [], do: "% Multigoals\n" <> Enum.join(multigoal_constraints, "\n"), else: "% No multigoal constraints"}
 
     solve satisfy;
     """
 
     {:ok, minizinc}
   end
+
+  defp generate_variable_declarations(predicates, entities) do
+    # Generate variable declarations for predicates
+    predicate_vars =
+      predicates
+      |> Enum.map(fn pred ->
+        pred_name = if is_binary(pred), do: pred, else: Map.get(pred, "name") || Map.get(pred, :name) || "unknown"
+        "var bool: #{pred_name};"
+      end)
+      |> Enum.join("\n")
+
+    # Generate variable declarations for entities if needed
+    entity_vars =
+      entities
+      |> Enum.map(fn entity ->
+        entity_name = if is_binary(entity), do: entity, else: Map.get(entity, "name") || Map.get(entity, :name) || "unknown"
+        "var int: #{entity_name};"
+      end)
+      |> Enum.join("\n")
+
+    [predicate_vars, entity_vars]
+    |> Enum.filter(&(&1 != ""))
+    |> Enum.join("\n")
+  end
+
+  defp extract_constraints_from_model(model) when is_binary(model) do
+    # Extract constraint lines from model string
+    model
+    |> String.split("\n")
+    |> Enum.filter(fn line ->
+      String.trim(line) |> String.starts_with?("constraint")
+    end)
+  end
+
+  defp extract_constraints_from_model(_), do: []
 
   defp convert_command_element(cmd) when is_map(cmd) do
     name = Map.get(cmd, "name") || Map.get(cmd, :name)
@@ -527,12 +662,25 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
   end
 
   defp generate_command_minizinc_from_map(name, preconditions, effects) do
+    # Convert preconditions to MiniZinc constraints
+    constraint_lines = 
+      preconditions
+      |> Enum.map(&convert_precondition_to_constraint/1)
+      |> Enum.filter(&(&1 != ""))
+      |> Enum.join("\n")
+
+    # Convert effects to variable assignments or constraints
+    effect_lines =
+      effects
+      |> Enum.map(&convert_effect_to_minizinc/1)
+      |> Enum.filter(&(&1 != ""))
+      |> Enum.join("\n")
+
     """
     % Command: #{name}
-    % Preconditions:
-    #{format_preconditions_from_strings(preconditions)}
-    % Effects:
-    #{format_effects_from_strings(effects)}
+    #{if constraint_lines != "", do: constraint_lines, else: "% No preconditions"}
+    #{if effect_lines != "", do: effect_lines, else: "% No effects"}
+    % End Command: #{name}
     """
   end
 
@@ -540,15 +688,72 @@ defmodule AriaPlanner.Planner.MiniZincConverter do
     """
     % Task: #{name}
     % Decomposition: #{decomposition || "N/A"}
+    % Tasks are decomposed into subtasks during planning
     """
   end
 
   defp generate_multigoal_minizinc_from_map(name, predicate) do
+    goal_constraint = if predicate do
+      "constraint #{predicate} = true;"
+    else
+      "% Goal: #{name}"
+    end
+
     """
     % Multigoal: #{name}
-    % Predicate: #{predicate || "N/A"}
+    #{goal_constraint}
     """
   end
+
+  defp convert_precondition_to_constraint(prec) when is_binary(prec) do
+    # Try to parse common precondition patterns
+    cond do
+      # Pattern: "predicate[entity] == value"
+      Regex.match?(~r/(\w+)\[(\w+)\]\s*==\s*(\w+)/, prec) ->
+        [_, pred, entity, value] = Regex.run(~r/(\w+)\[(\w+)\]\s*==\s*(\w+)/, prec)
+        "constraint #{pred}_#{entity} = #{value};"
+
+      # Pattern: "predicate == value"
+      Regex.match?(~r/(\w+)\s*==\s*(\w+)/, prec) ->
+        [_, pred, value] = Regex.run(~r/(\w+)\s*==\s*(\w+)/, prec)
+        "constraint #{pred} = #{value};"
+
+      # Pattern: "predicate >= value"
+      Regex.match?(~r/(\w+)\s*>=\s*(\w+)/, prec) ->
+        [_, pred, value] = Regex.run(~r/(\w+)\s*>=\s*(\w+)/, prec)
+        "constraint #{pred} >= #{value};"
+
+      # Pattern: "predicate <= value"
+      Regex.match?(~r/(\w+)\s*<=\s*(\w+)/, prec) ->
+        [_, pred, value] = Regex.run(~r/(\w+)\s*<=\s*(\w+)/, prec)
+        "constraint #{pred} <= #{value};"
+
+      true ->
+        "% Precondition: #{prec}"
+    end
+  end
+
+  defp convert_precondition_to_constraint(_), do: ""
+
+  defp convert_effect_to_minizinc(effect) when is_binary(effect) do
+    # Try to parse common effect patterns
+    cond do
+      # Pattern: "predicate[entity] = value"
+      Regex.match?(~r/(\w+)\[(\w+)\]\s*=\s*(\w+)/, effect) ->
+        [_, pred, entity, value] = Regex.run(~r/(\w+)\[(\w+)\]\s*=\s*(\w+)/, effect)
+        "% Effect: #{pred}_#{entity} = #{value}"
+
+      # Pattern: "predicate = value"
+      Regex.match?(~r/(\w+)\s*=\s*(\w+)/, effect) ->
+        [_, pred, value] = Regex.run(~r/(\w+)\s*=\s*(\w+)/, effect)
+        "% Effect: #{pred} = #{value}"
+
+      true ->
+        "% Effect: #{effect}"
+    end
+  end
+
+  defp convert_effect_to_minizinc(_), do: ""
 
   # Formatting functions
 
