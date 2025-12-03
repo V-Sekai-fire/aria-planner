@@ -32,21 +32,21 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Multigoals.TransportAll do
 
       goals =
         if west_fox > 0 do
-          goals ++ [{"east_fox", west_fox}]
+          goals ++ [{"east_fox", ["value", west_fox]}]
         else
           goals
         end
 
       goals =
         if west_geese > 0 do
-          goals ++ [{"east_geese", west_geese}]
+          goals ++ [{"east_geese", ["value", west_geese]}]
         else
           goals
         end
 
       goals =
         if west_corn > 0 do
-          goals ++ [{"east_corn", west_corn}]
+          goals ++ [{"east_corn", ["value", west_corn]}]
         else
           goals
         end

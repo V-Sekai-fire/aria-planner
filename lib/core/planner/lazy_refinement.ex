@@ -175,9 +175,26 @@ defmodule AriaCore.Planner.LazyRefinement do
             end
 
           :G -> # Goal
-            {subject_id, predicate_table, desired_val} = curr_node.info
-            if State.get_fact(current_state, subject_id, predicate_table) == desired_val do
-              Logger.info("Goal #{inspect(curr_node.info)} already achieved.")
+            # Support new goal format: {predicate_table, [subject_id, desired_val]}
+            # and legacy format: {subject_id, predicate_table, desired_val}
+            {is_achieved, goal_info} = case curr_node.info do
+              {predicate_table, args} when is_list(args) ->
+                [subject_id, desired_val] = args
+                achieved = State.get_fact_by_predicate(current_state, predicate_table, subject_id) == desired_val
+                {achieved, {predicate_table, args}}
+              
+              {subject_id, predicate_table, desired_val} when is_binary(subject_id) or is_atom(subject_id) ->
+                # Legacy format support
+                achieved = State.get_fact(current_state, subject_id, predicate_table) == desired_val
+                {achieved, {subject_id, predicate_table, desired_val}}
+              
+              _ ->
+                # Unknown format, treat as not achieved
+                {false, curr_node.info}
+            end
+            
+            if is_achieved do
+              Logger.info("Goal #{inspect(goal_info)} already achieved.")
               solution_graph = Map.put(solution_graph, curr_node_id, %{curr_node | status: :C})
               {new_id, new_solution_graph} = GraphOperations.add_nodes_and_edges(id, curr_node_id, [], solution_graph, methods, actions) # Add empty subgoals for verification # Fix _id
               planning_loop_recursive(new_id, curr_node_id, current_state, new_solution_graph, blacklisted_commands, methods, actions, iter + 1) # Fix _id, _iter
@@ -225,8 +242,23 @@ defmodule AriaCore.Planner.LazyRefinement do
 
           :VG -> # Verify Goal
             goal_node = Map.get(solution_graph, parent_node_id)
-            {subject_id, predicate_table, desired_val} = goal_node.info
-            if State.get_fact(current_state, subject_id, predicate_table) == desired_val do
+            # Support new goal format: {predicate_table, [subject_id, desired_val]}
+            # and legacy format: {subject_id, predicate_table, desired_val}
+            is_achieved = case goal_node.info do
+              {predicate_table, args} when is_list(args) ->
+                [subject_id, desired_val] = args
+                State.get_fact_by_predicate(current_state, predicate_table, subject_id) == desired_val
+              
+              {subject_id, predicate_table, desired_val} when is_binary(subject_id) or is_atom(subject_id) ->
+                # Legacy format support
+                State.get_fact(current_state, subject_id, predicate_table) == desired_val
+              
+              _ ->
+                # Unknown format, treat as not achieved
+                false
+            end
+            
+            if is_achieved do
               Logger.info("Goal #{inspect(goal_node.info)} verified successfully.")
               solution_graph = Map.put(solution_graph, curr_node_id, %{curr_node | status: :C})
               planning_loop_recursive(id, parent_node_id, current_state, solution_graph, blacklisted_commands, methods, actions, iter + 1) # Fix _id, _iter

@@ -22,7 +22,7 @@ defmodule AriaPlanner.Domains.TinyCvrp.Multigoals.RouteVehicles do
       goals =
         for customer <- 2..state.total_places,
             not CustomerVisited.get(state, customer) do
-          {"customer_visited", customer, true}
+          {"customer_visited", [customer, true]}
         end
 
       goals
