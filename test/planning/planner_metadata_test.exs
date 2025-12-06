@@ -26,10 +26,10 @@ defmodule AriaPlanner.Planner.PlannerMetadataTest do
       end
     end
 
-    test "raises on empty entity requirements" do
-      assert_raise ArgumentError, fn ->
-        PlannerMetadata.new!("PT2H", [])
-      end
+    test "allows empty entity requirements" do
+      metadata = PlannerMetadata.new!("PT2H", [])
+      assert metadata.duration == "PT2H"
+      assert metadata.requires_entities == []
     end
   end
 
@@ -52,13 +52,13 @@ defmodule AriaPlanner.Planner.PlannerMetadataTest do
       assert PlannerMetadata.validate(metadata) == {:error, :invalid_duration}
     end
 
-    test "rejects empty entity requirements" do
+    test "allows empty entity requirements" do
       metadata = %PlannerMetadata{
         duration: "PT2H",
         requires_entities: []
       }
 
-      assert PlannerMetadata.validate(metadata) == {:error, :no_entity_requirements}
+      assert PlannerMetadata.validate(metadata) == :ok
     end
   end
 

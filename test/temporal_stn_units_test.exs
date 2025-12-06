@@ -25,7 +25,7 @@ defmodule AriaPlanner.Planner.Temporal.STN.UnitsTest do
     end
 
     test "returns correct resolution for very_low" do
-      assert Units.lod_resolution_for_level(:very_low) == 10000
+      assert Units.lod_resolution_for_level(:very_low) == 10_000
     end
   end
 
@@ -174,7 +174,7 @@ defmodule AriaPlanner.Planner.Temporal.STN.UnitsTest do
         )
 
       # 15-45 minutes in seconds * 100 resolution
-      assert result == {90000, 270_000}
+      assert result == {90_000, 270_000}
     end
 
     test "returns error for invalid ISO 8601 duration" do

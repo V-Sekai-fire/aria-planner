@@ -4,12 +4,12 @@
 defmodule AriaPlanner.Domains.TinyCvrp.Commands.ReturnToDepot do
   @moduledoc """
   Command: c_return_to_depot(vehicle)
-  
+
   Return a vehicle to the depot and reset its capacity.
-  
+
   Preconditions:
   - Vehicle is not already at depot
-  
+
   Effects:
   - vehicle_at[vehicle] = 1 (depot)
   - vehicle_capacity[vehicle] = initial_capacity[vehicle]
@@ -38,4 +38,3 @@ defmodule AriaPlanner.Domains.TinyCvrp.Commands.ReturnToDepot do
     end
   end
 end
-

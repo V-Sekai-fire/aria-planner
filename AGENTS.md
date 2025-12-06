@@ -10,7 +10,10 @@ This document explains the persona system, belief-immersed planning architecture
 4. [Planning Architecture](#planning-architecture)
 5. [Execution Model](#execution-model)
 6. [Domain System](#domain-system)
-7. [Examples](#examples)
+7. [Temporal System](#temporal-system)
+8. [Solver Architecture](#solver-architecture)
+9. [MCP Integration](#mcp-integration)
+10. [Examples](#examples)
 
 ## Introduction
 
@@ -392,30 +395,90 @@ plan.execution_status
 Execution state is managed allocentrically:
 
 ```elixir
-# Execution state
-state = AriaCore.Planner.State.new(
-  current_time,
-  timeline,
-  entity_capabilities,
-  facts
+# Execution state with ISO 8601 datetime string
+state = AriaPlanner.Planner.State.new(
+  current_time: "2025-01-01T10:00:00Z",  # ISO 8601 datetime string
+  timeline: %{},
+  entity_capabilities: %{},
+  facts: %{}
 )
 
 # State updates during execution
-new_state = AriaCore.Planner.State.update_fact(state, entity_id, predicate, value)
+new_state = AriaPlanner.Planner.State.update_fact(state, entity_id, predicate, value)
+```
+
+### Planner Metadata
+
+Actions, commands, and methods return `PlannerMetadata` with temporal and entity requirements:
+
+```elixir
+metadata = %AriaPlanner.Planner.PlannerMetadata{
+  duration: "PT2H",  # ISO 8601 duration string
+  requires_entities: [
+    %AriaPlanner.Planner.EntityRequirement{
+      type: "agent",
+      capabilities: [:cooking, :movable]
+    }
+  ],
+  start_time: "2025-01-01T10:00:00Z",  # Optional ISO 8601 datetime
+  end_time: "2025-01-01T12:00:00Z"    # Optional ISO 8601 datetime
+}
+```
+
+### Temporal Constraint Networks (STN)
+
+The system uses Simple Temporal Networks (STN) for temporal constraint solving:
+
+```elixir
+# Create STN with time unit and level of detail
+stn = AriaPlanner.Planner.Temporal.STN.new(
+  time_unit: :second,
+  lod_level: :medium  # 100ms resolution
+)
+
+# Add temporal intervals with ISO 8601 strings
+interval = %AriaPlanner.Planner.Temporal.Interval{
+  id: "action1",
+  start_time: "2025-01-01T10:00:00Z",  # ISO 8601 datetime
+  end_time: "2025-01-01T10:05:00Z",    # ISO 8601 datetime
+  duration: "PT5M"                      # ISO 8601 duration
+}
+
+stn = AriaPlanner.Planner.Temporal.STN.add_interval(stn, interval)
+
+# Check consistency
+case AriaPlanner.Planner.Temporal.STN.check_consistency(stn) do
+  {:consistent, solution} -> # Plan is temporally consistent
+  {:inconsistent, reason} -> # Temporal conflict detected
+end
 ```
 
 ### Temporal Constraints
 
-Plans can include temporal constraints:
+Plans can include temporal constraints using **ISO 8601 strings** (not integers):
 
 ```elixir
 plan = %AriaCore.Plan{
   temporal_constraints: %{
-    "action_1" => %{start: ~N[2025-01-01 10:00:00], duration: 300},
-    "action_2" => %{after: "action_1", duration: 200}
+    "action_1" => %{
+      start: "2025-01-01T10:00:00Z",
+      duration: "PT5M"  # ISO 8601 duration string
+    },
+    "action_2" => %{
+      after: "action_1",
+      duration: "PT3M20S"  # ISO 8601 duration string
+    }
   }
 }
 ```
+
+**Important**: All planning-related time values use ISO 8601 format:
+- **Datetime strings**: `"2025-01-01T10:00:00Z"` (absolute times)
+- **Duration strings**: `"PT5M"`, `"PT2H30M"`, `"PT30S"` (relative durations)
+
+The system uses `AriaPlanner.Planner.TimeRange` and `AriaPlanner.Planner.PlannerMetadata` for temporal management. Internal conversion to microseconds happens only for calculations, but the API uses ISO strings exclusively.
+
+**Note**: `ExecutionState.world_time` remains an integer for game simulation (Minecraft-like world state), but all planning operations use ISO 8601 strings.
 
 ## Domain System
 
@@ -528,8 +591,9 @@ domain_spec = %{
   initial_tasks: initial_tasks
 }
 
+# Initial state with ISO 8601 datetime string
 initial_state = %{
-  current_time: DateTime.utc_now(),
+  current_time: DateTime.utc_now() |> DateTime.to_iso8601(),  # ISO 8601 string
   timeline: %{},
   entity_capabilities: %{},
   facts: %{}
@@ -540,6 +604,27 @@ initial_state = %{
   initial_state,
   plan
 )
+```
+
+### Command Execution with Temporal Constraints
+
+Commands accept ISO 8601 datetime strings for temporal parameters:
+
+```elixir
+# Start activity with ISO 8601 datetime string
+current_time = DateTime.utc_now() |> DateTime.to_iso8601()  # "2025-01-01T10:00:00Z"
+
+{:ok, new_state, metadata} = AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity.c_start_activity(
+  state,
+  activity_id: 1,
+  current_time: current_time,  # ISO 8601 string, not integer
+  assigned_resources: [resource_1, resource_2]
+)
+
+# Metadata includes ISO 8601 temporal constraints
+metadata.duration      # "PT2H" - ISO 8601 duration
+metadata.start_time    # "2025-01-01T10:00:00Z" - ISO 8601 datetime
+metadata.end_time      # "2025-01-01T12:00:00Z" - ISO 8601 datetime
 ```
 
 ### Belief Updates
@@ -582,10 +667,84 @@ The codebase includes several example domains:
 - Predicates: `task_duration`, `task_dependency`, `task_status`
 - Commands: `c_add_task`, `c_add_dependency`, `c_start_task`, `c_complete_task`
 
-**MiniZinc Domains** (`lib/domains/`):
+**Aircraft Disassembly** (`lib/domains/aircraft_disassembly/`):
 
-- Domains based on MiniZinc problems
-- Examples: Fox-Geese-Corn, Neighbours, Tiny-CVRP
+- Complex scheduling with precedence, resources, and location capacity
+- Commands: `c_start_activity`, `c_complete_activity`, `c_assign_resource`
+- Tasks: `t_schedule_activities`
+- Multigoals: `m_schedule_activities`
+- Uses ISO 8601 datetime strings for temporal constraints
+
+**Fox-Geese-Corn** (`lib/domains/fox_geese_corn/`):
+
+- Classic river crossing puzzle
+- Commands: `c_cross_east`, `c_cross_west`
+- Tasks: `t_transport_all`
+- Multigoals: `m_transport_all`
+
+**Neighbours** (`lib/domains/neighbours/`):
+
+- Grid value assignment with neighbor constraints
+- Commands: `c_assign_value`
+- Tasks: `t_maximize_grid`
+- Multigoals: `m_maximize_grid`
+
+**Tiny-CVRP** (`lib/domains/tiny_cvrp/`):
+
+- Capacitated Vehicle Routing Problem
+- Commands: `c_visit_customer`, `c_return_to_depot`
+- Tasks: `t_route_vehicles`
+- Multigoals: `m_route_vehicles`
+
+**Note**: MiniZinc dependencies have been removed from the solver. The `MiniZincSolver`, `ChuffedMiniZinc`, and `MiniZincConverter` modules are deprecated and should not be used in new code.
+
+## Temporal System
+
+### ISO 8601 Time Format
+
+All planning-related time values use **ISO 8601 strings**:
+
+- **Datetime strings**: `"2025-01-01T10:00:00Z"` for absolute times
+- **Duration strings**: `"PT5M"`, `"PT2H30M"`, `"PT30S"` for relative durations
+
+**Key Modules**:
+- `AriaPlanner.Client`: Converts between ISO 8601 strings and microseconds (internal calculations)
+- `AriaPlanner.Planner.TimeRange`: Manages time ranges with ISO 8601 strings
+- `AriaPlanner.Planner.PlannerMetadata`: Stores temporal constraints as ISO 8601 strings
+- `AriaPlanner.Planner.Temporal.STN`: Simple Temporal Network for constraint solving
+
+**Conversion Functions**:
+```elixir
+# Convert ISO 8601 datetime to microseconds (internal use)
+{:ok, microseconds} = AriaPlanner.Client.iso8601_to_absolute_microseconds("2025-01-01T10:00:00Z")
+
+# Convert microseconds back to ISO 8601 datetime
+{:ok, datetime_string} = AriaPlanner.Client.absolute_microseconds_to_iso8601(microseconds)
+
+# Convert ISO 8601 duration to microseconds
+{:ok, microseconds} = AriaPlanner.Client.iso8601_duration_to_microseconds("PT5M")
+
+# Convert microseconds to ISO 8601 duration
+{:ok, duration_string} = AriaPlanner.Client.microseconds_to_iso8601_duration(microseconds)
+```
+
+**Note**: Godot uses integer microseconds internally, but the Elixir planner API exclusively uses ISO 8601 strings. Conversion happens at the boundary layer.
+
+## Solver Architecture
+
+The planner uses multiple solver types:
+
+- **Goal Solver** (`AriaPlanner.Solvers.AriaGoalSolver`): Solves goal-based planning problems
+- **STN Solver** (`AriaPlanner.Solvers.AriaStnSolver`): Solves temporal constraint networks
+- **Chuffed Solver** (`AriaPlanner.Solvers.AriaChuffedSolver`): Direct Chuffed solver (no MiniZinc)
+
+**Deprecated**: MiniZinc dependencies have been removed. `MiniZincSolver`, `ChuffedMiniZinc`, and `MiniZincConverter` are deprecated.
+
+## MCP Integration
+
+The system includes MCP (Model Context Protocol) tool handlers for external integration:
+
+- `AriaPlanner.MCP.AriaForge.ToolHandlers`: Handles MCP tool calls for plan creation, domain management, etc.
 
 ## Summary
 
@@ -596,5 +755,8 @@ The aria-planner system is **persona-centric**, not agent-centric. Personas are 
 - **HTN Planning**: Hierarchical task network with lazy refinement
 - **Information Asymmetry**: Personas form beliefs through observation, not direct state access
 - **Domain-Driven Design**: Extensible domain system with predicates, commands, tasks, and goals
+- **ISO 8601 Temporal System**: All planning times use ISO 8601 strings (not integers)
+- **Temporal Constraint Networks**: STN-based temporal constraint solving
+- **Metadata System**: Structured planner metadata with entity requirements and temporal constraints
 
 This architecture enables rich multi-persona interactions where each persona plans from their own perspective while executing in a shared reality.

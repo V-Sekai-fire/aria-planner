@@ -4,14 +4,14 @@
 defmodule AriaPlanner.Domains.Neighbours.Commands.AssignValue do
   @moduledoc """
   Command: c_assign_value(row, col, value)
-  
+
   Assign a value to a grid cell.
-  
+
   Preconditions:
   - Cell is unassigned (value == 0)
   - Value is between 1 and 5
   - If value > 1, cell must have neighbors with values 1..value-1
-  
+
   Effects:
   - grid_value[row, col] = value
   """
@@ -58,9 +58,9 @@ defmodule AriaPlanner.Domains.Neighbours.Commands.AssignValue do
       if Neighbours.has_neighbors_with_values(state, row, col, required_values) do
         :ok
       else
-        {:error, "Cell (#{row}, #{col}) cannot have value #{value} without neighbors having values #{inspect(required_values)}"}
+        {:error,
+         "Cell (#{row}, #{col}) cannot have value #{value} without neighbors having values #{inspect(required_values)}"}
       end
     end
   end
 end
-

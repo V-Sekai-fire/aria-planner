@@ -4,9 +4,9 @@
 defmodule AriaPlanner.Domains.FoxGeeseCorn.Tasks.TransportAll do
   @moduledoc """
   Task: t_transport_all(state)
-  
+
   Transport all items from west to east side.
-  
+
   This task decomposes into a sequence of crossing actions.
   Returns a list of subtasks to execute.
   """
@@ -15,9 +15,6 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Tasks.TransportAll do
     WestFox,
     WestGeese,
     WestCorn,
-    EastFox,
-    EastGeese,
-    EastCorn,
     BoatLocation
   }
 
@@ -72,4 +69,3 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Tasks.TransportAll do
     [{"c_cross_west", 0, 0, 0}, {"t_transport_all", state}]
   end
 end
-

@@ -4,14 +4,14 @@
 defmodule AriaPlanner.Domains.TinyCvrp.Commands.VisitCustomer do
   @moduledoc """
   Command: c_visit_customer(vehicle, customer)
-  
+
   Visit a customer with a vehicle.
-  
+
   Preconditions:
   - Customer has not been visited
   - Vehicle has sufficient capacity
   - Vehicle is at a valid location
-  
+
   Effects:
   - vehicle_at[vehicle] = customer
   - customer_visited[customer] = true
@@ -72,10 +72,10 @@ defmodule AriaPlanner.Domains.TinyCvrp.Commands.VisitCustomer do
     # Demands array: [depot_demand, customer_2_demand, customer_3_demand, ...]
     # So customer N is at index N-1
     if customer == 1 do
-      0  # Depot has no demand
+      # Depot has no demand
+      0
     else
       Enum.at(demands, customer - 1, 0)
     end
   end
 end
-

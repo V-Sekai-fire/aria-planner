@@ -25,6 +25,7 @@ defmodule AriaPlanner.Client do
     case Timex.parse(iso8601_string, "{ISO:Extended}") do
       {:ok, datetime} ->
         {:ok, civil_datetime_to_absolute_microseconds(datetime)}
+
       {:error, reason} ->
         {:error, "Invalid ISO 8601 datetime string: #{inspect(reason)}"}
     end
@@ -42,9 +43,40 @@ defmodule AriaPlanner.Client do
       case Timex.Duration.parse(iso8601_duration_string) do
         {:ok, %Timex.Duration{} = duration} ->
           {:ok, Timex.Duration.to_microseconds(duration)}
+
         {:error, reason} ->
           {:error, "Invalid ISO 8601 duration string: #{inspect(reason)}"}
       end
+    end
+  end
+
+  @doc """
+  Converts microseconds to an ISO 8601 duration string.
+  """
+  @spec microseconds_to_iso8601_duration(integer()) :: {:ok, String.t()} | {:error, String.t()}
+  def microseconds_to_iso8601_duration(microseconds) when is_integer(microseconds) do
+    case Timex.Duration.from_microseconds(microseconds) do
+      %Timex.Duration{} = duration ->
+        {:ok, Timex.Duration.to_string(duration)}
+
+      error ->
+        {:error, "Failed to convert microseconds to duration: #{inspect(error)}"}
+    end
+  end
+
+  @doc """
+  Converts absolute microseconds since Unix epoch to an ISO 8601 datetime string.
+  """
+  @spec absolute_microseconds_to_iso8601(integer()) :: {:ok, String.t()} | {:error, String.t()}
+  def absolute_microseconds_to_iso8601(microseconds) when is_integer(microseconds) do
+    epoch = ~U[1970-01-01 00:00:00Z]
+
+    case DateTime.add(epoch, microseconds, :microsecond) do
+      %DateTime{} = datetime ->
+        {:ok, DateTime.to_iso8601(datetime)}
+
+      error ->
+        {:error, "Failed to convert microseconds to datetime: #{inspect(error)}"}
     end
   end
 end

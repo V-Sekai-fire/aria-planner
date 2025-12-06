@@ -13,13 +13,14 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
   alias MCP.AriaForge.ToolHandlers
 
   setup do
-    {:ok, %{
-      state: %{
-        prompt_uses: 0,
-        created_resources: %{},
-        subscriptions: []
-      }
-    }}
+    {:ok,
+     %{
+       state: %{
+         prompt_uses: 0,
+         created_resources: %{},
+         subscriptions: []
+       }
+     }}
   end
 
   describe "Planning domain changeset validation" do
@@ -35,11 +36,12 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
         ]
       }
 
-      {:ok, result, new_state} = ToolHandlers.handle_tool_call(
-        "create_planning_domain",
-        domain_attrs,
-        state
-      )
+      {:ok, result, new_state} =
+        ToolHandlers.handle_tool_call(
+          "create_planning_domain",
+          domain_attrs,
+          state
+        )
 
       assert is_map(result)
       assert Map.has_key?(result, :content)
@@ -124,15 +126,17 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
     end
 
     test "updates domain via PlanningDomain.update/2", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "blocks_world",
-        "name" => "Original Name"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "blocks_world",
+          "name" => "Original Name"
+        })
 
-      {:ok, updated_domain} = PlanningDomain.update(domain, %{
-        "name" => "Updated Name",
-        "description" => "Updated description"
-      })
+      {:ok, updated_domain} =
+        PlanningDomain.update(domain, %{
+          "name" => "Updated Name",
+          "description" => "Updated description"
+        })
 
       assert updated_domain.name == "Updated Name"
       assert updated_domain.description == "Updated description"
@@ -142,15 +146,17 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
 
   describe "Domain element addition via changeset" do
     test "adds task element to domain", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "blocks_world",
-        "name" => "Test Domain"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "blocks_world",
+          "name" => "Test Domain"
+        })
 
-      {:ok, updated_domain} = PlanningDomain.add_element(domain, :task, %{
-        "name" => "Stack Blocks",
-        "description" => "Stack three blocks"
-      })
+      {:ok, updated_domain} =
+        PlanningDomain.add_element(domain, :task, %{
+          "name" => "Stack Blocks",
+          "description" => "Stack three blocks"
+        })
 
       assert length(updated_domain.tasks) == 1
       task = List.first(updated_domain.tasks)
@@ -159,15 +165,17 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
     end
 
     test "adds action element to domain", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "blocks_world",
-        "name" => "Test Domain"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "blocks_world",
+          "name" => "Test Domain"
+        })
 
-      {:ok, updated_domain} = PlanningDomain.add_element(domain, :action, %{
-        "name" => "Pickup",
-        "preconditions" => ["hand_empty"]
-      })
+      {:ok, updated_domain} =
+        PlanningDomain.add_element(domain, :action, %{
+          "name" => "Pickup",
+          "preconditions" => ["hand_empty"]
+        })
 
       assert length(updated_domain.actions) == 1
       action = List.first(updated_domain.actions)
@@ -175,10 +183,11 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
     end
 
     test "adds multiple elements sequentially", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "tactical",
-        "name" => "Tactical Domain"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "tactical",
+          "name" => "Tactical Domain"
+        })
 
       {:ok, domain1} = PlanningDomain.add_element(domain, :task, %{"name" => "Task 1"})
       {:ok, domain2} = PlanningDomain.add_element(domain1, :action, %{"name" => "Action 1"})
@@ -190,10 +199,11 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
     end
 
     test "validates element type", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "blocks_world",
-        "name" => "Test Domain"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "blocks_world",
+          "name" => "Test Domain"
+        })
 
       changeset = PlanningDomain.add_element_changeset(domain, :invalid_type, %{"name" => "Test"})
       refute changeset.valid?
@@ -203,30 +213,33 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
 
   describe "Domain state management" do
     test "domain defaults to active state", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "navigation",
-        "name" => "Test Domain"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "navigation",
+          "name" => "Test Domain"
+        })
 
       assert domain.state == :active
     end
 
     test "domain state can be updated", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "navigation",
-        "name" => "Test Domain"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "navigation",
+          "name" => "Test Domain"
+        })
 
       {:ok, updated_domain} = PlanningDomain.update(domain, %{"state" => :archived})
       assert updated_domain.state == :archived
     end
 
     test "domain version increments", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "navigation",
-        "name" => "Test Domain",
-        "version" => 1
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "navigation",
+          "name" => "Test Domain",
+          "version" => 1
+        })
 
       assert domain.version == 1
 
@@ -249,30 +262,33 @@ defmodule AriaPlanner.MCPDomainChangesetTest do
 
   describe "Domain metadata" do
     test "domain accepts metadata map", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "blocks_world",
-        "name" => "Test Domain",
-        "metadata" => %{
-          "author" => "test_user",
-          "tags" => ["test", "blocks"],
-          "difficulty" => "medium"
-        }
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "blocks_world",
+          "name" => "Test Domain",
+          "metadata" => %{
+            "author" => "test_user",
+            "tags" => ["test", "blocks"],
+            "difficulty" => "medium"
+          }
+        })
 
       assert domain.metadata["author"] == "test_user"
       assert domain.metadata["tags"] == ["test", "blocks"]
     end
 
     test "domain metadata can be updated", %{state: _state} do
-      {:ok, domain} = PlanningDomain.create(%{
-        "domain_type" => "navigation",
-        "name" => "Test Domain",
-        "metadata" => %{"version" => "1.0"}
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          "domain_type" => "navigation",
+          "name" => "Test Domain",
+          "metadata" => %{"version" => "1.0"}
+        })
 
-      {:ok, updated_domain} = PlanningDomain.update(domain, %{
-        "metadata" => %{"version" => "2.0", "updated_by" => "admin"}
-      })
+      {:ok, updated_domain} =
+        PlanningDomain.update(domain, %{
+          "metadata" => %{"version" => "2.0", "updated_by" => "admin"}
+        })
 
       assert updated_domain.metadata["version"] == "2.0"
       assert updated_domain.metadata["updated_by"] == "admin"

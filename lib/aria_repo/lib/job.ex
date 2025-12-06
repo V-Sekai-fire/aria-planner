@@ -16,18 +16,23 @@ defmodule AriaRepo.Job do
   @foreign_key_type :binary_id
 
   schema "jobs" do
-    field :queue, :string, default: "default"
-    field :worker, :string
-    field :args, :map, default: %{}
-    field :state, Ecto.Enum, values: [:available, :scheduled, :executing, :completed, :discarded, :retryable], default: :available
-    field :attempt, :integer, default: 0
-    field :max_attempts, :integer, default: 3
-    field :scheduled_at, :utc_datetime_usec
-    field :attempted_at, :utc_datetime_usec
-    field :completed_at, :utc_datetime_usec
-    field :discarded_at, :utc_datetime_usec
-    field :errors, {:array, :map}, default: []
-    field :tags, {:array, :string}, default: []
+    field(:queue, :string, default: "default")
+    field(:worker, :string)
+    field(:args, :map, default: %{})
+
+    field(:state, Ecto.Enum,
+      values: [:available, :scheduled, :executing, :completed, :discarded, :retryable],
+      default: :available
+    )
+
+    field(:attempt, :integer, default: 0)
+    field(:max_attempts, :integer, default: 3)
+    field(:scheduled_at, :utc_datetime_usec)
+    field(:attempted_at, :utc_datetime_usec)
+    field(:completed_at, :utc_datetime_usec)
+    field(:discarded_at, :utc_datetime_usec)
+    field(:errors, {:array, :map}, default: [])
+    field(:tags, {:array, :string}, default: [])
 
     timestamps(type: :utc_datetime_usec)
   end

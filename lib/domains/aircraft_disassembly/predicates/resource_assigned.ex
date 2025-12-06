@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.AircraftDisassembly.Predicates.ResourceAssigned do
   @moduledoc """
   Resource Assigned predicate for aircraft-disassembly domain.
-  
+
   Represents whether a resource is assigned to an activity.
   """
 
@@ -25,4 +25,3 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Predicates.ResourceAssigned do
     Map.put(state, :resource_assigned, new_resource_assigned)
   end
 end
-

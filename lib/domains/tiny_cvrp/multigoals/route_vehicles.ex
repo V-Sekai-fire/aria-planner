@@ -4,9 +4,9 @@
 defmodule AriaPlanner.Domains.TinyCvrp.Multigoals.RouteVehicles do
   @moduledoc """
   Multigoal Method: m_route_vehicles(state)
-  
+
   Route all vehicles to visit all customers (goal-based).
-  
+
   Returns a list of goals to achieve.
   """
 
@@ -29,4 +29,3 @@ defmodule AriaPlanner.Domains.TinyCvrp.Multigoals.RouteVehicles do
     end
   end
 end
-

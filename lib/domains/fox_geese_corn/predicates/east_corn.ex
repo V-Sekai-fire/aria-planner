@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.FoxGeeseCorn.Predicates.EastCorn do
   @moduledoc """
   East Corn predicate for fox-geese-corn domain.
-  
+
   Represents the number of corn on the east side of the river.
   """
 
@@ -22,4 +22,3 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Predicates.EastCorn do
     Map.put(state, :east_corn, value)
   end
 end
-

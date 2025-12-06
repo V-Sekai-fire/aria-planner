@@ -15,18 +15,19 @@ defmodule AriaPlanner.Planner.State do
   @type fact :: {predicate(), subject(), fact_value()}
 
   @type t :: %__MODULE__{
-          facts: %{optional(predicate()) => %{optional(subject()) => fact_value()}}
+          facts: %{optional(predicate()) => %{optional(subject()) => fact_value()}},
+          entity_capabilities: %{optional(String.t()) => %{optional(String.t()) => term()}}
         }
 
   @enforce_keys [:facts]
-  defstruct facts: %{}
+  defstruct facts: %{}, entity_capabilities: %{}
 
   @doc """
   Create a new empty state.
   """
   @spec new() :: t()
   def new do
-    %__MODULE__{facts: %{}}
+    %__MODULE__{facts: %{}, entity_capabilities: %{}}
   end
 
   @doc """
@@ -34,7 +35,19 @@ defmodule AriaPlanner.Planner.State do
   """
   @spec new(%{optional(predicate()) => %{optional(subject()) => fact_value()}}) :: t()
   def new(facts) when is_map(facts) do
-    %__MODULE__{facts: facts}
+    %__MODULE__{facts: facts, entity_capabilities: %{}}
+  end
+
+  @doc """
+  Create a state with initial facts and entity capabilities.
+
+  Matches Godot planner's PlannerState structure with entity_capabilities dictionary.
+  """
+  @spec new(%{optional(predicate()) => %{optional(subject()) => fact_value()}}, %{
+          optional(String.t()) => %{optional(String.t()) => term()}
+        }) :: t()
+  def new(facts, entity_capabilities) when is_map(facts) and is_map(entity_capabilities) do
+    %__MODULE__{facts: facts, entity_capabilities: entity_capabilities}
   end
 
   @doc """
@@ -114,5 +127,53 @@ defmodule AriaPlanner.Planner.State do
     Enum.reduce(facts, 0, fn {_pred, subjects}, acc ->
       acc + map_size(subjects)
     end)
+  end
+
+  # Entity capabilities methods (matching Godot planner's PlannerState API)
+
+  @doc """
+  Get entity capability value.
+
+  Matches Godot planner's `get_entity_capability(entity_id, capability)` method.
+  """
+  @spec get_entity_capability(t(), String.t(), String.t()) :: term() | nil
+  def get_entity_capability(%__MODULE__{entity_capabilities: capabilities}, entity_id, capability) do
+    get_in(capabilities, [entity_id, capability])
+  end
+
+  @doc """
+  Set entity capability value.
+
+  Matches Godot planner's `set_entity_capability(entity_id, capability, value)` method.
+  """
+  @spec set_entity_capability(t(), String.t(), String.t(), term()) :: t()
+  def set_entity_capability(%__MODULE__{entity_capabilities: capabilities} = state, entity_id, capability, value) do
+    updated_capabilities =
+      update_in(capabilities, [entity_id], fn
+        nil -> %{capability => value}
+        existing -> Map.put(existing, capability, value)
+      end)
+
+    %{state | entity_capabilities: updated_capabilities}
+  end
+
+  @doc """
+  Check if entity exists in state.
+
+  Matches Godot planner's `has_entity(entity_id)` method.
+  """
+  @spec has_entity(t(), String.t()) :: boolean()
+  def has_entity(%__MODULE__{entity_capabilities: capabilities}, entity_id) do
+    Map.has_key?(capabilities, entity_id)
+  end
+
+  @doc """
+  Get all entity IDs in state.
+
+  Matches Godot planner's `get_all_entities()` method.
+  """
+  @spec get_all_entities(t()) :: [String.t()]
+  def get_all_entities(%__MODULE__{entity_capabilities: capabilities}) do
+    Map.keys(capabilities)
   end
 end

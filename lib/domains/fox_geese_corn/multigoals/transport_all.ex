@@ -4,17 +4,16 @@
 defmodule AriaPlanner.Domains.FoxGeeseCorn.Multigoals.TransportAll do
   @moduledoc """
   Multigoal Method: m_transport_all(state)
-  
+
   Transport all items from west to east side (goal-based).
-  
+
   Returns a list of goals to achieve.
   """
 
   alias AriaPlanner.Domains.FoxGeeseCorn.Predicates.{
     WestFox,
     WestGeese,
-    WestCorn,
-    BoatLocation
+    WestCorn
   }
 
   @spec m_transport_all(state :: map()) :: [tuple()]
@@ -61,4 +60,3 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Multigoals.TransportAll do
       WestCorn.get(state) == 0
   end
 end
-

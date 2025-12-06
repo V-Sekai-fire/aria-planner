@@ -94,11 +94,13 @@ defmodule AriaCore.ExecutionState do
   def add_player(%__MODULE__{} = state, player_id, player) do
     updated_players = Map.put(state.players, player_id, player)
     updated_entities = Map.put(state.entities, player_id, player)
-    %{state | 
-      players: updated_players, 
-      entities: updated_entities, 
-      total_players: map_size(updated_players),
-      total_entities: map_size(updated_entities)
+
+    %{
+      state
+      | players: updated_players,
+        entities: updated_entities,
+        total_players: map_size(updated_players),
+        total_entities: map_size(updated_entities)
     }
   end
 
@@ -214,5 +216,4 @@ defmodule AriaCore.ExecutionState do
   def safe_outside?(%__MODULE__{} = state) do
     not state.is_raining and not state.is_thundering and state.temperature > 0.0 and state.temperature < 40.0
   end
-
 end

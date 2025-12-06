@@ -5,7 +5,7 @@ defmodule AriaPlanner.Storage.EtsStorage do
   @moduledoc """
   ETS-based storage for all environments.
   Provides a simple in-memory storage layer using ETS tables.
-  
+
   This replaces SQLite database storage with fast in-memory ETS tables.
   All data is stored in memory and will be lost on application restart.
   """
@@ -27,6 +27,7 @@ defmodule AriaPlanner.Storage.EtsStorage do
 
   def insert(table_name, id, data) do
     table = Map.get(@tables, table_name)
+
     if table do
       :ets.insert(table, {id, data})
       {:ok, data}
@@ -37,6 +38,7 @@ defmodule AriaPlanner.Storage.EtsStorage do
 
   def get(table_name, id) do
     table = Map.get(@tables, table_name)
+
     if table do
       case :ets.lookup(table, id) do
         [{^id, data}] -> {:ok, data}
@@ -49,6 +51,7 @@ defmodule AriaPlanner.Storage.EtsStorage do
 
   def all(table_name) do
     table = Map.get(@tables, table_name)
+
     if table do
       :ets.tab2list(table)
       |> Enum.map(fn {_id, data} -> data end)
@@ -59,6 +62,7 @@ defmodule AriaPlanner.Storage.EtsStorage do
 
   def delete(table_name, id) do
     table = Map.get(@tables, table_name)
+
     if table do
       :ets.delete(table, id)
       :ok
@@ -69,6 +73,7 @@ defmodule AriaPlanner.Storage.EtsStorage do
 
   def clear(table_name) do
     table = Map.get(@tables, table_name)
+
     if table do
       :ets.delete_all_objects(table)
       :ok
@@ -81,7 +86,7 @@ defmodule AriaPlanner.Storage.EtsStorage do
     for {_name, table} <- @tables do
       :ets.delete_all_objects(table)
     end
+
     :ok
   end
 end
-

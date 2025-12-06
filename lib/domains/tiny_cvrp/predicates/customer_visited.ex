@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.TinyCvrp.Predicates.CustomerVisited do
   @moduledoc """
   Customer Visited predicate for tiny-cvrp domain.
-  
+
   Represents whether a customer has been visited (true/false).
   """
 
@@ -25,4 +25,3 @@ defmodule AriaPlanner.Domains.TinyCvrp.Predicates.CustomerVisited do
     Map.put(state, :customer_visited, new_customer_visited)
   end
 end
-

@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.NeighboursTest do
   @moduledoc """
   Test-only domain for Neighbours grid assignment problem.
-  
+
   Each cell in an n×m grid gets a number 1-5.
   If a cell has value N>1, it must have neighbors with values 1, 2, ..., N-1.
   Goal: Maximize the sum of all values.

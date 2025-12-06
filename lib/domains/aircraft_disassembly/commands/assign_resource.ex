@@ -4,14 +4,14 @@
 defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
   @moduledoc """
   Command: c_assign_resource(activity, resource)
-  
+
   Assign a resource to an activity.
-  
+
   Preconditions:
   - Activity is in progress or not started
   - Resource is available (simplified for now)
   - Location capacity not exceeded (simplified for now)
-  
+
   Effects:
   - resource_assigned[activity, resource] = true
   """
@@ -25,10 +25,10 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
   def c_assign_resource(state, activity, resource) do
     with :ok <- check_resource_not_assigned(state, activity, resource) do
       new_state = ResourceAssigned.set(state, activity, resource, true)
-      
+
       # Return planner metadata - resource assignment is instant
       metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
-      
+
       {:ok, new_state, metadata}
     else
       error -> error
@@ -46,4 +46,3 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
     end
   end
 end
-

@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.AircraftDisassembly.Predicates.LocationCapacity do
   @moduledoc """
   Location Capacity predicate for aircraft-disassembly domain.
-  
+
   Represents the capacity of a location (maximum number of activities that can run simultaneously).
   """
 
@@ -25,4 +25,3 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Predicates.LocationCapacity do
     Map.put(state, :location_capacity, new_location_capacity)
   end
 end
-

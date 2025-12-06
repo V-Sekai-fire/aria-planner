@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.AircraftDisassembly.Predicates.Precedence do
   @moduledoc """
   Precedence predicate for aircraft-disassembly domain.
-  
+
   Represents precedence relationships between activities (predecessor -> successor).
   """
 
@@ -25,4 +25,3 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Predicates.Precedence do
     Map.put(state, :precedence, new_precedence)
   end
 end
-

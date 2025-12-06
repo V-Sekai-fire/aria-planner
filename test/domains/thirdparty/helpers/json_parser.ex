@@ -24,23 +24,18 @@ defmodule AriaPlanner.Domains.Helpers.JsonParser do
   end
 
   @doc """
-  Extracts a value from parsed JSON data by key path.
+  Extracts a value from parsed JSON data by key path or single key.
   """
-  @spec get_value(data :: map(), key_path :: list()) :: any() | nil
+  @spec get_value(data :: map(), key_path :: list() | String.t() | atom()) :: any() | nil
   def get_value(data, key_path) when is_list(key_path) do
     Enum.reduce(key_path, data, fn
-      key, nil -> nil
+      _key, nil -> nil
       key, map when is_map(map) -> Map.get(map, key)
       _key, _ -> nil
     end)
   end
 
-  @doc """
-  Extracts a value from parsed JSON data by single key.
-  """
-  @spec get_value(data :: map(), key :: String.t() | atom()) :: any() | nil
   def get_value(data, key) when is_map(data) do
     Map.get(data, key) || Map.get(data, to_string(key))
   end
 end
-

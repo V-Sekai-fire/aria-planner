@@ -18,6 +18,7 @@ defmodule AriaPlanner.Domains.TinyCvrpTest do
   alias AriaPlanner.Domains.TinyCvrp
   alias AriaPlanner.Domains.TinyCvrp.Commands.{ReturnToDepot, VisitCustomer}
   alias AriaPlanner.Domains.TinyCvrp.Tasks.RouteVehicles
+
   alias AriaPlanner.Domains.TinyCvrp.Predicates.{
     VehicleAt,
     CustomerVisited,

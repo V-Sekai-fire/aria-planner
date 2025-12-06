@@ -38,4 +38,3 @@ defmodule AriaCore.Types.JsonArray do
 
   def dump(_), do: :error
 end
-

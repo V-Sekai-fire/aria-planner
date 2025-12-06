@@ -7,4 +7,3 @@ import Config
 config :aria_planner, AriaPlanner.Repo,
   database: Path.join(["priv", "aria_planner_dev.db"]),
   pool_size: 10
-

@@ -9,9 +9,12 @@ defmodule AriaCore.Planner.State do
 
   @type t :: %__MODULE__{
           current_time: DateTime.t(),
-          timeline: map(), # Represents temporal events/intervals
-          entity_capabilities: map(), # Capabilities of entities in the domain
-          facts: %{String.t() => %{atom() => term()}} # subject_id => %{predicate_table => fact_value}
+          # Represents temporal events/intervals
+          timeline: map(),
+          # Capabilities of entities in the domain
+          entity_capabilities: map(),
+          # subject_id => %{predicate_table => fact_value}
+          facts: %{String.t() => %{atom() => term()}}
         }
 
   @spec new(DateTime.t(), map(), map(), map()) :: t()
@@ -79,7 +82,8 @@ defmodule AriaCore.Planner.State do
   @spec get_fact(t(), String.t(), atom()) :: term() | nil
   def get_fact(state, subject_id, predicate_table) do
     state.facts
-    |> Map.get(subject_id, %{}) # Return an empty map if subject_id is not found
+    # Return an empty map if subject_id is not found
+    |> Map.get(subject_id, %{})
     |> Map.get(predicate_table)
   end
 
@@ -87,9 +91,9 @@ defmodule AriaCore.Planner.State do
   Retrieves a fact using predicate_table -> subject_id structure.
   This matches how facts are stored in domains like aircraft_disassembly
   where facts are organized as facts[predicate_table][subject_id] = value.
-  
+
   ## Examples
-  
+
       # For goal format: {"activity_status", ["activity_1", "completed"]}
       get_fact_by_predicate(state, "activity_status", "activity_1")
       # => "completed"
@@ -97,7 +101,8 @@ defmodule AriaCore.Planner.State do
   @spec get_fact_by_predicate(t(), String.t(), String.t()) :: term() | nil
   def get_fact_by_predicate(state, predicate_table, subject_id) do
     state.facts
-    |> Map.get(predicate_table, %{}) # Return an empty map if predicate_table is not found
+    # Return an empty map if predicate_table is not found
+    |> Map.get(predicate_table, %{})
     |> Map.get(subject_id)
   end
 end

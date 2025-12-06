@@ -15,7 +15,8 @@ defmodule AriaCore.Planner.LazyRefinement.NodeUtils do
       is_tuple(node_info) and elem(node_info, 0) in methods.task_method_dict -> :T
       is_tuple(node_info) and elem(node_info, 0) in actions.action_dict -> :A
       is_tuple(node_info) and elem(node_info, 0) in methods.goal_method_dict -> :G
-      true -> :unknown # Should not happen if all types are covered
+      # Should not happen if all types are covered
+      true -> :unknown
     end
   end
 
@@ -25,12 +26,13 @@ defmodule AriaCore.Planner.LazyRefinement.NodeUtils do
       case goal do
         {predicate_table, args} when is_list(args) ->
           [subject_id, desired_val] = args
+
           if State.get_fact_by_predicate(current_state, predicate_table, subject_id) == desired_val do
             acc
           else
             acc ++ [{predicate_table, args}]
           end
-        
+
         # Legacy format support: {subject_id, predicate_table, desired_val}
         {subject_id, predicate_table, desired_val} when is_binary(subject_id) or is_atom(subject_id) ->
           if State.get_fact(current_state, subject_id, predicate_table) == desired_val do
@@ -38,7 +40,7 @@ defmodule AriaCore.Planner.LazyRefinement.NodeUtils do
           else
             acc ++ [{subject_id, predicate_table, desired_val}]
           end
-        
+
         _ ->
           # Unknown format, treat as not achieved
           acc ++ [goal]

@@ -179,7 +179,6 @@ defmodule AriaCore.FactsAllocentric do
     |> put_change(:updated_at, DateTime.utc_now())
   end
 
-
   @doc """
   Creates new allocentric fact.
   """
@@ -207,7 +206,6 @@ defmodule AriaCore.FactsAllocentric do
     |> changeset(attrs)
     |> apply_action(:update)
   end
-
 
   @doc """
   Record communication as an allocentric fact.
@@ -267,6 +265,4 @@ defmodule AriaCore.FactsAllocentric do
     # Returns facts where entity is subject or mentioned in object
     {:ok, []}
   end
-
-
 end

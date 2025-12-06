@@ -77,10 +77,12 @@ defmodule AriaPlanner.Planner.UnigoalMetadata do
       not Enum.all?(requires_entities, &EntityRequirement.valid?/1) ->
         {:error, :invalid_entity_requirements}
 
-      start_time != nil and (not is_binary(start_time) or not (Client.iso8601_to_absolute_microseconds(start_time) |> elem(0) == :ok)) ->
+      start_time != nil and
+          (not is_binary(start_time) or not (Client.iso8601_to_absolute_microseconds(start_time) |> elem(0) == :ok)) ->
         {:error, :invalid_start_time}
 
-      end_time != nil and (not is_binary(end_time) or not (Client.iso8601_to_absolute_microseconds(end_time) |> elem(0) == :ok)) ->
+      end_time != nil and
+          (not is_binary(end_time) or not (Client.iso8601_to_absolute_microseconds(end_time) |> elem(0) == :ok)) ->
         {:error, :invalid_end_time}
 
       true ->
@@ -165,7 +167,7 @@ defmodule AriaPlanner.Planner.UnigoalMetadata do
   def valid?(%__MODULE__{predicate: predicate, duration: duration, requires_entities: requires_entities})
       when is_binary(predicate) and is_binary(duration) and is_list(requires_entities) do
     String.trim(predicate) != "" and
-      (Client.iso8601_duration_to_microseconds(duration) |> elem(0) == :ok) and
+      Client.iso8601_duration_to_microseconds(duration) |> elem(0) == :ok and
       Enum.all?(requires_entities, &EntityRequirement.valid?/1)
   end
 
@@ -179,5 +181,4 @@ defmodule AriaPlanner.Planner.UnigoalMetadata do
   defp convert_entity_requirement(other) do
     raise ArgumentError, "Cannot convert entity requirement: #{inspect(other)}"
   end
-
 end

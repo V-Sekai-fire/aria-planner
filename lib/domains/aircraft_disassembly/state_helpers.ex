@@ -17,6 +17,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateHelpers do
   @spec all_activities_completed?(state()) :: boolean()
   def all_activities_completed?(state) do
     num_activities = Map.get(state, :num_activities, 0)
+
     Enum.all?(1..num_activities, fn activity ->
       activity_id = "activity_#{activity}"
       get_activity_status(state, activity_id) == "completed"
@@ -33,12 +34,18 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateHelpers do
         case Map.get(facts, "activity_status", %{}) do
           status_map when is_map(status_map) ->
             Map.get(status_map, activity_id, "not_started")
+
           _ ->
             "not_started"
         end
+
       _ ->
         # Fallback to old state structure
-        Map.get(state.activity_status || %{}, String.to_integer(String.replace(activity_id, "activity_", "")), "not_started")
+        Map.get(
+          state.activity_status || %{},
+          String.to_integer(String.replace(activity_id, "activity_", "")),
+          "not_started"
+        )
     end
   end
 
@@ -48,6 +55,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateHelpers do
   @spec get_predecessors(state(), activity()) :: [activity()]
   def get_predecessors(state, activity) do
     precedences = Map.get(state, :precedences, [])
+
     precedences
     |> Enum.filter(fn {_pred, succ} -> succ == activity end)
     |> Enum.map(fn {pred, _succ} -> pred end)
@@ -59,6 +67,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateHelpers do
   @spec get_successors(state(), activity()) :: [activity()]
   def get_successors(state, activity) do
     precedences = Map.get(state, :precedences, [])
+
     precedences
     |> Enum.filter(fn {pred, _succ} -> pred == activity end)
     |> Enum.map(fn {_pred, succ} -> succ end)
@@ -70,10 +79,10 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateHelpers do
   @spec all_predecessors_completed?(state(), activity()) :: boolean()
   def all_predecessors_completed?(state, activity) do
     predecessors = get_predecessors(state, activity)
+
     Enum.all?(predecessors, fn pred ->
       pred_id = "activity_#{pred}"
       get_activity_status(state, pred_id) == "completed"
     end)
   end
 end
-
