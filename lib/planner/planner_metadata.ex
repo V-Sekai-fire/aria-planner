@@ -65,16 +65,18 @@ defmodule AriaPlanner.Planner.PlannerMetadata do
       not is_binary(duration) or not (Client.iso8601_duration_to_microseconds(duration) |> elem(0) == :ok) ->
         {:error, :invalid_duration}
 
-      not is_list(requires_entities) or Enum.empty?(requires_entities) ->
+      not is_list(requires_entities) ->
         {:error, :no_entity_requirements}
 
       not Enum.all?(requires_entities, &EntityRequirement.valid?/1) ->
         {:error, :invalid_entity_requirements}
 
-      start_time != nil and (not is_binary(start_time) or not (Client.iso8601_to_absolute_microseconds(start_time) |> elem(0) == :ok)) ->
+      start_time != nil and
+          (not is_binary(start_time) or not (Client.iso8601_to_absolute_microseconds(start_time) |> elem(0) == :ok)) ->
         {:error, :invalid_start_time}
 
-      end_time != nil and (not is_binary(end_time) or not (Client.iso8601_to_absolute_microseconds(end_time) |> elem(0) == :ok)) ->
+      end_time != nil and
+          (not is_binary(end_time) or not (Client.iso8601_to_absolute_microseconds(end_time) |> elem(0) == :ok)) ->
         {:error, :invalid_end_time}
 
       true ->
@@ -154,7 +156,7 @@ defmodule AriaPlanner.Planner.PlannerMetadata do
   @spec valid?(term()) :: boolean()
   def valid?(%__MODULE__{duration: duration, requires_entities: requires_entities})
       when is_binary(duration) and is_list(requires_entities) do
-    (Client.iso8601_duration_to_microseconds(duration) |> elem(0) == :ok) and
+    Client.iso8601_duration_to_microseconds(duration) |> elem(0) == :ok and
       Enum.all?(requires_entities, &EntityRequirement.valid?/1)
   end
 
@@ -505,21 +507,24 @@ defmodule AriaPlanner.Planner.PlannerMetadata do
   @spec validate(t()) :: :ok | {:error, atom()}
   def validate(%__MODULE__{} = metadata) do
     cond do
-      not is_binary(metadata.duration) or not (Client.iso8601_duration_to_microseconds(metadata.duration) |> elem(0) == :ok) ->
+      not is_binary(metadata.duration) or
+          not (Client.iso8601_duration_to_microseconds(metadata.duration) |> elem(0) == :ok) ->
         {:error, :invalid_duration}
 
-      not is_list(metadata.requires_entities) or Enum.empty?(metadata.requires_entities) ->
+      not is_list(metadata.requires_entities) ->
         {:error, :no_entity_requirements}
 
       not Enum.all?(metadata.requires_entities, &EntityRequirement.valid?/1) ->
         {:error, :invalid_entity_requirements}
 
       metadata.start_time != nil and
-          (not is_binary(metadata.start_time) or not (Client.iso8601_to_absolute_microseconds(metadata.start_time) |> elem(0) == :ok)) ->
+          (not is_binary(metadata.start_time) or
+             not (Client.iso8601_to_absolute_microseconds(metadata.start_time) |> elem(0) == :ok)) ->
         {:error, :invalid_start_time}
 
       metadata.end_time != nil and
-          (not is_binary(metadata.end_time) or not (Client.iso8601_to_absolute_microseconds(metadata.end_time) |> elem(0) == :ok)) ->
+          (not is_binary(metadata.end_time) or
+             not (Client.iso8601_to_absolute_microseconds(metadata.end_time) |> elem(0) == :ok)) ->
         {:error, :invalid_end_time}
 
       true ->
@@ -542,5 +547,4 @@ defmodule AriaPlanner.Planner.PlannerMetadata do
     all_entities = entities1 ++ entities2
     Enum.uniq_by(all_entities, fn %{type: type, capabilities: caps} -> {type, Enum.sort(caps)} end)
   end
-
 end

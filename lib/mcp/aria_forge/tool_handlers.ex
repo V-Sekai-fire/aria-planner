@@ -4,18 +4,18 @@
 defmodule MCP.AriaForge.ToolHandlers do
   @moduledoc """
   MCP Tool Handlers for AriaForge integration.
-  
+
   This module provides handlers for MCP tool calls, serving as a bridge
   between the MCP protocol and the aria_planner functionality.
   """
 
   alias AriaPlanner.PlanManager
-  alias AriaCore.Plan
+  # alias AriaCore.Plan  # Unused - removed to fix compilation warning
   alias UUIDv7
 
   @doc """
   Handles a tool call from the MCP protocol.
-  
+
   Returns {:ok, result, new_state} on success or {:error, message, new_state} on failure.
   """
   @spec handle_tool_call(String.t(), map(), map()) :: {:ok, map(), map()} | {:error, String.t(), map()}
@@ -39,16 +39,17 @@ defmodule MCP.AriaForge.ToolHandlers do
           content: [
             %{
               type: "text",
-              text: Jason.encode!(%{
-                "id" => plan_id,
-                "plan_id" => plan_id,
-                "name" => name,
-                "domain_type" => domain_type,
-                "persona_id" => persona_id,
-                "execution_status" => if(run_lazy, do: "pending", else: "planned"),
-                "run_lazy" => run_lazy,
-                "resource_uri" => resource_uri
-              })
+              text:
+                Jason.encode!(%{
+                  "id" => plan_id,
+                  "plan_id" => plan_id,
+                  "name" => name,
+                  "domain_type" => domain_type,
+                  "persona_id" => persona_id,
+                  "execution_status" => if(run_lazy, do: "pending", else: "planned"),
+                  "run_lazy" => run_lazy,
+                  "resource_uri" => resource_uri
+                })
             }
           ]
         }
@@ -76,11 +77,12 @@ defmodule MCP.AriaForge.ToolHandlers do
       content: [
         %{
           type: "text",
-          text: Jason.encode!(%{
-            "domain_type" => domain_type,
-            "entities" => entities,
-            "resource_uri" => resource_uri
-          })
+          text:
+            Jason.encode!(%{
+              "domain_type" => domain_type,
+              "entities" => entities,
+              "resource_uri" => resource_uri
+            })
         }
       ]
     }
@@ -88,10 +90,11 @@ defmodule MCP.AriaForge.ToolHandlers do
     new_state = %{
       state
       | prompt_uses: (Map.get(state, :prompt_uses) || 0) + 1,
-        created_resources: Map.put(Map.get(state, :created_resources) || %{}, resource_uri, %{
-          domain_type: domain_type,
-          entities: entities
-        })
+        created_resources:
+          Map.put(Map.get(state, :created_resources) || %{}, resource_uri, %{
+            domain_type: domain_type,
+            entities: entities
+          })
     }
 
     {:ok, result, new_state}
@@ -207,17 +210,18 @@ defmodule MCP.AriaForge.ToolHandlers do
       content: [
         %{
           type: "text",
-          text: Jason.encode!(%{
-            "id" => element_id,
-            "element_id" => element_id,
-            "name" => name,
-            "element_type" => element_type,
-            "domain_type" => domain_type,
-            "resource_uri" => resource_uri,
-            "data" => data,
-            "run_lazy" => run_lazy,
-            "execution_status" => if(run_lazy, do: "pending", else: "planned")
-          })
+          text:
+            Jason.encode!(%{
+              "id" => element_id,
+              "element_id" => element_id,
+              "name" => name,
+              "element_type" => element_type,
+              "domain_type" => domain_type,
+              "resource_uri" => resource_uri,
+              "data" => data,
+              "run_lazy" => run_lazy,
+              "execution_status" => if(run_lazy, do: "pending", else: "planned")
+            })
         }
       ]
     }
@@ -225,14 +229,15 @@ defmodule MCP.AriaForge.ToolHandlers do
     new_state = %{
       state
       | prompt_uses: (Map.get(state, :prompt_uses) || 0) + 1,
-        created_resources: Map.put(Map.get(state, :created_resources) || %{}, resource_uri, %{
-          id: element_id,
-          name: name,
-          element_type: element_type,
-          domain_type: domain_type,
-          data: data,
-          run_lazy: run_lazy
-        })
+        created_resources:
+          Map.put(Map.get(state, :created_resources) || %{}, resource_uri, %{
+            id: element_id,
+            name: name,
+            element_type: element_type,
+            domain_type: domain_type,
+            data: data,
+            run_lazy: run_lazy
+          })
     }
 
     {:ok, result, new_state}
@@ -367,4 +372,3 @@ defmodule MCP.AriaForge.ToolHandlers do
 
   defp get_domain_elements(_domain_type, _element_type), do: []
 end
-

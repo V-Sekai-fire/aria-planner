@@ -4,9 +4,9 @@
 defmodule AriaPlanner.Domains.TinyCvrp.Tasks.RouteVehicles do
   @moduledoc """
   Task: t_route_vehicles(state)
-  
+
   Route all vehicles to visit all customers.
-  
+
   Returns a list of subtasks to execute.
   """
 
@@ -45,7 +45,7 @@ defmodule AriaPlanner.Domains.TinyCvrp.Tasks.RouteVehicles do
     demand = get_customer_demand(state, customer)
 
     Enum.find(1..state.num_vehicles, fn vehicle ->
-      current_location = VehicleAt.get(state, vehicle)
+      _current_location = VehicleAt.get(state, vehicle)
       capacity = VehicleCapacity.get(state, vehicle)
 
       # Vehicle must have sufficient capacity
@@ -58,10 +58,10 @@ defmodule AriaPlanner.Domains.TinyCvrp.Tasks.RouteVehicles do
     # Customer IDs: 1=depot, 2+=customers
     # Demands array: [depot_demand, customer_2_demand, customer_3_demand, ...]
     if customer == 1 do
-      0  # Depot has no demand
+      # Depot has no demand
+      0
     else
       Enum.at(demands, customer - 1, 0)
     end
   end
 end
-

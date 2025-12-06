@@ -7,4 +7,3 @@ import Config
 config :aria_planner, AriaPlanner.Repo,
   database: ":memory:",
   pool_size: 10
-

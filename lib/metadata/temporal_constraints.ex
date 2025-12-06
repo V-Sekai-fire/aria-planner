@@ -21,10 +21,10 @@ defmodule AriaCore.Metadata.TemporalConstraints do
   ]
 
   @type t :: %__MODULE__{
-    duration: String.t() | nil,
-    start: String.t() | nil,
-    end: String.t() | nil
-  }
+          duration: String.t() | nil,
+          start: String.t() | nil,
+          end: String.t() | nil
+        }
 
   @doc """
   Creates a new TemporalConstraints struct.

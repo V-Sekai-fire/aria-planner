@@ -4,8 +4,8 @@
 defmodule AriaCore.ExecutionStateTest do
   use ExUnit.Case, async: true
 
-  alias AriaCore.ExecutionState
   alias AriaCore.Execution.Entity
+  alias AriaCore.ExecutionState
 
   describe "new/0" do
     test "creates execution state with default values" do
@@ -222,9 +222,9 @@ defmodule AriaCore.ExecutionStateTest do
     test "advances world time and updates day count" do
       state = ExecutionState.new()
       # Half a day
-      updated = ExecutionState.advance_time(state, 12000)
+      updated = ExecutionState.advance_time(state, 12_000)
 
-      assert updated.world_time == 12000
+      assert updated.world_time == 12_000
       assert updated.day_count == 0
       assert updated.time_of_day == "night"
     end
@@ -232,9 +232,9 @@ defmodule AriaCore.ExecutionStateTest do
     test "advances to next day" do
       state = ExecutionState.new()
       # Full day
-      updated = ExecutionState.advance_time(state, 24000)
+      updated = ExecutionState.advance_time(state, 24_000)
 
-      assert updated.world_time == 24000
+      assert updated.world_time == 24_000
       assert updated.day_count == 1
       assert updated.time_of_day == "day"
     end
@@ -275,5 +275,4 @@ defmodule AriaCore.ExecutionStateTest do
       assert updated == state
     end
   end
-
 end

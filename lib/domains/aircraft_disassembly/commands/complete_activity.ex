@@ -4,13 +4,13 @@
 defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
   @moduledoc """
   Command: c_complete_activity(activity)
-  
+
   Complete an activity.
-  
+
   Preconditions:
   - Activity status is "in_progress"
   - Activity duration has elapsed (simplified - just check status)
-  
+
   Effects:
   - activity_status[activity] = "completed"
   """
@@ -25,10 +25,10 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
       # Update state: set activity status to "completed" using facts
       activity_id = "activity_#{activity}"
       new_state = update_activity_status(state, activity_id, "completed")
-      
+
       # Return planner metadata - completion is instant
       metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
-      
+
       {:ok, new_state, metadata}
     else
       error -> error
@@ -41,6 +41,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
   defp check_activity_in_progress(state, activity) do
     activity_id = "activity_#{activity}"
     status = get_activity_status(state, activity_id)
+
     if status == "in_progress" do
       :ok
     else
@@ -56,12 +57,18 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
         case Map.get(facts, "activity_status", %{}) do
           status_map when is_map(status_map) ->
             Map.get(status_map, activity_id, "not_started")
+
           _ ->
             "not_started"
         end
+
       _ ->
         # Fallback to old state structure
-        Map.get(state.activity_status || %{}, String.to_integer(String.replace(activity_id, "activity_", "")), "not_started")
+        Map.get(
+          state.activity_status || %{},
+          String.to_integer(String.replace(activity_id, "activity_", "")),
+          "not_started"
+        )
     end
   end
 
@@ -75,4 +82,3 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
     Map.put(state, :facts, updated_facts)
   end
 end
-

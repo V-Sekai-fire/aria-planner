@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.TinyCvrp.Predicates.Distance do
   @moduledoc """
   Distance predicate for tiny-cvrp domain.
-  
+
   Represents the distance/ETA between two locations.
   """
 
@@ -30,4 +30,3 @@ defmodule AriaPlanner.Domains.TinyCvrp.Predicates.Distance do
     end
   end
 end
-

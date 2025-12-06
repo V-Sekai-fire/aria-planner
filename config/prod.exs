@@ -7,4 +7,3 @@ import Config
 config :aria_planner, AriaPlanner.Repo,
   database: System.get_env("DATABASE_PATH", Path.join(["priv", "aria_planner_prod.db"])),
   pool_size: String.to_integer(System.get_env("POOL_SIZE", "10"))
-

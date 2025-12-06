@@ -4,9 +4,9 @@
 defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
   @moduledoc """
   Task: t_schedule_activities(state)
-  
+
   Schedule all activities respecting precedence constraints.
-  
+
   Returns a list of subtasks to execute.
   """
 
@@ -33,16 +33,17 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
   @spec find_next_activity(map()) :: nil | {integer(), [integer()]}
   defp find_next_activity(state) do
     num_activities = Map.get(state, :num_activities, 0)
+
     Enum.reduce_while(1..num_activities, nil, fn activity, _acc ->
       activity_id = "activity_#{activity}"
       status = get_activity_status(state, activity_id)
-      
+
       if status == "not_started" do
         # Check all constraints from ego-centric perspective (beliefs)
         case check_activity_constraints_ego(state, activity) do
           {:ok, assigned_resources} ->
             {:halt, {activity, assigned_resources}}
-          
+
           {:error, _reason} ->
             {:cont, nil}
         end
@@ -56,7 +57,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
   @spec check_activity_constraints_ego(map(), integer()) :: {:ok, [integer()]} | {:error, String.t()}
   defp check_activity_constraints_ego(state, activity) do
     current_time = Map.get(state, :current_time, 0)
-    
+
     with :ok <- check_precedence_ego(state, activity),
          {:ok, assigned_resources} <- find_resources_with_skills_ego(state, activity),
          :ok <- check_resource_unavailable_ego(state, assigned_resources, current_time, activity),
@@ -74,12 +75,13 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
   @spec check_precedence_ego(map(), integer()) :: :ok | {:error, String.t()}
   defp check_precedence_ego(state, activity) do
     predecessors = AircraftDisassembly.get_predecessors(state, activity)
-    
-    all_completed = Enum.all?(predecessors, fn pred ->
-      pred_id = "activity_#{pred}"
-      get_activity_status(state, pred_id) == "completed"
-    end)
-    
+
+    all_completed =
+      Enum.all?(predecessors, fn pred ->
+        pred_id = "activity_#{pred}"
+        get_activity_status(state, pred_id) == "completed"
+      end)
+
     if all_completed do
       :ok
     else
@@ -92,42 +94,49 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
     skill_reqs = get_activity_skill_requirements(state, activity)
     num_skills = Map.get(state, :nSkills, 3)
     useful_res = get_useful_resources(state, activity)
-    
+
     # Find resources that have the required skills (ego-centric: based on beliefs)
-    assigned_resources = Enum.reduce(1..num_skills, [], fn skill_idx, acc ->
-      required = get_skill_requirement(skill_reqs, activity, skill_idx, state)
-      
-      if required > 0 do
-        # Find resources with this skill from useful_res set
-        resources_with_skill = Enum.filter(useful_res, fn resource_id ->
-          has_skill_capability?(state, resource_id, skill_idx)
-        end)
-        
-        # Take required number of resources
-        needed = required - length(acc)
-        if needed > 0 do
-          acc ++ Enum.take(resources_with_skill, needed)
+    assigned_resources =
+      Enum.reduce(1..num_skills, [], fn skill_idx, acc ->
+        required = get_skill_requirement(skill_reqs, activity, skill_idx, state)
+
+        if required > 0 do
+          # Find resources with this skill from useful_res set
+          resources_with_skill =
+            Enum.filter(useful_res, fn resource_id ->
+              has_skill_capability?(state, resource_id, skill_idx)
+            end)
+
+          # Take required number of resources
+          needed = required - length(acc)
+
+          if needed > 0 do
+            acc ++ Enum.take(resources_with_skill, needed)
+          else
+            acc
+          end
         else
           acc
         end
-      else
-        acc
-      end
-    end)
-    
+      end)
+
     # Verify we have enough resources for all skills
-    skill_ok = Enum.all?(1..num_skills, fn skill_idx ->
-      required = get_skill_requirement(skill_reqs, activity, skill_idx, state)
-      if required > 0 do
-        skill_count = Enum.count(assigned_resources, fn resource_id ->
-          has_skill_capability?(state, resource_id, skill_idx)
-        end)
-        skill_count >= required
-      else
-        true
-      end
-    end)
-    
+    skill_ok =
+      Enum.all?(1..num_skills, fn skill_idx ->
+        required = get_skill_requirement(skill_reqs, activity, skill_idx, state)
+
+        if required > 0 do
+          skill_count =
+            Enum.count(assigned_resources, fn resource_id ->
+              has_skill_capability?(state, resource_id, skill_idx)
+            end)
+
+          skill_count >= required
+        else
+          true
+        end
+      end)
+
     if skill_ok and length(assigned_resources) > 0 do
       {:ok, assigned_resources}
     else
@@ -140,15 +149,17 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
     duration = get_activity_duration(state, activity)
     end_time = start_time + duration
     unavailable_periods = get_unavailable_periods(state)
-    
+
     # Ego-centric: check based on beliefs about resource availability
-    resource_available = Enum.all?(assigned_resources, fn resource_id ->
-      resource_periods = Map.get(unavailable_periods, resource_id, [])
-      Enum.all?(resource_periods, fn {unavail_start, unavail_end} ->
-        end_time <= unavail_start or start_time >= unavail_end
+    resource_available =
+      Enum.all?(assigned_resources, fn resource_id ->
+        resource_periods = Map.get(unavailable_periods, resource_id, [])
+
+        Enum.all?(resource_periods, fn {unavail_start, unavail_end} ->
+          end_time <= unavail_start or start_time >= unavail_end
+        end)
       end)
-    end)
-    
+
     if resource_available do
       :ok
     else
@@ -162,13 +173,15 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
     duration = get_activity_duration(state, activity)
     occupancy = get_activity_occupancy(state, activity)
     capacity = get_location_capacity(state, location)
-    
+
     # Ego-centric: check based on beliefs about other activities
     overlapping_activities = find_overlapping_activities_at_location_ego(state, location, start_time, duration)
-    total_occupancy = Enum.reduce(overlapping_activities, occupancy, fn other_activity, acc ->
-      acc + get_activity_occupancy(state, other_activity)
-    end)
-    
+
+    total_occupancy =
+      Enum.reduce(overlapping_activities, occupancy, fn other_activity, acc ->
+        acc + get_activity_occupancy(state, other_activity)
+      end)
+
     if total_occupancy <= capacity do
       :ok
     else
@@ -180,6 +193,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
   defp check_mass_balance_ego(state, activity, _start_time) do
     # Ego-centric: simplified check based on beliefs
     mass_consumption = get_activity_mass_consumption(state, activity)
+
     if mass_consumption == 0 do
       :ok
     else
@@ -226,6 +240,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
     useful_res = Map.get(state, :useful_res, [])
     num_resources = Map.get(state, :num_resources, 0)
     idx = activity - 1
+
     case Enum.at(useful_res, idx) do
       %MapSet{} = resource_set -> MapSet.to_list(resource_set)
       list when is_list(list) -> list
@@ -238,7 +253,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
     unavailable_resources = Map.get(state, :unavailable_resource, [])
     unavailable_starts = Map.get(state, :unavailable_start, [])
     unavailable_ends = Map.get(state, :unavailable_end, [])
-    
+
     unavailable_resources
     |> Enum.with_index()
     |> Enum.reduce(%{}, fn {resource_id, idx}, acc ->
@@ -281,12 +296,15 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
   defp find_overlapping_activities_at_location_ego(state, location, _start_time, _duration) do
     # Ego-centric: find activities based on beliefs about what's in progress
     num_activities = Map.get(state, :num_activities, 0)
+
     Enum.filter(1..num_activities, fn other_activity ->
       other_location = get_activity_location(state, other_activity)
+
       if other_location == location do
         other_activity_id = "activity_#{other_activity}"
         status = get_activity_status(state, other_activity_id)
-        status == "in_progress"  # Based on beliefs
+        # Based on beliefs
+        status == "in_progress"
       else
         false
       end
@@ -308,13 +326,18 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Tasks.ScheduleActivities do
         case Map.get(facts, "activity_status", %{}) do
           status_map when is_map(status_map) ->
             Map.get(status_map, activity_id, "not_started")
+
           _ ->
             "not_started"
         end
+
       _ ->
         # Fallback to old state structure
-        Map.get(state.activity_status || %{}, String.to_integer(String.replace(activity_id, "activity_", "")), "not_started")
+        Map.get(
+          state.activity_status || %{},
+          String.to_integer(String.replace(activity_id, "activity_", "")),
+          "not_started"
+        )
     end
   end
 end
-

@@ -175,7 +175,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCornTest do
       assert new_state.boat_location == "west"
     end
 
-    test "commands enforce safety constraints", %{initial_state: state} do
+    test "commands enforce safety constraints", %{initial_state: _state} do
       # Create unsafe state (should be prevented)
       unsafe_state = %{
         west_fox: 1,

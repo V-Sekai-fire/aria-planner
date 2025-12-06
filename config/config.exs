@@ -9,4 +9,3 @@ config :aria_planner,
 config :aria_planner, AriaPlanner.Repo,
   database: Path.join(["priv", "aria_planner_#{Mix.env()}.db"]),
   pool_size: 10
-

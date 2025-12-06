@@ -7,36 +7,36 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
   """
 
   @type params :: %{
-    optional(:num_activities) => non_neg_integer(),
-    optional(:nActs) => non_neg_integer(),
-    optional(:num_resources) => non_neg_integer(),
-    optional(:nResources) => non_neg_integer(),
-    optional(:durations) => [non_neg_integer()],
-    optional(:dur) => [non_neg_integer()],
-    optional(:precedences) => [{non_neg_integer(), non_neg_integer()}],
-    optional(:locations) => [non_neg_integer()],
-    optional(:loc) => [non_neg_integer()],
-    optional(:location_capacities) => [non_neg_integer()],
-    optional(:loc_cap) => [non_neg_integer()],
-    optional(:nSkills) => non_neg_integer(),
-    optional(:nUnavailable) => non_neg_integer(),
-    optional(:nUnrels) => non_neg_integer(),
-    optional(:maxt) => non_neg_integer(),
-    optional(:sreq) => [term()],
-    optional(:mastery) => [term()],
-    optional(:mass) => [term()],
-    optional(:maxDiff) => [term()],
-    optional(:M) => MapSet.t() | [term()] | non_neg_integer() | nil,
-    optional(:comp_prod) => [term()],
-    optional(:useful_res) => [MapSet.t() | term()],
-    optional(:potential_act) => [MapSet.t() | term()],
-    optional(:resource_cost) => [term()],
-    optional(:unavailable_resource) => [term()],
-    optional(:unavailable_start) => [term()],
-    optional(:unavailable_end) => [term()],
-    optional(:unrelated) => [{non_neg_integer(), non_neg_integer()}],
-    optional(:occupancy) => [term()]
-  }
+          optional(:num_activities) => non_neg_integer(),
+          optional(:nActs) => non_neg_integer(),
+          optional(:num_resources) => non_neg_integer(),
+          optional(:nResources) => non_neg_integer(),
+          optional(:durations) => [non_neg_integer()],
+          optional(:dur) => [non_neg_integer()],
+          optional(:precedences) => [{non_neg_integer(), non_neg_integer()}],
+          optional(:locations) => [non_neg_integer()],
+          optional(:loc) => [non_neg_integer()],
+          optional(:location_capacities) => [non_neg_integer()],
+          optional(:loc_cap) => [non_neg_integer()],
+          optional(:nSkills) => non_neg_integer(),
+          optional(:nUnavailable) => non_neg_integer(),
+          optional(:nUnrels) => non_neg_integer(),
+          optional(:maxt) => non_neg_integer(),
+          optional(:sreq) => [term()],
+          optional(:mastery) => [term()],
+          optional(:mass) => [term()],
+          optional(:maxDiff) => [term()],
+          optional(:M) => MapSet.t() | [term()] | non_neg_integer() | nil,
+          optional(:comp_prod) => [term()],
+          optional(:useful_res) => [MapSet.t() | term()],
+          optional(:potential_act) => [MapSet.t() | term()],
+          optional(:resource_cost) => [term()],
+          optional(:unavailable_resource) => [term()],
+          optional(:unavailable_start) => [term()],
+          optional(:unavailable_end) => [term()],
+          optional(:unrelated) => [{non_neg_integer(), non_neg_integer()}],
+          optional(:occupancy) => [term()]
+        }
 
   # State type - required fields are always present, optional fields may be present
   @type state :: map()
@@ -49,7 +49,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
     try do
       num_activities = extract_integer(params, [:num_activities, :nActs], 0)
       num_resources = extract_integer(params, [:num_resources, :nResources], 0)
-      
+
       durations = extract_list(params, [:durations, :dur], [])
       precedences = extract_list(params, [:precedences], [])
       locations = extract_list(params, [:locations, :loc], [])
@@ -66,7 +66,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
       n_unavailable = extract_integer(params, [:nUnavailable], 0)
       n_unrels = extract_integer(params, [:nUnrels], 0)
       maxt = extract_integer(params, [:maxt], 1920)
-      
+
       # Extract optional fields (return nil if not present)
       sreq = extract_list(params, [:sreq], nil)
       mastery = extract_list(params, [:mastery], nil)
@@ -84,49 +84,54 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
       occupancy = extract_list(params, [:occupancy], nil)
 
       # Build base state with required fields
-      state = %{
-        num_activities: num_activities,
-        durations: durations,
-        precedences: precedences,
-        num_resources: num_resources,
-        locations: locations,
-        num_locations: length(location_capacities),
-        facts: facts,
-        precedence: precedence,
-        resource_assigned: resource_assigned,
-        location_capacity: location_capacity,
-        current_time: 0,
-        nSkills: n_skills,
-        nUnavailable: n_unavailable,
-        nUnrels: n_unrels,
-        maxt: maxt
-      }
-      |> maybe_put(:sreq, sreq)
-      |> maybe_put(:mastery, mastery)
-      |> maybe_put(:mass, mass)
-      |> maybe_put(:maxDiff, max_diff)
-      |> maybe_put(:M, mapset_m)
-      |> maybe_put(:comp_prod, comp_prod)
-      |> maybe_put(:useful_res, useful_res)
-      |> maybe_put(:potential_act, potential_act)
-      |> maybe_put(:resource_cost, resource_cost)
-      |> maybe_put(:unavailable_resource, unavailable_resource)
-      |> maybe_put(:unavailable_start, unavailable_start)
-      |> maybe_put(:unavailable_end, unavailable_end)
-      |> maybe_put(:unrelated, unrelated)
-      |> maybe_put(:occupancy, occupancy)
+      state =
+        %{
+          num_activities: num_activities,
+          durations: durations,
+          precedences: precedences,
+          num_resources: num_resources,
+          locations: locations,
+          num_locations: length(location_capacities),
+          facts: facts,
+          precedence: precedence,
+          resource_assigned: resource_assigned,
+          location_capacity: location_capacity,
+          current_time: 0,
+          nSkills: n_skills,
+          nUnavailable: n_unavailable,
+          nUnrels: n_unrels,
+          maxt: maxt
+        }
+        |> maybe_put(:sreq, sreq)
+        |> maybe_put(:mastery, mastery)
+        |> maybe_put(:mass, mass)
+        |> maybe_put(:maxDiff, max_diff)
+        |> maybe_put(:M, mapset_m)
+        |> maybe_put(:comp_prod, comp_prod)
+        |> maybe_put(:useful_res, useful_res)
+        |> maybe_put(:potential_act, potential_act)
+        |> maybe_put(:resource_cost, resource_cost)
+        |> maybe_put(:unavailable_resource, unavailable_resource)
+        |> maybe_put(:unavailable_start, unavailable_start)
+        |> maybe_put(:unavailable_end, unavailable_end)
+        |> maybe_put(:unrelated, unrelated)
+        |> maybe_put(:occupancy, occupancy)
 
       {:ok, state}
     rescue
       e ->
-        error_msg = case e do
-          %MatchError{term: term} ->
-            "MatchError with term: #{inspect(term)}. This usually means a pattern match failed. Check if all required params are provided."
-          %KeyError{key: key} ->
-            "KeyError: missing key #{inspect(key)}. Available keys: #{inspect(Map.keys(params))}"
-          _ ->
-            "#{inspect(e.__struct__)}: #{Exception.message(e)}"
-        end
+        error_msg =
+          case e do
+            %MatchError{term: term} ->
+              "MatchError with term: #{inspect(term)}. This usually means a pattern match failed. Check if all required params are provided."
+
+            %KeyError{key: key} ->
+              "KeyError: missing key #{inspect(key)}. Available keys: #{inspect(Map.keys(params))}"
+
+            _ ->
+              "#{inspect(e.__struct__)}: #{Exception.message(e)}"
+          end
+
         {:error, "Failed to initialize state: #{error_msg}"}
     end
   end
@@ -135,25 +140,27 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
 
   @spec extract_integer(map(), [atom()], non_neg_integer()) :: non_neg_integer()
   defp extract_integer(params, keys, default) do
-    value = Enum.reduce_while(keys, nil, fn key, acc ->
-      case Map.get(params, key) do
-        nil -> {:cont, acc}
-        val -> {:halt, val}
-      end
-    end) || default
-    
+    value =
+      Enum.reduce_while(keys, nil, fn key, acc ->
+        case Map.get(params, key) do
+          nil -> {:cont, acc}
+          val -> {:halt, val}
+        end
+      end) || default
+
     if is_integer(value) and value >= 0, do: value, else: default
   end
 
   @spec extract_list(map(), [atom()], [term()] | nil) :: [term()] | nil
   defp extract_list(params, keys, default) do
-    value = Enum.reduce_while(keys, nil, fn key, acc ->
-      case Map.get(params, key) do
-        nil -> {:cont, acc}
-        val -> {:halt, val}
-      end
-    end)
-    
+    value =
+      Enum.reduce_while(keys, nil, fn key, acc ->
+        case Map.get(params, key) do
+          nil -> {:cont, acc}
+          val -> {:halt, val}
+        end
+      end)
+
     cond do
       is_nil(value) -> default
       is_list(value) -> value
@@ -165,6 +172,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
   @spec extract_mapset(map(), atom()) :: MapSet.t() | nil
   defp extract_mapset(params, key) do
     value = Map.get(params, key)
+
     cond do
       is_nil(value) -> nil
       match?(%MapSet{}, value) -> value
@@ -177,40 +185,58 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
   @spec extract_useful_res(map()) :: [term()] | nil
   defp extract_useful_res(params) do
     value = Map.get(params, :useful_res)
+
     cond do
-      is_nil(value) -> nil
+      is_nil(value) ->
+        nil
+
       is_list(value) ->
         Enum.map(value, fn
-          nil -> nil
-          m -> 
+          nil ->
+            nil
+
+          m ->
             if match?(%MapSet{}, m) do
               MapSet.to_list(m)
             else
               m
             end
         end)
-      match?(%MapSet{}, value) -> [MapSet.to_list(value)]
-      true -> nil
+
+      match?(%MapSet{}, value) ->
+        [MapSet.to_list(value)]
+
+      true ->
+        nil
     end
   end
 
   @spec extract_potential_act(map()) :: [term()] | nil
   defp extract_potential_act(params) do
     value = Map.get(params, :potential_act)
+
     cond do
-      is_nil(value) -> nil
+      is_nil(value) ->
+        nil
+
       is_list(value) ->
         Enum.map(value, fn
-          nil -> nil
-          m -> 
+          nil ->
+            nil
+
+          m ->
             if match?(%MapSet{}, m) do
               MapSet.to_list(m)
             else
               m
             end
         end)
-      match?(%MapSet{}, value) -> [MapSet.to_list(value)]
-      true -> nil
+
+      match?(%MapSet{}, value) ->
+        [MapSet.to_list(value)]
+
+      true ->
+        nil
     end
   end
 
@@ -221,9 +247,12 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
       {activity_id, "not_started"}
     end
   end
+
   defp build_activity_status_facts(_), do: %{}
 
-  @spec build_precedence_map([{non_neg_integer(), non_neg_integer()}]) :: %{{non_neg_integer(), non_neg_integer()} => boolean()}
+  @spec build_precedence_map([{non_neg_integer(), non_neg_integer()}]) :: %{
+          {non_neg_integer(), non_neg_integer()} => boolean()
+        }
   defp build_precedence_map(precedences) when is_list(precedences) do
     precedences
     |> Enum.filter(fn
@@ -235,10 +264,13 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
       Map.put(acc, key, true)
     end)
   end
+
   defp build_precedence_map(_), do: %{}
 
-  @spec build_resource_assigned_map(non_neg_integer(), non_neg_integer()) :: %{{non_neg_integer(), non_neg_integer()} => boolean()}
-  defp build_resource_assigned_map(num_activities, num_resources) 
+  @spec build_resource_assigned_map(non_neg_integer(), non_neg_integer()) :: %{
+          {non_neg_integer(), non_neg_integer()} => boolean()
+        }
+  defp build_resource_assigned_map(num_activities, num_resources)
        when num_activities > 0 and num_resources > 0 do
     for activity <- 1..num_activities,
         resource <- 1..num_resources,
@@ -246,6 +278,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
       {{activity, resource}, false}
     end
   end
+
   defp build_resource_assigned_map(_, _), do: %{}
 
   @spec build_location_capacity_map([non_neg_integer()]) :: %{non_neg_integer() => non_neg_integer()}
@@ -256,6 +289,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
       {location, capacity}
     end
   end
+
   defp build_location_capacity_map(_), do: %{}
 
   # Helper to conditionally add fields to map
@@ -263,4 +297,3 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
   defp maybe_put(map, _key, nil), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)
 end
-

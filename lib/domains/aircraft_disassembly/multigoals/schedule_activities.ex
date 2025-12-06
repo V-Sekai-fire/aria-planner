@@ -4,9 +4,9 @@
 defmodule AriaPlanner.Domains.AircraftDisassembly.Multigoals.ScheduleActivities do
   @moduledoc """
   Multigoal: m_schedule_activities(state)
-  
+
   Schedule all activities respecting precedence constraints (goal-based).
-  
+
   Returns a list of goals to achieve.
   """
 
@@ -15,6 +15,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Multigoals.ScheduleActivities 
     # Return goals for all activities to be completed
     # Use activity_id format for planner's state facts
     num_activities = Map.get(state, :num_activities, 0)
+
     goals =
       for activity <- 1..num_activities do
         activity_id = "activity_#{activity}"
@@ -24,4 +25,3 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Multigoals.ScheduleActivities 
     goals
   end
 end
-

@@ -14,5 +14,6 @@ defmodule AriaCore.Planner.Actions do
   def new(), do: %__MODULE__{action_dict: %{}}
 
   @spec add_action(t(), atom(), fun()) :: t()
-  def add_action(actions, action_name, fun), do: %{actions | action_dict: Map.put(actions.action_dict, action_name, fun)}
+  def add_action(actions, action_name, fun),
+    do: %{actions | action_dict: Map.put(actions.action_dict, action_name, fun)}
 end

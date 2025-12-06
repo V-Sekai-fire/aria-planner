@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.TinyCvrp do
   @moduledoc """
   Tiny CVRP (Capacitated Vehicle Routing Problem) planning domain.
-  
+
   Vehicle routing problem where:
   - Multiple vehicles start at a depot
   - Each vehicle has a capacity
@@ -13,12 +13,7 @@ defmodule AriaPlanner.Domains.TinyCvrp do
   - Goal: Minimize total distance/ETA
   """
 
-  alias AriaPlanner.Domains.TinyCvrp.Predicates.{
-    VehicleAt,
-    CustomerVisited,
-    VehicleCapacity,
-    Distance
-  }
+  # Aliases removed - not currently used in this module
 
   @doc """
   Creates and registers the tiny-cvrp planning domain.
@@ -124,21 +119,24 @@ defmodule AriaPlanner.Domains.TinyCvrp do
       total_places = num_customers + 1
 
       # Initialize vehicle positions (all at depot = 1)
-      vehicle_at = for v <- 1..num_vehicles, into: %{} do
-        {v, 1}
-      end
+      vehicle_at =
+        for v <- 1..num_vehicles, into: %{} do
+          {v, 1}
+        end
 
       # Initialize customer visited status (all false)
-      customer_visited = for c <- 2..total_places, into: %{} do
-        {c, false}
-      end
+      customer_visited =
+        for c <- 2..total_places, into: %{} do
+          {c, false}
+        end
 
       # Initialize vehicle capacities
       vehicle_capacities = params.vehicle_capacities || [500]
 
-      vehicle_capacity = for {capacity, v} <- Enum.with_index(vehicle_capacities, 1), into: %{} do
-        {v, capacity}
-      end
+      vehicle_capacity =
+        for {capacity, v} <- Enum.with_index(vehicle_capacities, 1), into: %{} do
+          {v, capacity}
+        end
 
       state = %{
         num_vehicles: num_vehicles,
@@ -163,7 +161,7 @@ defmodule AriaPlanner.Domains.TinyCvrp do
   Calculates the total ETA for all vehicle routes.
   """
   @spec calculate_total_eta(state :: map()) :: integer()
-  def calculate_total_eta(state) do
+  def calculate_total_eta(_state) do
     # This is a simplified calculation
     # In a full implementation, we'd track the actual route sequence
     0
@@ -201,9 +199,11 @@ defmodule AriaPlanner.Domains.TinyCvrp do
 
   defp parse_dzn_line(content, key, params, param_key) do
     regex = ~r/#{key}\s*=\s*(\d+);/
+
     case Regex.run(regex, content) do
       [_, value] ->
         Map.put(params, param_key, String.to_integer(value))
+
       nil ->
         params
     end
@@ -211,22 +211,25 @@ defmodule AriaPlanner.Domains.TinyCvrp do
 
   defp parse_array_line(content, key, params, param_key) do
     regex = ~r/#{key}\s*=\s*\[([^\]]+)\];/
+
     case Regex.run(regex, content) do
       [_, values] ->
-        array_values = values
-        |> String.split(",")
-        |> Enum.map(&String.trim/1)
-        |> Enum.map(&String.to_integer/1)
+        array_values =
+          values
+          |> String.split(",")
+          |> Enum.map(&String.trim/1)
+          |> Enum.map(&String.to_integer/1)
+
         Map.put(params, param_key, array_values)
+
       nil ->
         params
     end
   end
 
-  defp parse_matrix_line(content, key, params, param_key) do
+  defp parse_matrix_line(_content, _key, params, _param_key) do
     # Simplified matrix parsing - would need more complex regex for full matrix
     # For now, return empty map
     params
   end
 end
-

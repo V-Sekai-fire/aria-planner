@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.Neighbours do
   @moduledoc """
   Neighbours planning domain.
-  
+
   Grid assignment problem where:
   - Each cell in an n×m grid gets a number 1-5
   - If a cell has value N>1, it must have neighbors with values 1, 2, ..., N-1
@@ -97,9 +97,10 @@ defmodule AriaPlanner.Domains.Neighbours do
   @spec initialize_state(n :: integer(), m :: integer()) :: {:ok, map()} | {:error, String.t()}
   def initialize_state(n, m) when n > 0 and m > 0 do
     try do
-      grid = for i <- 1..n, j <- 1..m, into: %{} do
-        {{i, j}, 0}
-      end
+      grid =
+        for i <- 1..n, j <- 1..m, into: %{} do
+          {{i, j}, 0}
+        end
 
       state = %{
         n: n,
@@ -136,33 +137,37 @@ defmodule AriaPlanner.Domains.Neighbours do
   @doc """
   Checks if a cell has neighbors with all required values.
   """
-  @spec has_neighbors_with_values(state :: map(), row :: integer(), col :: integer(), required_values :: Range.t() | list()) ::
+  @spec has_neighbors_with_values(
+          state :: map(),
+          row :: integer(),
+          col :: integer(),
+          required_values :: Range.t() | list()
+        ) ::
           boolean()
   def has_neighbors_with_values(state, row, col, required_values) do
     # Handle ranges: check if it's a valid non-empty range
-    values_list = 
-      if Range.range?(required_values) do
-        # For ranges, check if it's effectively empty
-        # A range like 1..0//-1 has first=1, last=0, step=-1
-        # This is a valid descending range, but if first > last with negative step,
-        # it's a "backwards" range that should be treated as "no requirements"
-        first = required_values.first
-        last = required_values.last
-        step = required_values.step
-        
-        # If step is negative and first > last, it's a backwards descending range (treat as empty)
-        # If step is positive and first > last, it's an invalid/empty range
-        # If step is negative and first < last, it's an invalid/empty range  
-        if (step < 0 and first > last) or (step > 0 and first > last) or (step < 0 and first < last) do
-          []  # Empty/invalid range = no requirements
-        else
-          Enum.to_list(required_values)
-        end
-      else
-        # Not a range, treat as list
-        required_values
+    values_list =
+      case required_values do
+        first..last//step = range ->
+          # For ranges, check if it's effectively empty
+          # A range like 1..0//-1 has first=1, last=0, step=-1
+          # This is a valid descending range, but if first > last with negative step,
+          # it's a "backwards" range that should be treated as "no requirements"
+          # If step is negative and first > last, it's a backwards descending range (treat as empty)
+          # If step is positive and first > last, it's an invalid/empty range
+          # If step is negative and first < last, it's an invalid/empty range
+          if (step < 0 and first > last) or (step > 0 and first > last) or (step < 0 and first < last) do
+            # Empty/invalid range = no requirements
+            []
+          else
+            Enum.to_list(range)
+          end
+
+        _ ->
+          # Not a range, treat as list
+          required_values
       end
-    
+
     # Empty list means no requirements, so it's always true
     if Enum.empty?(values_list) do
       true
@@ -215,12 +220,13 @@ defmodule AriaPlanner.Domains.Neighbours do
 
   defp parse_dzn_line(content, key, params, param_key) do
     regex = ~r/#{key}\s*=\s*(\d+);/
+
     case Regex.run(regex, content) do
       [_, value] ->
         Map.put(params, param_key, String.to_integer(value))
+
       nil ->
         params
     end
   end
 end
-

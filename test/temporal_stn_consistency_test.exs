@@ -29,9 +29,9 @@ defmodule AriaPlanner.Planner.Temporal.STN.ConsistencyTest do
         stn
         | constraints: %{
             # b starts at least 10 after a
-            {"a", "b"} => {10, 10000},
+            {"a", "b"} => {10, 10_000},
             # a starts at least 10 after b
-            {"b", "a"} => {10, 10000}
+            {"b", "a"} => {10, 10_000}
           },
           time_points: MapSet.new(["a", "b"])
       }

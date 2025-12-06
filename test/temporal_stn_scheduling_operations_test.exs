@@ -50,7 +50,7 @@ defmodule TemporalSTNSchedulingOperationsTest do
       }
 
       # Find free slots for 30-minute activities in a 24-hour period
-      free_slots = Scheduling.find_free_slots(stn, 1800, 0, 86400)
+      free_slots = Scheduling.find_free_slots(stn, 1800, 0, 86_400)
 
       # Should find slots before and after the rest period
       assert is_list(free_slots)

@@ -3,5 +3,4 @@
 
 defmodule AriaCore.PersonaTest do
   use ExUnit.Case, async: true
-
 end

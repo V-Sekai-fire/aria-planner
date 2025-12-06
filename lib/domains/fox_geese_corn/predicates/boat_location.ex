@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.FoxGeeseCorn.Predicates.BoatLocation do
   @moduledoc """
   Boat Location predicate for fox-geese-corn domain.
-  
+
   Represents where the boat is: "west" or "east".
   """
 
@@ -22,4 +22,3 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Predicates.BoatLocation do
     Map.put(state, :boat_location, value)
   end
 end
-

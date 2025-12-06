@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.FoxGeeseCorn do
   @moduledoc """
   Fox-Geese-Corn planning domain.
-  
+
   This is a classic river crossing puzzle where:
   - Fox cannot be left alone with geese (fox eats geese)
   - Geese cannot be left alone with corn (geese eats corn)
@@ -12,9 +12,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn do
   - Goal: Transport all items to the east side, maximizing points
   """
 
-  # Aliases for commands
-  alias AriaPlanner.Domains.FoxGeeseCorn.Commands.{CrossEast, CrossWest}
-  alias AriaPlanner.Domains.FoxGeeseCorn.Predicates.{EastFox, EastGeese, EastCorn, WestFox, WestGeese, WestCorn, BoatLocation}
+  # Aliases removed - not currently used in this module
 
   @doc """
   Creates and registers the fox-geese-corn planning domain.
@@ -165,8 +163,8 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn do
     cond do
       # Only one type present - always safe
       (fox > 0 and geese == 0 and corn == 0) or
-      (fox == 0 and geese > 0 and corn == 0) or
-      (fox == 0 and geese == 0 and corn > 0) ->
+        (fox == 0 and geese > 0 and corn == 0) or
+          (fox == 0 and geese == 0 and corn > 0) ->
         true
 
       # All together - safe
@@ -223,12 +221,13 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn do
 
   defp parse_dzn_line(content, key, params, param_key) do
     regex = ~r/#{key}\s*=\s*(\d+);/
+
     case Regex.run(regex, content) do
       [_, value] ->
         Map.put(params, param_key, String.to_integer(value))
+
       nil ->
         params
     end
   end
 end
-

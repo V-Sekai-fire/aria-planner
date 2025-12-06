@@ -15,7 +15,7 @@ defmodule AriaPlanner.Planner.Application do
       # Start the Ecto repository
       AriaPlanner.Repo,
       # Domain Registry for dynamic domain discovery
-      AriaPlanner.Planner.DomainRegistry,
+      AriaPlanner.Planner.DomainRegistry
 
       # Membrane Pipeline for command execution (temporarily disabled for UUID generation)
       # %{

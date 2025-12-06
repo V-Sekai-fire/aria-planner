@@ -4,17 +4,17 @@
 defmodule AriaGoalSolver do
   @moduledoc """
   Goal Solver for planning with entity requirements.
-  
+
   This module solves goals while checking that required entities and capabilities are available.
   """
 
-  alias AriaPlanner.Planner.PlannerMetadata
+  # alias AriaPlanner.Planner.PlannerMetadata  # Unused - removed to fix compilation warning
   alias AriaPlanner.Planner.EntityRequirement
   alias AriaPlanner.Planner.State
 
   @doc """
   Solves goals with entity requirement validation.
-  
+
   Returns {:ok, solution} when all requirements are met, or {:error, reason} otherwise.
   """
   @spec solve_goals(map(), State.t(), list(), keyword()) :: {:ok, map()} | {:error, String.t()}
@@ -81,19 +81,22 @@ defmodule AriaGoalSolver do
     # Get capabilities for the entity
     capability_facts = Map.get(state.facts, "has_capability", %{})
     capabilities = Map.get(capability_facts, entity_id, [])
-    
+
     # Normalize to atoms for comparison
     List.wrap(capabilities)
     |> Enum.map(fn
-      val when is_atom(val) -> val
-      val when is_binary(val) -> 
+      val when is_atom(val) ->
+        val
+
+      val when is_binary(val) ->
         try do
           String.to_existing_atom(val)
         rescue
           ArgumentError -> String.to_atom(val)
         end
-      val -> val
+
+      val ->
+        val
     end)
   end
 end
-

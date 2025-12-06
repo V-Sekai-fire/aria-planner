@@ -15,8 +15,13 @@ defmodule AriaPlanner.MixProject do
       package: package(),
       test_coverage: [output: "cover"],
       elixirc_paths: elixirc_paths(Mix.env()),
-      aliases: aliases(),
-      preferred_cli_env: [
+      aliases: aliases()
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.html": :test,
@@ -45,10 +50,13 @@ defmodule AriaPlanner.MixProject do
       {:nx, "~> 0.10"},
       {:torchx, "~> 0.10", optional: true},
       {:aria_math, git: "https://github.com/V-Sekai-fire/aria-math.git"},
-      {:exqlite, "~> 0.33.1"}, # Added for SQLite3 adapter
-      {:ecto_sqlite3, "~> 0.22.0"}, # Added for SQLite3 Ecto adapter
+      # Added for SQLite3 adapter
+      {:exqlite, "~> 0.33.1"},
+      # Added for SQLite3 Ecto adapter
+      {:ecto_sqlite3, "~> 0.22.0"},
       {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
-      {:aria_storage, git: "https://github.com/V-Sekai-fire/aria-storage.git", ref: "2ae9d51537a7272d489663c56206731312c961aa"},
+      {:aria_storage,
+       git: "https://github.com/V-Sekai-fire/aria-storage.git", ref: "2ae9d51537a7272d489663c56206731312c961aa"},
       {:abnf_parsec, "~> 2.1"},
       {:sourceror, "~> 1.10"},
       # Using built-in :zstd module from Erlang/OTP 28+ (no external dependency needed)

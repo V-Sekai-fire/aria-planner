@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.TinyCvrp.Predicates.VehicleCapacity do
   @moduledoc """
   Vehicle Capacity predicate for tiny-cvrp domain.
-  
+
   Represents the remaining capacity of a vehicle.
   """
 
@@ -25,4 +25,3 @@ defmodule AriaPlanner.Domains.TinyCvrp.Predicates.VehicleCapacity do
     Map.put(state, :vehicle_capacity, new_vehicle_capacity)
   end
 end
-

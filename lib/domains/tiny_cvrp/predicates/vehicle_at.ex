@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.TinyCvrp.Predicates.VehicleAt do
   @moduledoc """
   Vehicle At predicate for tiny-cvrp domain.
-  
+
   Represents the current location of a vehicle (depot = 1, customers = 2..total_places).
   """
 
@@ -25,4 +25,3 @@ defmodule AriaPlanner.Domains.TinyCvrp.Predicates.VehicleAt do
     Map.put(state, :vehicle_at, new_vehicle_at)
   end
 end
-

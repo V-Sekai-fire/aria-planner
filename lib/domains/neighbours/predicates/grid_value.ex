@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.Neighbours.Predicates.GridValue do
   @moduledoc """
   Grid Value predicate for neighbours domain.
-  
+
   Represents the value assigned to a cell at position (row, col).
   """
 
@@ -25,4 +25,3 @@ defmodule AriaPlanner.Domains.Neighbours.Predicates.GridValue do
     Map.put(state, :grid, new_grid)
   end
 end
-

@@ -4,9 +4,9 @@
 defmodule AriaPlanner.Domains.Neighbours.Multigoals.MaximizeGrid do
   @moduledoc """
   Multigoal Method: m_maximize_grid(state)
-  
+
   Assign values to all grid cells to maximize the sum (goal-based).
-  
+
   Returns a list of goals to achieve.
   """
 
@@ -32,7 +32,7 @@ defmodule AriaPlanner.Domains.Neighbours.Multigoals.MaximizeGrid do
 
   defp find_max_assignable_value(state, row, col) do
     # Try values from 5 down to 1
-    Enum.find_value(5..1, fn value ->
+    Enum.find_value(5..1//-1, fn value ->
       if value == 1 do
         1
       else
@@ -47,4 +47,3 @@ defmodule AriaPlanner.Domains.Neighbours.Multigoals.MaximizeGrid do
     end) || 1
   end
 end
-

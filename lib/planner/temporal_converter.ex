@@ -44,7 +44,6 @@ defmodule AriaPlanner.Planner.TemporalConverter do
   """
   alias AriaPlanner.Client
 
-
   @doc """
   Converts a durative action into a simple action and method decomposition.
 
@@ -102,7 +101,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
     duration =
       case durative_action[:duration] do
         duration when is_binary(duration) ->
-          if (Client.iso8601_duration_to_microseconds(duration) |> elem(0) == :ok) do
+          if Client.iso8601_duration_to_microseconds(duration) |> elem(0) == :ok do
             duration
           else
             # Default for invalid duration
@@ -152,7 +151,8 @@ defmodule AriaPlanner.Planner.TemporalConverter do
       |> maybe_append_seconds(secs, remaining_microseconds)
 
     case time_parts do
-      [] -> "PT1S"  # Default if all zeros
+      # Default if all zeros
+      [] -> "PT1S"
       parts -> "PT" <> Enum.join(parts)
     end
   end
@@ -164,13 +164,14 @@ defmodule AriaPlanner.Planner.TemporalConverter do
   defp maybe_append_minutes(acc, minutes), do: acc ++ ["#{minutes}M"]
 
   defp maybe_append_seconds(acc, 0, 0), do: acc
+
   defp maybe_append_seconds(acc, secs, 0) do
     acc ++ ["#{secs}S"]
   end
 
   defp maybe_append_seconds(acc, secs, microseconds) when microseconds > 0 do
     # Build fractional seconds string without storing singular numeric values
-    microsecond_string = microseconds |> :erlang.float_to_binary([decimals: 6]) |> String.replace_prefix("0.", "")
+    microsecond_string = microseconds |> :erlang.float_to_binary(decimals: 6) |> String.replace_prefix("0.", "")
     acc ++ ["#{secs}.#{microsecond_string}S"]
   end
 
@@ -317,6 +318,4 @@ defmodule AriaPlanner.Planner.TemporalConverter do
       [:temporal_conversion]
     )
   end
-
-
 end

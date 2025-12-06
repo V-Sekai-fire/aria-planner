@@ -107,4 +107,3 @@ defmodule AriaPlanner.Solvers.FlatZincGeneratorTest do
     end
   end
 end
-

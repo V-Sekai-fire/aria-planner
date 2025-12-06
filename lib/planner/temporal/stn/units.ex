@@ -5,7 +5,8 @@ defmodule AriaPlanner.Planner.Temporal.STN.Units do
   @moduledoc false
   alias AriaPlanner.Planner.Temporal.STN
   alias AriaPlanner.Planner.Temporal.Interval
-  use Timex # Add Timex for duration parsing
+  # Add Timex for duration parsing
+  use Timex
 
   @type time_unit :: :microsecond | :millisecond | :second | :minute | :hour | :day
   @type lod_level :: :ultra_high | :high | :medium | :low | :very_low
@@ -237,6 +238,7 @@ defmodule AriaPlanner.Planner.Temporal.STN.Units do
       case {Timex.Duration.parse(min_iso_duration), Timex.Duration.parse(max_iso_duration)} do
         {{:ok, min_duration}, {:ok, max_duration}} ->
           {:ok, {Timex.Duration.to_microseconds(min_duration), Timex.Duration.to_microseconds(max_duration)}}
+
         _ ->
           {:error, "Invalid ISO 8601 variable duration format"}
       end
@@ -245,6 +247,7 @@ defmodule AriaPlanner.Planner.Temporal.STN.Units do
       case Timex.Duration.parse(iso_duration) do
         {:ok, %Timex.Duration{} = duration} ->
           {:ok, {:fixed, Timex.Duration.to_microseconds(duration)}}
+
         _ ->
           {:error, "Invalid ISO 8601 duration format"}
       end

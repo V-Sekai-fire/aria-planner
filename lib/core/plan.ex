@@ -79,14 +79,30 @@ defmodule AriaCore.Plan do
     ])
     |> validate_required([:id, :name, :persona_id, :domain_type])
     |> validate_length(:name, min: 1)
-     |> validate_uuid_v7(:id)
-    |> validate_inclusion(:domain_type, ["tactical", "navigation", "social", "economic", "exploration", "stealth", "blocks_world", "pert_planner", "workflow_test_domain", "test_domain_1", "empty_domain", "multi_entity_domain", "list_test_domain", "filter_test_domain", "restore_domain", "backtrack_domain"])
+    |> validate_uuid_v7(:id)
+    |> validate_inclusion(:domain_type, [
+      "tactical",
+      "navigation",
+      "social",
+      "economic",
+      "exploration",
+      "stealth",
+      "blocks_world",
+      "pert_planner",
+      "workflow_test_domain",
+      "test_domain_1",
+      "empty_domain",
+      "multi_entity_domain",
+      "list_test_domain",
+      "filter_test_domain",
+      "restore_domain",
+      "backtrack_domain"
+    ])
     |> validate_inclusion(:execution_status, ["planned", "executing", "completed", "failed"])
     |> validate_number(:success_probability, greater_than_or_equal_to: 0.0, less_than_or_equal_to: 1.0)
     |> validate_number(:planning_duration_ms, greater_than: 0)
     |> put_change(:updated_at, NaiveDateTime.utc_now())
   end
-
 
   @doc """
   Creates new plan with UUIDv7 ID.

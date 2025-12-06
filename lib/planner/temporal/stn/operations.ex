@@ -14,7 +14,8 @@ defmodule AriaPlanner.Planner.Temporal.STN.Operations do
 
   alias AriaPlanner.Planner.Temporal.Interval
   alias AriaPlanner.Planner.Temporal.STN
-  use Timex # Add Timex for datetime parsing
+  # Add Timex for datetime parsing
+  use Timex
 
   @type constraint :: {number(), number()}
   @type time_point :: String.t()

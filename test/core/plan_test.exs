@@ -215,6 +215,7 @@ defmodule AriaCore.PlanTest do
         persona_id: "persona-uuid",
         domain_type: "tactical"
       }
+
       {:ok, plan} = Plan.create(initial_plan_attrs)
 
       # Initially planned (ego-centric phase)
@@ -231,7 +232,8 @@ defmodule AriaCore.PlanTest do
       assert executing_plan.execution_status == "executing"
       assert executing_plan.execution_started_at == execution_started_at_nativetime
 
-      execution_completed_at_nativetime = NaiveDateTime.add(execution_started_at_nativetime, 5_000, :millisecond) # 5 seconds later
+      # 5 seconds later
+      execution_completed_at_nativetime = NaiveDateTime.add(execution_started_at_nativetime, 5_000, :millisecond)
       # Complete execution
       {:ok, completed_plan} =
         Plan.update(executing_plan, %{
@@ -297,7 +299,8 @@ defmodule AriaCore.PlanTest do
   describe "time-based planning metadata" do
     test "planning timestamp and duration tracking" do
       planning_start_nativetime = NaiveDateTime.utc_now()
-      planning_duration = 2150 # Duration in ms as before
+      # Duration in ms as before
+      planning_duration = 2150
 
       {:ok, plan} =
         Plan.create(%{
@@ -314,7 +317,8 @@ defmodule AriaCore.PlanTest do
 
     test "execution time tracking for allocentric run_lazy phases" do
       execution_start_nativetime = NaiveDateTime.utc_now()
-      execution_end_nativetime = NaiveDateTime.add(execution_start_nativetime, 5_000, :millisecond) # 5 seconds later
+      # 5 seconds later
+      execution_end_nativetime = NaiveDateTime.add(execution_start_nativetime, 5_000, :millisecond)
 
       {:ok, existing_plan} =
         Plan.create(%{

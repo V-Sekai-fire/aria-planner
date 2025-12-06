@@ -11,17 +11,17 @@ defmodule AriaPlanner.Solvers.FlatZincGenerator do
 
   @doc """
   Generates FlatZinc content from a constraint map.
-  
+
   ## Parameters
-  
+
   - `constraints`: Map with `:variables`, `:constraints`, and optional `:objective`
-  
+
   ## Returns
-  
+
   - FlatZinc string
-  
+
   ## Example
-  
+
       constraints = %{
         variables: [
           {:x, :int, 1, 10},
@@ -48,11 +48,13 @@ defmodule AriaPlanner.Solvers.FlatZincGenerator do
     ]
 
     # Add format functions to assigns so template can access them
-    assigns_with_functions = assigns ++ [
-      format_variable: &format_variable/1,
-      format_constraint: &format_constraint/1,
-      format_objective: &format_objective/1
-    ]
+    assigns_with_functions =
+      assigns ++
+        [
+          format_variable: &format_variable/1,
+          format_constraint: &format_constraint/1,
+          format_objective: &format_objective/1
+        ]
 
     EEx.eval_file(@template_path, assigns: assigns_with_functions)
   end
@@ -199,4 +201,3 @@ defmodule AriaPlanner.Solvers.FlatZincGenerator do
   defp var_to_string(str) when is_binary(str), do: str
   defp var_to_string(other), do: inspect(other)
 end
-

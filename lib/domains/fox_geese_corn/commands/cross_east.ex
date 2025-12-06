@@ -4,16 +4,16 @@
 defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossEast do
   @moduledoc """
   Command: c_cross_east(fox_count, geese_count, corn_count)
-  
+
   Cross the river from west to east with specified items.
-  
+
   Preconditions:
   - Boat is on west side
   - Sufficient items on west side
   - Total items <= boat capacity
   - At least one item must be transported
   - Resulting state must be safe
-  
+
   Effects:
   - Items move from west to east
   - Boat moves to east side
@@ -111,4 +111,3 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossEast do
     end
   end
 end
-

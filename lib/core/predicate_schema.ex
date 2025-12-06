@@ -39,7 +39,9 @@ defmodule AriaCore.PredicateSchema do
     ])
     |> validate_required([:id, :name])
     |> validate_length(:name, min: 1)
-    |> validate_format(:name, ~r/^[a-z][a-zA-Z0-9_]*$/, message: "must be a valid atom name (starting with lowercase letter)")
+    |> validate_format(:name, ~r/^[a-z][a-zA-Z0-9_]*$/,
+      message: "must be a valid atom name (starting with lowercase letter)"
+    )
     |> validate_inclusion(:category, ["state", "action", "effect", "goal"])
     |> put_change(:updated_at, DateTime.utc_now())
   end
@@ -91,7 +93,8 @@ defmodule AriaCore.PredicateSchema do
   @doc """
   Updates predicate metadata.
   """
-  @spec update_metadata(predicate :: %__MODULE__{}, metadata :: map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec update_metadata(predicate :: %__MODULE__{}, metadata :: map()) ::
+          {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
   def update_metadata(predicate, new_metadata) do
     merged_metadata = Map.merge(predicate.metadata, new_metadata)
     update(predicate, %{metadata: merged_metadata})
@@ -100,7 +103,8 @@ defmodule AriaCore.PredicateSchema do
   @doc """
   Sets predicate as multi-valued.
   """
-  @spec set_multi_valued(predicate :: %__MODULE__{}, multi_valued :: boolean()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec set_multi_valued(predicate :: %__MODULE__{}, multi_valued :: boolean()) ::
+          {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
   def set_multi_valued(predicate, multi_valued) do
     update(predicate, %{multi_valued: multi_valued})
   end
@@ -108,7 +112,8 @@ defmodule AriaCore.PredicateSchema do
   @doc """
   Changes predicate category.
   """
-  @spec change_category(predicate :: %__MODULE__{}, category :: String.t()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec change_category(predicate :: %__MODULE__{}, category :: String.t()) ::
+          {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
   def change_category(predicate, category) do
     update(predicate, %{category: category})
   end

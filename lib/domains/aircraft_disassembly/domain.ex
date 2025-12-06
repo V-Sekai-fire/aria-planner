@@ -4,7 +4,7 @@
 defmodule AriaPlanner.Domains.AircraftDisassembly do
   @moduledoc """
   Aircraft Disassembly planning domain.
-  
+
   This domain models aircraft disassembly scheduling with:
   - Activities (tasks) with durations
   - Precedence constraints (predecessor/successor relationships)
@@ -12,7 +12,6 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
   - Location capacity constraints
   - Goal: Schedule all activities respecting precedence and resource constraints
   """
-
 
   @doc """
   Creates and registers the aircraft-disassembly planning domain.
@@ -35,7 +34,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
      %{
        type: "aircraft_disassembly",
        predicates: [
-         "activity_status",  # Uses planner's state facts system
+         # Uses planner's state facts system
+         "activity_status",
          "precedence",
          "resource_assigned",
          "location_capacity"
@@ -175,4 +175,3 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
     StateHelpers.all_predecessors_completed?(state, activity)
   end
 end
-
