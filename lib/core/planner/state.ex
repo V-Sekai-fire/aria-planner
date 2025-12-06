@@ -82,4 +82,22 @@ defmodule AriaCore.Planner.State do
     |> Map.get(subject_id, %{}) # Return an empty map if subject_id is not found
     |> Map.get(predicate_table)
   end
+
+  @doc """
+  Retrieves a fact using predicate_table -> subject_id structure.
+  This matches how facts are stored in domains like aircraft_disassembly
+  where facts are organized as facts[predicate_table][subject_id] = value.
+  
+  ## Examples
+  
+      # For goal format: {"activity_status", ["activity_1", "completed"]}
+      get_fact_by_predicate(state, "activity_status", "activity_1")
+      # => "completed"
+  """
+  @spec get_fact_by_predicate(t(), String.t(), String.t()) :: term() | nil
+  def get_fact_by_predicate(state, predicate_table, subject_id) do
+    state.facts
+    |> Map.get(predicate_table, %{}) # Return an empty map if predicate_table is not found
+    |> Map.get(subject_id)
+  end
 end

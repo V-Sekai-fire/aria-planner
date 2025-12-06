@@ -22,7 +22,8 @@ defmodule AriaPlanner.Domains.Neighbours.Multigoals.MaximizeGrid do
       goals =
         for row <- 1..state.n, col <- 1..state.m, GridValue.get(state, row, col) == 0 do
           max_value = find_max_assignable_value(state, row, col)
-          {"grid_value", row, col, max_value}
+          # Use tuple as subject_id for grid position
+          {"grid_value", [{row, col}, max_value]}
         end
 
       goals

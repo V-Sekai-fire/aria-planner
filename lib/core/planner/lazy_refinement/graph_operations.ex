@@ -10,6 +10,7 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
 
   alias AriaCore.Planner.State
   alias AriaCore.Planner.MultiGoal
+  alias AriaCore.Planner.LazyRefinement.NodeUtils
 
   # Helper function to add nodes and edges to the solution graph
   def add_nodes_and_edges(id, parent_node_id, children_node_info_list, solution_graph, methods, actions) do
@@ -149,12 +150,7 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
   end
 
   def goals_not_achieved(multigoal_info, current_state) do
-    Enum.reduce(multigoal_info.goals, [], fn {subject_id, predicate_table, desired_val}, acc ->
-      if State.get_fact(current_state, subject_id, predicate_table) == desired_val do
-        acc
-      else
-        acc ++ [{subject_id, predicate_table, desired_val}]
-      end
-    end)
+    # Delegate to NodeUtils to avoid duplication
+    NodeUtils.goals_not_achieved(multigoal_info, current_state)
   end
 end
