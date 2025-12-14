@@ -45,7 +45,7 @@ defmodule AriaPlanner.MixProject do
       {:ecto_sql, "~> 3.13"},
       {:jason, "~> 1.4"},
       {:axon, "~> 0.7.0"},
-      {:timex, "~> 3.7"},
+      {:timex, "~> 3.7.13"},
       {:uuidv7, "~> 1.0"},
       {:nx, "~> 0.10"},
       {:torchx, "~> 0.10", optional: true},
@@ -55,8 +55,6 @@ defmodule AriaPlanner.MixProject do
       # Added for SQLite3 Ecto adapter
       {:ecto_sqlite3, "~> 0.22.0"},
       {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
-      {:aria_storage,
-       git: "https://github.com/V-Sekai-fire/aria-storage.git", ref: "2ae9d51537a7272d489663c56206731312c961aa"},
       {:abnf_parsec, "~> 2.1"},
       {:sourceror, "~> 1.10"},
       # Using built-in :zstd module from Erlang/OTP 28+ (no external dependency needed)
