@@ -45,7 +45,7 @@ defmodule AriaPlanner.MixProject do
       {:ecto_sql, "~> 3.13"},
       {:jason, "~> 1.4"},
       {:axon, "~> 0.7.0"},
-      {:timex, "~> 3.7"},
+      {:timex, "~> 3.7.13"},
       {:uuidv7, "~> 1.0"},
       {:nx, "~> 0.10"},
       {:torchx, "~> 0.10", optional: true},
