@@ -24,7 +24,11 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
 
   @spec c_start_activity(state :: map(), activity :: integer(), current_time :: String.t(), list()) ::
           {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}
-  def c_start_activity(state, activity, current_time, assigned_resources \\ []) when is_binary(current_time) do
+  def c_start_activity(state, activity, current_time, assigned_resources \\ [])
+  
+  def c_start_activity(state, activity, current_time, assigned_resources)
+      when is_map(state) and is_integer(activity) and activity > 0 and is_binary(current_time) and
+             is_list(assigned_resources) do
     # Parse ISO 8601 datetime string
     case Timex.parse(current_time, "{ISO:Extended}") do
       {:ok, start_datetime} ->
@@ -70,6 +74,10 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
     end
   end
 
+  def c_start_activity(_state, _activity, _current_time, _assigned_resources) do
+    {:error, "Invalid arguments: state must be a map, activity must be a positive integer, current_time must be a binary string, assigned_resources must be a list"}
+  end
+
   # Private helper functions
 
   @spec check_activity_not_started(map(), integer()) :: :ok | {:error, String.t()}
@@ -85,7 +93,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
   end
 
   @spec get_activity_status(map(), String.t()) :: String.t()
-  defp get_activity_status(state, activity_id) do
+  defp get_activity_status(state, activity_id) when is_map(state) and is_binary(activity_id) do
     # Use planner's state facts system
     case Map.get(state, :facts, %{}) do
       facts when is_map(facts) ->

@@ -38,10 +38,27 @@ defmodule AriaPlanner.Planner.Temporal.STN.Consistency do
   @spec stn_to_constraints_list(STN.t()) :: [AriaStnSolver.constraint()]
   defp stn_to_constraints_list(stn) do
     for {{from, to}, {min, max}} <- stn.constraints do
-      # Convert string keys to atoms (safe conversion)
-      from_atom = String.to_atom(from)
-      to_atom = String.to_atom(to)
+      # Convert string keys to atoms safely
+      # Use String.to_existing_atom to avoid atom table exhaustion
+      # Fall back to String.to_atom only if atom doesn't exist yet
+      from_atom = safe_string_to_atom(from)
+      to_atom = safe_string_to_atom(to)
       {from_atom, to_atom, min, max}
     end
   end
+
+  # Safely convert string to atom, avoiding atom table exhaustion
+  defp safe_string_to_atom(str) when is_binary(str) do
+    try do
+      String.to_existing_atom(str)
+    rescue
+      ArgumentError ->
+        # Atom doesn't exist yet, create it (but this should be rare)
+        # In production, prefer pre-defining atoms or using string keys
+        String.to_atom(str)
+    end
+  end
+
+  defp safe_string_to_atom(atom) when is_atom(atom), do: atom
+  defp safe_string_to_atom(_), do: :invalid
 end

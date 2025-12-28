@@ -73,10 +73,19 @@ defmodule AriaPlanner.Planner.TemporalConverter do
       iex> simple_action.duration
       "PT1H"
   """
-  def convert_durative_action(durative_action) do
+  def convert_durative_action(durative_action) when is_map(durative_action) do
+    # Validate required fields
+    if not Map.has_key?(durative_action, :name) do
+      raise ArgumentError, "durative_action must have a :name field"
+    end
+
     simple_action = extract_simple_action(durative_action)
     method_decomposition = build_method_decomposition(durative_action)
     {simple_action, method_decomposition}
+  end
+
+  def convert_durative_action(_durative_action) do
+    raise ArgumentError, "durative_action must be a map"
   end
 
   @doc """

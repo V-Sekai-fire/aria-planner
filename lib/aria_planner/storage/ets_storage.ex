@@ -39,61 +39,116 @@ defmodule AriaPlanner.Storage.EtsStorage do
     {:ok, self()}
   end
 
-  def insert(table_name, id, data) do
+  def insert(table_name, id, data) when is_atom(table_name) and is_binary(id) and is_map(data) do
     table = Map.get(@tables, table_name)
 
     if table do
-      :ets.insert(table, {id, data})
-      {:ok, data}
-    else
-      {:error, :unknown_table}
-    end
-  end
-
-  def get(table_name, id) do
-    table = Map.get(@tables, table_name)
-
-    if table do
-      case :ets.lookup(table, id) do
-        [{^id, data}] -> {:ok, data}
-        [] -> {:error, :not_found}
+      try do
+        :ets.insert(table, {id, data})
+        {:ok, data}
+      rescue
+        e -> {:error, "ETS insert failed: #{inspect(e)}"}
+      catch
+        :exit, reason -> {:error, "ETS insert exit: #{inspect(reason)}"}
+        :throw, reason -> {:error, "ETS insert throw: #{inspect(reason)}"}
       end
     else
       {:error, :unknown_table}
     end
   end
 
-  def all(table_name) do
+  def insert(_table_name, _id, _data) do
+    {:error, :invalid_input}
+  end
+
+  def get(table_name, id) when is_atom(table_name) and is_binary(id) do
     table = Map.get(@tables, table_name)
 
     if table do
-      :ets.tab2list(table)
-      |> Enum.map(fn {_id, data} -> data end)
+      try do
+        case :ets.lookup(table, id) do
+          [{^id, data}] -> {:ok, data}
+          [] -> {:error, :not_found}
+        end
+      rescue
+        e -> {:error, "ETS lookup failed: #{inspect(e)}"}
+      catch
+        :exit, reason -> {:error, "ETS lookup exit: #{inspect(reason)}"}
+        :throw, reason -> {:error, "ETS lookup throw: #{inspect(reason)}"}
+      end
+    else
+      {:error, :unknown_table}
+    end
+  end
+
+  def get(_table_name, _id) do
+    {:error, :invalid_input}
+  end
+
+  def all(table_name) when is_atom(table_name) do
+    table = Map.get(@tables, table_name)
+
+    if table do
+      try do
+        :ets.tab2list(table)
+        |> Enum.map(fn {_id, data} -> data end)
+      rescue
+        e -> {:error, "ETS tab2list failed: #{inspect(e)}"}
+      catch
+        :exit, reason -> {:error, "ETS tab2list exit: #{inspect(reason)}"}
+        :throw, reason -> {:error, "ETS tab2list throw: #{inspect(reason)}"}
+      end
     else
       []
     end
   end
 
-  def delete(table_name, id) do
+  def all(_table_name) do
+    []
+  end
+
+  def delete(table_name, id) when is_atom(table_name) and is_binary(id) do
     table = Map.get(@tables, table_name)
 
     if table do
-      :ets.delete(table, id)
-      :ok
+      try do
+        :ets.delete(table, id)
+        :ok
+      rescue
+        e -> {:error, "ETS delete failed: #{inspect(e)}"}
+      catch
+        :exit, reason -> {:error, "ETS delete exit: #{inspect(reason)}"}
+        :throw, reason -> {:error, "ETS delete throw: #{inspect(reason)}"}
+      end
     else
       {:error, :unknown_table}
     end
   end
 
-  def clear(table_name) do
+  def delete(_table_name, _id) do
+    {:error, :invalid_input}
+  end
+
+  def clear(table_name) when is_atom(table_name) do
     table = Map.get(@tables, table_name)
 
     if table do
-      :ets.delete_all_objects(table)
-      :ok
+      try do
+        :ets.delete_all_objects(table)
+        :ok
+      rescue
+        e -> {:error, "ETS clear failed: #{inspect(e)}"}
+      catch
+        :exit, reason -> {:error, "ETS clear exit: #{inspect(reason)}"}
+        :throw, reason -> {:error, "ETS clear throw: #{inspect(reason)}"}
+      end
     else
       {:error, :unknown_table}
     end
+  end
+
+  def clear(_table_name) do
+    {:error, :invalid_input}
   end
 
   def clear_all do

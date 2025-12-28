@@ -176,8 +176,12 @@ defmodule AriaCore.Persona do
   Beliefs are hidden from other personas (information asymmetry).
   """
   @spec get_beliefs_about(t(), String.t()) :: map()
-  def get_beliefs_about(persona, target_entity_id) do
+  def get_beliefs_about(%__MODULE__{} = persona, target_entity_id) when is_binary(target_entity_id) do
     Map.get(persona.beliefs_about_others, target_entity_id, %{})
+  end
+
+  def get_beliefs_about(_persona, _target_entity_id) do
+    %{}
   end
 
   @doc """
@@ -199,8 +203,12 @@ defmodule AriaCore.Persona do
   while maintaining information asymmetry (no direct state access).
   """
   @spec process_observation(t(), map()) :: {:ok, t()} | {:error, String.t()}
-  def process_observation(persona, observation) do
+  def process_observation(%__MODULE__{} = persona, observation) when is_map(observation) do
     AriaPlanner.PersonaObserver.process_observation(persona, observation)
+  end
+
+  def process_observation(_persona, _observation) do
+    {:error, "persona must be a Persona struct and observation must be a map"}
   end
 
   @doc """
@@ -210,16 +218,24 @@ defmodule AriaCore.Persona do
   without revealing internal states.
   """
   @spec process_communication(t(), map()) :: {:ok, t()} | {:error, String.t()}
-  def process_communication(persona, communication) do
+  def process_communication(%__MODULE__{} = persona, communication) when is_map(communication) do
     AriaPlanner.PersonaObserver.process_communication(persona, communication)
+  end
+
+  def process_communication(_persona, _communication) do
+    {:error, "persona must be a Persona struct and communication must be a map"}
   end
 
   @doc """
   Update beliefs from execution outcomes.
   """
   @spec update_beliefs_from_outcomes(t(), [map()]) :: {:ok, t()}
-  def update_beliefs_from_outcomes(persona, outcomes) do
+  def update_beliefs_from_outcomes(%__MODULE__{} = persona, outcomes) when is_list(outcomes) do
     AriaPlanner.PersonaObserver.update_beliefs_from_outcomes(persona, outcomes)
+  end
+
+  def update_beliefs_from_outcomes(_persona, _outcomes) do
+    {:error, "persona must be a Persona struct and outcomes must be a list"}
   end
 
 end
