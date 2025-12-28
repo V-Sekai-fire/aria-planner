@@ -12,7 +12,9 @@ This document explains the persona system, belief-immersed planning architecture
 6. [Domain System](#domain-system)
 7. [Temporal System](#temporal-system)
 8. [Solver Architecture](#solver-architecture)
-9. [Examples](#examples)
+9. [Storage Architecture](#storage-architecture)
+10. [Examples](#examples)
+11. [Summary](#summary)
 
 ## Introduction
 
@@ -41,6 +43,7 @@ This creates **information asymmetry** - personas cannot directly access each ot
 - **Beliefs**: Ego-centric models each persona maintains about others
 - **Planning Domains**: HTN-style planning with predicates, actions, commands, methods, and multigoals
 - **Allocentric Facts**: Shared ground truth observable by all personas
+- **ETS Storage**: All data stored in-memory using Elixir Term Storage (ETS), no database dependencies
 
 ## Persona System
 
@@ -304,13 +307,15 @@ end
 
 Planning domains consist of:
 
-**Predicates**: State facts stored in database tables
+**Predicates**: State facts stored as plain structs in ETS (Elixir Term Storage)
 
 ```elixir
-# Example: blocks_world_pos table
-schema "blocks_world_pos" do
-  field(:entity_id, :string)
-  field(:value, :string)
+# Example: Position predicate (plain struct, no database)
+defmodule AriaPlanner.Domains.BlocksWorld.Predicates.Pos do
+  defstruct [:entity_id, :value]
+  
+  # Stored in ETS (Elixir Term Storage) for in-memory persistence
+  # All data is stored in-memory and lost on application restart
 end
 ```
 
@@ -499,9 +504,38 @@ Domains are registered with the planning system:
 }
 ```
 
+### Storage System
+
+All data is stored in-memory using **ETS (Elixir Term Storage)**. The system uses `AriaPlanner.Storage.EtsStorage` to manage all data:
+
+**Supported Tables:**
+- `plans` - Persona-specific plans
+- `personas` - Persona entities
+- `facts_allocentric` - Shared ground truth facts
+- `predicates` - Planning domain predicates
+- `planning_domains` - Domain definitions
+- `locations` - Location entities
+- `items` - Item entities
+
+**Storage API:**
+```elixir
+# Create/Update
+{:ok, plan} = AriaCore.Plan.create(attrs)
+{:ok, updated_plan} = AriaCore.Plan.update(plan, new_attrs)
+
+# Read
+{:ok, plan} = AriaCore.Plan.get(plan_id)
+all_plans = AriaCore.Plan.all()
+
+# Delete
+:ok = AriaCore.Plan.delete(plan_id)
+```
+
+**Important**: All data is stored in-memory and will be lost on application restart. This is similar to `ipyhop` which also doesn't use a database.
+
 ### Predicate Schemas
 
-Each predicate has its own database table:
+Each predicate is a plain struct stored in ETS:
 
 ```elixir
 # Example: Position predicate (plain struct, no database)
@@ -509,6 +543,7 @@ defmodule AriaPlanner.Domains.BlocksWorld.Predicates.Pos do
   defstruct [:entity_id, :value]
   
   # Stored in ETS (Elixir Term Storage) for in-memory persistence
+  # All data is stored in-memory and lost on application restart
 end
 ```
 
@@ -570,7 +605,10 @@ hybrid = Persona.new("hybrid_001", "Cyborg")
 ### Planning with Personas
 
 ```elixir
-# Create a plan for a persona
+# ETS storage is automatically initialized on application start
+# via AriaPlanner.Storage.EtsStorage.start_link()
+
+# Create a plan for a persona (stored in ETS)
 plan_attrs = %{
   name: "Move Blocks Plan",
   persona_id: persona.id,
@@ -579,6 +617,7 @@ plan_attrs = %{
 }
 
 {:ok, plan} = AriaCore.Plan.create(plan_attrs)
+# Plan is now stored in ETS table :aria_planner_plans
 
 # Execute plan (lazy refinement)
 domain_spec = %{
@@ -736,6 +775,42 @@ The planner uses multiple solver types:
 
 **Deprecated**: MiniZinc dependencies have been removed. `MiniZincSolver`, `ChuffedMiniZinc`, `MiniZincConverter`, and `AriaChuffedSolver` are deprecated and have been removed.
 
+## Storage Architecture
+
+### ETS (Elixir Term Storage)
+
+The aria-planner uses **ETS (Elixir Term Storage)** for all data persistence. This is an in-memory storage system that provides fast access to structured data without database dependencies.
+
+**Key Features:**
+- **In-Memory Storage**: All data stored in ETS tables (no disk persistence)
+- **Fast Access**: O(1) lookup performance for keyed data
+- **No Database Dependencies**: No SQLite, PostgreSQL, or other database required
+- **Simple API**: Direct struct manipulation with `create/1`, `update/2`, `get/1`, `all/0`, `delete/1`
+
+**Storage Module:**
+```elixir
+# Initialize ETS storage (called automatically on application start)
+AriaPlanner.Storage.EtsStorage.start_link()
+
+# Direct storage operations
+AriaPlanner.Storage.EtsStorage.insert(:plans, plan_id, plan)
+{:ok, plan} = AriaPlanner.Storage.EtsStorage.get(:plans, plan_id)
+all_plans = AriaPlanner.Storage.EtsStorage.all(:plans)
+:ok = AriaPlanner.Storage.EtsStorage.delete(:plans, plan_id)
+```
+
+**Data Models:**
+All core data models are plain structs (not Ecto schemas):
+- `AriaCore.Plan` - Persona-specific plans
+- `AriaCore.Persona` - Persona entities
+- `AriaCore.FactsAllocentric` - Shared ground truth facts
+- `AriaCore.PredicateSchema` - Planning domain predicates
+- `AriaCore.PlanningDomain` - Domain definitions
+- `AriaCore.Location` - Location entities
+- `AriaCore.Item` - Item entities
+
+**Important**: All data is stored in-memory and will be lost on application restart. This design is intentional and similar to `ipyhop`, which also doesn't use a database.
+
 ## Summary
 
 The aria-planner system is **persona-centric**, not agent-centric. Personas are the core abstraction, with AI personas (agents) being just one type. The system uses:
@@ -748,5 +823,6 @@ The aria-planner system is **persona-centric**, not agent-centric. Personas are 
 - **ISO 8601 Temporal System**: All planning times use ISO 8601 strings (not integers)
 - **Temporal Constraint Networks**: STN-based temporal constraint solving
 - **Metadata System**: Structured planner metadata with entity requirements and temporal constraints
+- **ETS Storage**: In-memory storage using Elixir Term Storage (no database dependencies)
 
-This architecture enables rich multi-persona interactions where each persona plans from their own perspective while executing in a shared reality.
+This architecture enables rich multi-persona interactions where each persona plans from their own perspective while executing in a shared reality. All data is stored in-memory using ETS, providing fast access without database overhead.
