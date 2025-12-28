@@ -87,11 +87,12 @@ defmodule AriaCore.Persona do
   Get ego-centric beliefs about another entity.
 
   Returns what this persona believes about the target entity.
+  Beliefs are ego-centric - each persona has their own model of others.
   Beliefs are hidden from other personas (information asymmetry).
   """
   @spec get_beliefs_about(t(), String.t()) :: map()
   def get_beliefs_about(persona, target_entity_id) do
-    AriaPlanner.BeliefManager.get_beliefs_about(persona, target_entity_id)
+    Map.get(persona.beliefs_about_others, target_entity_id, %{})
   end
 
   @doc """
