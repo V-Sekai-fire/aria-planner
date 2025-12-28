@@ -731,6 +731,21 @@ The codebase includes several example domains:
 - Tasks: `t_route_vehicles`
 - Multigoals: `m_route_vehicles`
 
+**Locomotion** (migrated to `apps/patrol_solver/lib/patrol_solver/domains/locomotion/`):
+
+- 3D movement and navigation planning with Fibonacci sphere quantization
+- Positions and rotations quantized to sphere points for discrete state space
+- Predicates: `quantized_position`, `quantized_rotation`, `entity_speed`, `movement_type`, `waypoint_reached`
+- Commands: `c_move_to`, `c_rotate_to`, `c_move_and_rotate`, `c_mark_waypoint_reached`
+- Tasks: `t_navigate_to`, `t_navigate_path`, `t_patrol`, `t_return_to_start`
+- Multigoals: `m_navigate_to`, `m_navigate_path`, `m_patrol`
+- **Visualization**: Blender MCP integration for 3D trajectory visualization with keyframe animation
+  - Patrol problems create time-based animations with keyframes at each trajectory step
+  - Entity movement animated along patrol paths through scattered waypoints
+  - Path curves use POLY splines to pass exactly through waypoint positions
+  - Meter-scale visualization with proper camera positioning
+  - See `apps/patrol_solver` for usage via `mix patrol_solve` or `PatrolSolver.Solver.solve/1`
+
 **Note**: MiniZinc dependencies have been removed from the solver. The `MiniZincSolver`, `ChuffedMiniZinc`, and `MiniZincConverter` modules are deprecated and should not be used in new code.
 
 ## Temporal System
@@ -824,5 +839,6 @@ The aria-planner system is **persona-centric**, not agent-centric. Personas are 
 - **Temporal Constraint Networks**: STN-based temporal constraint solving
 - **Metadata System**: Structured planner metadata with entity requirements and temporal constraints
 - **ETS Storage**: In-memory storage using Elixir Term Storage (no database dependencies)
+- **3D Visualization**: Blender MCP integration for visualizing planning solutions as time-based animations with keyframes
 
-This architecture enables rich multi-persona interactions where each persona plans from their own perspective while executing in a shared reality. All data is stored in-memory using ETS, providing fast access without database overhead.
+This architecture enables rich multi-persona interactions where each persona plans from their own perspective while executing in a shared reality. All data is stored in-memory using ETS, providing fast access without database overhead. The Locomotion domain includes Blender visualization support for patrol problems, creating keyframe animations that show entity movement through waypoints over time.
