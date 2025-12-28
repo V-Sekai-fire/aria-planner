@@ -734,9 +734,10 @@ All planning-related time values use **ISO 8601 strings**:
 
 The planner uses multiple solver types:
 
-- **Goal Solver** (`AriaPlanner.Solvers.AriaGoalSolver`): Solves goal-based planning problems
 - **STN Solver** (`AriaPlanner.Solvers.AriaStnSolver`): Solves temporal constraint networks
 - **Chuffed Solver** (`AriaPlanner.Solvers.AriaChuffedSolver`): Direct Chuffed solver (no MiniZinc)
+
+**Note**: Goal solving is handled by `LazyRefinement` planning loop, not a separate solver module.
 
 **Deprecated**: MiniZinc dependencies have been removed. `MiniZincSolver`, `ChuffedMiniZinc`, and `MiniZincConverter` are deprecated.
 
