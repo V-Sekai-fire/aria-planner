@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 #
-# Example script demonstrating planning with Chuffed constraint solver
+# Example script demonstrating FlatZinc generation (Chuffed solver removed)
 # Run with: mix run scripts/plan_with_chuffed.exs
+#
+# Note: AriaChuffedSolver has been removed as it was non-functional.
+# This script now only demonstrates FlatZinc generation.
 
-alias AriaPlanner.Solvers.AriaChuffedSolver
 alias AriaPlanner.Solvers.FlatZincGenerator
 
 IO.puts("=" <> String.duplicate("=", 70))
-IO.puts("Planning with Chuffed - Constraint Programming Examples")
+IO.puts("FlatZinc Generation Examples - Constraint Programming")
 IO.puts("=" <> String.duplicate("=", 70))
 IO.puts("")
 
@@ -46,31 +48,9 @@ flatzinc1 = FlatZincGenerator.generate(constraints1)
 IO.puts("Generated FlatZinc:")
 IO.puts(flatzinc1)
 IO.puts("")
-
-case AriaChuffedSolver.solve(constraints1) do
-  {:ok, solution} ->
-    IO.puts("✓ Solution found:")
-    IO.inspect(solution, pretty: true)
-    IO.puts("")
-    IO.puts("Interpretation:")
-    if Map.has_key?(solution, :task1_worker) do
-      IO.puts("  Task 1 → Worker #{solution.task1_worker}")
-      IO.puts("  Task 2 → Worker #{solution.task2_worker}")
-      IO.puts("  Task 3 → Worker #{solution.task3_worker}")
-    end
-
-  {:error, reason} ->
-    reason_str = to_string(reason)
-    if String.contains?(reason_str, "chuffed") or 
-       String.contains?(reason_str, "not found") or
-       String.contains?(reason_str, "command") or
-       reason == :nif_not_loaded do
-      IO.puts("⚠ Chuffed solver not available (NIF not loaded or Chuffed not installed)")
-      IO.puts("  Generated FlatZinc above can be solved with any FlatZinc-compatible solver")
-    else
-      IO.puts("✗ Error: #{inspect(reason)}")
-    end
-end
+IO.puts("Note: AriaChuffedSolver has been removed. The generated FlatZinc above")
+IO.puts("      can be saved to a file and solved with any FlatZinc-compatible solver.")
+IO.puts("")
 
 # Example 2: Scheduling with Precedence Constraints
 IO.puts("\n[Example 2] Task Scheduling with Precedence")
@@ -109,37 +89,9 @@ flatzinc2 = FlatZincGenerator.generate(constraints2)
 IO.puts("Generated FlatZinc:")
 IO.puts(flatzinc2)
 IO.puts("")
-
-case AriaChuffedSolver.solve(constraints2) do
-  {:ok, solution} ->
-    IO.puts("✓ Solution found:")
-    IO.inspect(solution, pretty: true)
-    IO.puts("")
-    IO.puts("Interpretation:")
-    if Map.has_key?(solution, :task1_start) do
-      task1_end = solution.task1_start + solution.task1_duration
-      task2_end = solution.task2_start + solution.task2_duration
-      task3_end = solution.task3_start + solution.task3_duration
-      task4_end = solution.task4_start + solution.task4_duration
-      
-      IO.puts("  Task 1: Start=#{solution.task1_start}, Duration=#{solution.task1_duration}, End=#{task1_end}")
-      IO.puts("  Task 2: Start=#{solution.task2_start}, Duration=#{solution.task2_duration}, End=#{task2_end}")
-      IO.puts("  Task 3: Start=#{solution.task3_start}, Duration=#{solution.task3_duration}, End=#{task3_end}")
-      IO.puts("  Task 4: Start=#{solution.task4_start}, Duration=#{solution.task4_duration}, End=#{task4_end}")
-      IO.puts("  Total completion time: #{task4_end}")
-    end
-
-  {:error, reason} ->
-    reason_str = to_string(reason)
-    if String.contains?(reason_str, "chuffed") or 
-       String.contains?(reason_str, "not found") or
-       String.contains?(reason_str, "command") or
-       reason == :nif_not_loaded do
-      IO.puts("⚠ Chuffed solver not available")
-    else
-      IO.puts("✗ Error: #{inspect(reason)}")
-    end
-end
+IO.puts("Note: AriaChuffedSolver has been removed. The generated FlatZinc above")
+IO.puts("      can be saved to a file and solved with any FlatZinc-compatible solver.")
+IO.puts("")
 
 # Example 3: All-Different Constraint (N-Queens style)
 IO.puts("\n[Example 3] All-Different Assignment")
@@ -166,40 +118,15 @@ flatzinc3 = FlatZincGenerator.generate(constraints3)
 IO.puts("Generated FlatZinc:")
 IO.puts(flatzinc3)
 IO.puts("")
-
-case AriaChuffedSolver.solve(constraints3) do
-  {:ok, solution} ->
-    IO.puts("✓ Solution found:")
-    IO.inspect(solution, pretty: true)
-    IO.puts("")
-    IO.puts("Interpretation:")
-    if Map.has_key?(solution, :item1) do
-      IO.puts("  Item 1 → Position #{solution.item1}")
-      IO.puts("  Item 2 → Position #{solution.item2}")
-      IO.puts("  Item 3 → Position #{solution.item3}")
-      IO.puts("  Item 4 → Position #{solution.item4}")
-      IO.puts("  Item 5 → Position #{solution.item5}")
-      IO.puts("")
-      IO.puts("  All positions are unique: ✓")
-    end
-
-  {:error, reason} ->
-    reason_str = to_string(reason)
-    if String.contains?(reason_str, "chuffed") or 
-       String.contains?(reason_str, "not found") or
-       String.contains?(reason_str, "command") or
-       reason == :nif_not_loaded do
-      IO.puts("⚠ Chuffed solver not available")
-    else
-      IO.puts("✗ Error: #{inspect(reason)}")
-    end
-end
+IO.puts("Note: AriaChuffedSolver has been removed. The generated FlatZinc above")
+IO.puts("      can be saved to a file and solved with any FlatZinc-compatible solver.")
+IO.puts("")
 
 IO.puts("\n" <> "=" <> String.duplicate("=", 70))
-IO.puts("Planning examples completed!")
+IO.puts("FlatZinc generation examples completed!")
 IO.puts("=" <> String.duplicate("=", 70))
 IO.puts("")
-IO.puts("Note: If Chuffed is not available, the generated FlatZinc can be")
-IO.puts("      saved to a file and solved with any FlatZinc-compatible solver.")
+IO.puts("Note: AriaChuffedSolver has been removed. The generated FlatZinc files")
+IO.puts("      can be saved and solved with any FlatZinc-compatible solver.")
 IO.puts("")
 
