@@ -3,10 +3,24 @@
 
 defmodule AriaCore.Planner.Methods do
   @moduledoc """
-  Placeholder module for planner methods.
+  Registry for planner methods in HTN (Hierarchical Task Network) planning.
+
+  Methods are decomposition functions that break down tasks, goals, and multigoals
+  into subtasks. This module maintains dictionaries mapping method names to their
+  decomposition functions for three types of nodes:
+  - Task methods: decompose tasks into subtasks
+  - Goal methods: decompose goals into subtasks
+  - Multigoal methods: decompose multigoals into subtasks
+
+  Used extensively by `LazyRefinement` to find available methods for refining
+  nodes during plan generation.
   """
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          task_method_dict: %{atom() => [function()]},
+          goal_method_dict: %{atom() => [function()]},
+          multigoal_method_dict: %{atom() => [function()]}
+        }
 
   defstruct [:task_method_dict, :goal_method_dict, :multigoal_method_dict]
 

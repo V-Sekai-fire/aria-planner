@@ -3,10 +3,15 @@
 
 defmodule AriaCore.Planner.Actions do
   @moduledoc """
-  Placeholder module for planner actions.
+  Registry for planner actions in HTN (Hierarchical Task Network) planning.
+
+  Actions are primitive operations that can be directly executed in the planning domain.
+  This module maintains a dictionary mapping action names to their implementation functions.
+
+  Used by `LazyRefinement` to look up and execute actions during plan refinement.
   """
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{action_dict: %{atom() => function()}}
 
   defstruct [:action_dict]
 
