@@ -10,7 +10,7 @@ repos:
         name: Insert license headers (#-style comments)
         args:
           - "--license-filepath"
-          - "LICENSE.short.md"
+          - "LICENSE.md"
           - "--comment-style"
           - "#"
         files: \.(ex|exs)$
@@ -23,7 +23,7 @@ repos:
         name: Insert license headers for config files (#-style comments)
         args:
           - "--license-filepath"
-          - "LICENSE.short.md"
+          - "LICENSE.md"
           - "--comment-style"
           - "#"
         files: \.(yaml|yml|py|sh|rb|pl)$
@@ -36,7 +36,7 @@ repos:
         name: Insert license headers for Justfiles
         args:
           - "--license-filepath"
-          - "LICENSE.short.md"
+          - "LICENSE.md"
           - "--comment-style"
           - "#"
         files: ^(justfile|Justfile)$
