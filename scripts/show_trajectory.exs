@@ -9,9 +9,9 @@ Code.require_file("../../aria_patrol_solver/lib/aria_patrol_solver/domains/locom
 Code.require_file("../../aria_patrol_solver/lib/aria_patrol_solver/domains/locomotion/visualization/solution_tracker.ex", __DIR__ <> "/../")
 Code.require_file("lib/core/plan.ex", __DIR__ <> "/../")
 
+alias AriaCore.Plan
 alias AriaPatrolSolver.Domains.Locomotion
 alias AriaPatrolSolver.Domains.Locomotion.Visualization.SolutionTracker
-alias AriaCore.Plan
 
 require Logger
 Logger.configure(level: :info)
