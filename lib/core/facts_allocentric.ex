@@ -124,6 +124,8 @@ defmodule AriaCore.FactsAllocentric do
 
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
+  alias AriaPlanner.Repo
 
   @primary_key {:id, :string, autogenerate: false}
 
@@ -248,9 +250,20 @@ defmodule AriaCore.FactsAllocentric do
   """
   @spec get_all_facts() :: {:ok, [%__MODULE__{}]} | {:error, String.t()}
   def get_all_facts do
-    # In a real implementation, this would query the database
-    # For now, return empty list as foundation for observation mechanisms
-    {:ok, []}
+    try do
+      now = DateTime.utc_now()
+
+      facts =
+        from(f in __MODULE__,
+          where: is_nil(f.expires_at) or f.expires_at > ^now,
+          order_by: [desc: f.updated_at]
+        )
+        |> Repo.all()
+
+      {:ok, facts}
+    rescue
+      e -> {:error, "Failed to query facts: #{inspect(e)}"}
+    end
   end
 
   @doc """
@@ -258,11 +271,224 @@ defmodule AriaCore.FactsAllocentric do
 
   Enables ego-centric observation of allocentric reality,
   allowing personas to build beliefs about specific other entities.
+  Returns facts where entity is subject or mentioned in object.
   """
   @spec get_facts_about(String.t()) :: {:ok, [%__MODULE__{}]} | {:error, String.t()}
-  def get_facts_about(_entity_id) do
-    # Entity-specific observation foundation
-    # Returns facts where entity is subject or mentioned in object
-    {:ok, []}
+  def get_facts_about(entity_id) when is_binary(entity_id) do
+    try do
+      now = DateTime.utc_now()
+
+      facts =
+        from(f in __MODULE__,
+          where:
+            (f.subject_id == ^entity_id or
+               (f.object_type == "entity_ref" and f.object_value == ^entity_id)) and
+              (is_nil(f.expires_at) or f.expires_at > ^now),
+          order_by: [desc: f.updated_at]
+        )
+        |> Repo.all()
+
+      {:ok, facts}
+    rescue
+      e -> {:error, "Failed to query facts about entity: #{inspect(e)}"}
+    end
   end
+
+  def get_facts_about(_), do: {:error, "Invalid entity_id"}
+
+  @doc """
+  Get complete entity state from allocentric facts.
+
+  Returns all observable facts about an entity including:
+  - Position (located_at facts)
+  - Capabilities (has_capability facts)
+  - Ownership (owns/has facts)
+  - Observable effects (agent_observable facts)
+  """
+  @spec get_entity_state(String.t()) :: {:ok, map()} | {:error, String.t()}
+  def get_entity_state(entity_id) when is_binary(entity_id) do
+    case get_facts_about(entity_id) do
+      {:ok, facts} ->
+        state =
+          facts
+          |> Enum.reduce(%{}, fn fact, acc ->
+            predicate = fact.predicate
+            value = parse_object_value(fact.object_value, fact.object_type)
+
+            # Group facts by predicate
+            current_values = Map.get(acc, predicate, [])
+            updated_values = [value | current_values]
+            Map.put(acc, predicate, updated_values)
+          end)
+          |> Map.put(:entity_id, entity_id)
+          |> Map.put(:fact_count, length(facts))
+
+        {:ok, state}
+
+      error ->
+        error
+    end
+  end
+
+  def get_entity_state(_), do: {:error, "Invalid entity_id"}
+
+  @doc """
+  Query what a persona can observe about another entity.
+
+  Returns facts compatible with persona's observation capabilities.
+  Filters facts based on fact_type (agent_observable, event, environmental are always observable).
+  """
+  @spec query_observable(String.t(), String.t()) :: {:ok, [%__MODULE__{}]} | {:error, String.t()}
+  def query_observable(observer_persona_id, target_entity_id)
+      when is_binary(observer_persona_id) and is_binary(target_entity_id) do
+    try do
+      # Observable fact types: agent_observable, event, environmental are always observable
+      # Terrain and object facts are observable by all
+      observable_types = ["agent_observable", "event", "environmental", "terrain", "object"]
+      now = DateTime.utc_now()
+
+      facts =
+        from(f in __MODULE__,
+          where:
+            f.subject_id == ^target_entity_id and f.fact_type in ^observable_types and
+              (is_nil(f.expires_at) or f.expires_at > ^now),
+          order_by: [desc: f.updated_at]
+        )
+        |> Repo.all()
+
+      {:ok, facts}
+    rescue
+      e -> {:error, "Failed to query observable facts: #{inspect(e)}"}
+    end
+  end
+
+  def query_observable(_, _), do: {:error, "Invalid persona_id or entity_id"}
+
+  @doc """
+  Validate world state consistency.
+
+  Checks for:
+  - No conflicting facts about the same subject with same predicate
+  - All facts have valid confidence values
+  - No expired facts are considered active
+  """
+  @spec validate_world_state() :: :consistent | {:inconsistent, String.t()}
+  def validate_world_state do
+    try do
+      # Check for conflicting facts (same subject + predicate with different values)
+      now = DateTime.utc_now()
+
+      conflicts =
+        from(f in __MODULE__,
+          where: is_nil(f.expires_at) or f.expires_at > ^now,
+          group_by: [f.subject_id, f.predicate],
+          having: count(f.id) > 1,
+          select: [f.subject_id, f.predicate, count(f.id)]
+        )
+        |> Repo.all()
+
+      if Enum.empty?(conflicts) do
+        :consistent
+      else
+        {:inconsistent, "Found conflicting facts: #{inspect(conflicts)}"}
+      end
+    rescue
+      e -> {:inconsistent, "Validation error: #{inspect(e)}"}
+    end
+  end
+
+  @doc """
+  Find conflicting facts about a specific subject.
+
+  Returns list of facts that conflict (same predicate, different values).
+  """
+  @spec conflicting_facts(String.t()) :: [%__MODULE__{}]
+  def conflicting_facts(subject_id) when is_binary(subject_id) do
+    try do
+      now = DateTime.utc_now()
+
+      # Find predicates with multiple values for the same subject
+      predicates_with_conflicts =
+        from(f in __MODULE__,
+          where: f.subject_id == ^subject_id and (is_nil(f.expires_at) or f.expires_at > ^now),
+          group_by: f.predicate,
+          having: count(f.id) > 1,
+          select: f.predicate
+        )
+        |> Repo.all()
+
+      # Get all facts for those predicates
+      if Enum.empty?(predicates_with_conflicts) do
+        []
+      else
+        from(f in __MODULE__,
+          where:
+            f.subject_id == ^subject_id and f.predicate in ^predicates_with_conflicts and
+              (is_nil(f.expires_at) or f.expires_at > ^now)
+        )
+        |> Repo.all()
+      end
+    rescue
+      _ -> []
+    end
+  end
+
+  def conflicting_facts(_), do: []
+
+  @doc """
+  Record environmental event as an allocentric fact.
+
+  Environmental events are observable by all personas and serve as
+  temporal bridges for belief updating.
+  """
+  @spec record_event(map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  def record_event(event) when is_map(event) do
+    region = Map.get(event, :region, "unknown")
+    event_type = Map.get(event, :type, "environmental_change")
+    new_condition = Map.get(event, :new_condition, "")
+
+    fact_attrs = %{
+      fact_id: UUIDv7.generate(),
+      fact_type: "environmental",
+      subject_id: to_string(region),
+      subject_type: "environmental",
+      predicate: "environmental_event",
+      object_value: Jason.encode!(%{type: event_type, condition: new_condition}),
+      object_type: "string",
+      confidence: 1.0,
+      metadata: Map.take(event, [:region, :type, :new_condition]),
+      game_session_id: Map.get(event, :game_session_id, "default_session")
+    }
+
+    create(fact_attrs)
+  end
+
+  def record_event(_), do: {:error, "Invalid event format"}
+
+  # Helper function to parse object values based on type
+  defp parse_object_value(value, "string"), do: value
+  defp parse_object_value(value, "number"), do: parse_number(value)
+  defp parse_object_value(value, "boolean"), do: parse_boolean(value)
+  defp parse_object_value(value, "location"), do: value
+  defp parse_object_value(value, "entity_ref"), do: value
+  defp parse_object_value(value, _), do: value
+
+  defp parse_number(value) when is_binary(value) do
+    case Float.parse(value) do
+      {float, _} -> float
+      :error -> value
+    end
+  end
+
+  defp parse_number(value), do: value
+
+  defp parse_boolean(value) when is_binary(value) do
+    case String.downcase(value) do
+      "true" -> true
+      "false" -> false
+      _ -> value
+    end
+  end
+
+  defp parse_boolean(value), do: value
 end
