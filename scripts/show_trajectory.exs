@@ -214,4 +214,3 @@ if length(trajectory) > 0 do
 end
 
 IO.puts("\n" <> String.duplicate("=", 80))
-
