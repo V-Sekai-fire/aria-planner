@@ -12,8 +12,7 @@ This document explains the persona system, belief-immersed planning architecture
 6. [Domain System](#domain-system)
 7. [Temporal System](#temporal-system)
 8. [Solver Architecture](#solver-architecture)
-9. [MCP Integration](#mcp-integration)
-10. [Examples](#examples)
+9. [Examples](#examples)
 
 ## Introduction
 
@@ -739,12 +738,6 @@ The planner uses multiple solver types:
 **Note**: Goal solving is handled by `LazyRefinement` planning loop, not a separate solver module.
 
 **Deprecated**: MiniZinc dependencies have been removed. `MiniZincSolver`, `ChuffedMiniZinc`, `MiniZincConverter`, and `AriaChuffedSolver` are deprecated and have been removed.
-
-## MCP Integration
-
-The system includes MCP (Model Context Protocol) tool handlers for external integration:
-
-- `AriaPlanner.MCP.AriaForge.ToolHandlers`: Handles MCP tool calls for plan creation, domain management, etc.
 
 ## Summary
 
