@@ -5,19 +5,18 @@ defmodule AriaPlanner.PlanManager do
   @moduledoc """
   Plan Manager for ego-centric plan creation and management.
 
-  Handles plan creation with belief contexts and persona-specific planning.
+  Handles plan creation with persona-specific planning.
   """
 
   alias AriaCore.Plan
 
   @doc """
-  Creates a persona-specific plan with belief context integration.
+  Creates a persona-specific plan.
   """
   @spec create_plan(String.t(), String.t(), String.t(), keyword()) ::
           {:ok, Plan.t()} | {:error, any()}
   def create_plan(persona_id, name, domain_type, opts \\ []) do
     todo = Keyword.get(opts, :todo, [])
-    _beliefs_context = Keyword.get(opts, :beliefs_context, %{})
     success_probability = Keyword.get(opts, :success_probability, 0.5)
 
     Plan.create(%{
