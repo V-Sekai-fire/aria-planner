@@ -23,15 +23,4 @@ defmodule AriaPlanner.BeliefManager do
     # This represents what 'persona' believes about target_entity_id
     Map.get(persona.beliefs_about_others, target_entity_id, %{})
   end
-
-  @doc """
-  Get planner state for a persona (for information asymmetry checking).
-
-  Returns hidden/error to demonstrate information asymmetry.
-  """
-  @spec get_planner_state(String.t(), String.t()) :: {:error, :hidden}
-  def get_planner_state(_target_persona_id, _requesting_persona_id) do
-    # Information asymmetry: persona internal states are hidden
-    {:error, :hidden}
-  end
 end

@@ -98,10 +98,12 @@ defmodule AriaCore.Persona do
   Get planner state for information asymmetry demonstration.
 
   Returns hidden error - personas cannot access others' internal planning states.
+  This demonstrates information asymmetry in the belief-based ego architecture.
   """
   @spec get_planner_state(String.t(), String.t()) :: {:error, :hidden}
-  def get_planner_state(target_persona_id, requesting_persona_id) do
-    AriaPlanner.BeliefManager.get_planner_state(target_persona_id, requesting_persona_id)
+  def get_planner_state(_target_persona_id, _requesting_persona_id) do
+    # Information asymmetry: persona internal states are hidden
+    {:error, :hidden}
   end
 
   @doc """
