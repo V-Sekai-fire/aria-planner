@@ -30,20 +30,4 @@ defmodule AriaPlanner.PlanManager do
       planning_timestamp: DateTime.utc_now()
     })
   end
-
-  @doc """
-  Orchestrates a tool call to the aria_forge_mcp_server.
-
-  This function serves as a walking skeleton for integrating with the
-  aria_forge_mcp_server. In a real scenario, this would involve
-  using the `use_mcp_tool` capability to interact with the MCP server.
-  """
-  @spec orchestrate_forge_tool(String.t(), map()) :: {:ok, map()} | {:error, any()}
-  def orchestrate_forge_tool(tool_name, args) do
-    # This is a placeholder for actual MCP tool invocation.
-    # In a real implementation, this would involve calling the
-    # 'use_mcp_tool' with the appropriate server_name, tool_name, and arguments.
-    IO.puts("Simulating call to aria_forge_mcp_server tool: #{tool_name} with args: #{inspect(args)}")
-    {:ok, %{status: "simulated", tool_name: tool_name, args: args}}
-  end
 end

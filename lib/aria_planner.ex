@@ -14,7 +14,6 @@ defmodule AriaPlanner do
 
   # PlanManager delegations
   defdelegate create_plan(persona_id, name, domain_type, opts), to: AriaPlanner.PlanManager
-  defdelegate orchestrate_forge_tool(tool_name, args), to: AriaPlanner.PlanManager
 
   # Client delegations
   defdelegate civil_datetime_to_absolute_microseconds(datetime), to: AriaPlanner.Client
