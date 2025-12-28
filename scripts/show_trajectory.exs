@@ -2,15 +2,15 @@
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 # Script to display locomotion trajectory data
-# NOTE: Locomotion domain has been migrated to apps/patrol_solver
-# This script needs to be updated to use PatrolSolver.Domains.Locomotion
+# NOTE: Locomotion domain has been migrated to apps/aria_patrol_solver
+# This script needs to be updated to use AriaPatrolSolver.Domains.Locomotion
 
-Code.require_file("../../patrol_solver/lib/patrol_solver/domains/locomotion/domain.ex", __DIR__ <> "/../")
-Code.require_file("../../patrol_solver/lib/patrol_solver/domains/locomotion/visualization/solution_tracker.ex", __DIR__ <> "/../")
+Code.require_file("../../aria_patrol_solver/lib/aria_patrol_solver/domains/locomotion/domain.ex", __DIR__ <> "/../")
+Code.require_file("../../aria_patrol_solver/lib/aria_patrol_solver/domains/locomotion/visualization/solution_tracker.ex", __DIR__ <> "/../")
 Code.require_file("lib/core/plan.ex", __DIR__ <> "/../")
 
-alias PatrolSolver.Domains.Locomotion
-alias PatrolSolver.Domains.Locomotion.Visualization.SolutionTracker
+alias AriaPatrolSolver.Domains.Locomotion
+alias AriaPatrolSolver.Domains.Locomotion.Visualization.SolutionTracker
 alias AriaCore.Plan
 
 require Logger

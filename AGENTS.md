@@ -731,7 +731,7 @@ The codebase includes several example domains:
 - Tasks: `t_route_vehicles`
 - Multigoals: `m_route_vehicles`
 
-**Locomotion** (migrated to `apps/patrol_solver/lib/patrol_solver/domains/locomotion/`):
+**Locomotion** (migrated to `apps/aria_patrol_solver/lib/aria_patrol_solver/domains/locomotion/`):
 
 - 3D movement and navigation planning with Fibonacci sphere quantization
 - Positions and rotations quantized to sphere points for discrete state space
@@ -744,7 +744,7 @@ The codebase includes several example domains:
   - Entity movement animated along patrol paths through scattered waypoints
   - Path curves use POLY splines to pass exactly through waypoint positions
   - Meter-scale visualization with proper camera positioning
-  - See `apps/patrol_solver` for usage via `mix patrol_solve` or `PatrolSolver.Solver.solve/1`
+  - See `apps/aria_patrol_solver` for usage via `mix patrol_solve` or `AriaPatrolSolver.Solver.solve/1`
 
 **Note**: MiniZinc dependencies have been removed from the solver. The `MiniZincSolver`, `ChuffedMiniZinc`, and `MiniZincConverter` modules are deprecated and should not be used in new code.
 
