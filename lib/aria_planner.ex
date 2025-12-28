@@ -21,11 +21,4 @@ defmodule AriaPlanner do
   defdelegate iso8601_to_absolute_microseconds(iso8601_string), to: AriaPlanner.Client
   defdelegate iso8601_duration_to_microseconds(iso8601_duration_string), to: AriaPlanner.Client
 
-  # Solver delegations
-  # TODO: Implement TensorWorkflowPlanner or remove this delegate
-  # defdelegate run_lazy(domain, initial_state, tasks, opts \\ [], execution \\ false),
-  #   to: AriaPlanner.Solvers.TensorWorkflowPlanner
-  def run_lazy(_domain, _initial_state, _tasks, _opts \\ [], _execution \\ false) do
-    {:error, "TensorWorkflowPlanner not yet implemented"}
-  end
 end

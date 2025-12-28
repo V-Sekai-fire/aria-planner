@@ -17,14 +17,6 @@ defmodule AriaPlanner.Planner.Application do
       # Domain Registry for dynamic domain discovery
       AriaPlanner.Planner.DomainRegistry
 
-      # Membrane Pipeline for command execution (temporarily disabled for UUID generation)
-      # %{
-      #   id: AriaMembrane.Pipeline,
-      #   start: {AriaMembrane.Pipeline, :start_link, [[repo: AriaRepo.Repo]]},
-      #   restart: :permanent,
-      #   shutdown: 5_000,
-      #   type: :worker
-      # }
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
