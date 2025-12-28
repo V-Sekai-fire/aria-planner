@@ -25,7 +25,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
   @spec c_start_activity(state :: map(), activity :: integer(), current_time :: String.t(), list()) ::
           {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}
   def c_start_activity(state, activity, current_time, assigned_resources \\ [])
-  
+
   def c_start_activity(state, activity, current_time, assigned_resources)
       when is_map(state) and is_integer(activity) and activity > 0 and is_binary(current_time) and
              is_list(assigned_resources) do

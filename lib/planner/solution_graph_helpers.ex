@@ -135,7 +135,7 @@ defmodule AriaPlanner.Planner.SolutionGraphHelpers do
       iex> node = %{start_time: "2025-01-01T10:00:00Z", duration: "PT5M"}
       iex> AriaPlanner.Planner.SolutionGraphHelpers.has_temporal?(node)
       true
-      
+
       iex> node = %{type: :A, status: :O}
       iex> AriaPlanner.Planner.SolutionGraphHelpers.has_temporal?(node)
       false

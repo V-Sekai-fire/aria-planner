@@ -7,7 +7,7 @@ defmodule AriaCore.Persona do
 
   This represents the fundamental persona structure for belief-immersed entities,
   providing the foundation for ego-centric planning and allocentric allocation.
-  
+
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
 

@@ -7,7 +7,7 @@ defmodule AriaCore.Location do
 
   Locations represent game world areas, territories, and map zones.
   Uses separate table structure avoiding EAV anti-pattern.
-  
+
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
 

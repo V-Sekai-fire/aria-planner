@@ -8,7 +8,7 @@ defmodule AriaCore.Plan do
   Plans are ego-centric structures representing individual persona perspectives,
   while run_lazy handles allocentric world execution. Plans contain solution
   tensor graphs and execution metadata.
-  
+
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
 

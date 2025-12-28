@@ -32,7 +32,7 @@ defmodule AriaPlanner.Solvers.FlatZincGenerator do
         ],
         objective: {:minimize, :x}
       }
-      
+
       flatzinc = FlatZincGenerator.generate(constraints)
   """
   @spec generate(map()) :: String.t()

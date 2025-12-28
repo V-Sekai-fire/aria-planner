@@ -7,7 +7,7 @@ defmodule AriaCore.PlanningDomain do
 
   Represents a planning domain with entities, tasks, actions, and other
   domain elements. Provides validation and state management.
-  
+
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
 
   ## Domain Structure

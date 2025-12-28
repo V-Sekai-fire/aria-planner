@@ -16,7 +16,7 @@ defmodule AriaPlanner.PlanManager do
   @spec create_plan(String.t(), String.t(), String.t(), keyword()) ::
           {:ok, Plan.t()} | {:error, any()}
   def create_plan(persona_id, name, domain_type, opts \\ [])
-  
+
   def create_plan(persona_id, name, domain_type, opts)
       when is_binary(persona_id) and is_binary(name) and is_binary(domain_type) do
     # Validate inputs

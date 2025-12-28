@@ -7,7 +7,7 @@ defmodule AriaCore.Item do
 
   Items represent collectible objects in the planning system.
   Uses separate table structure avoiding EAV anti-pattern.
-  
+
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
 

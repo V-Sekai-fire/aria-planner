@@ -26,10 +26,10 @@ defmodule AriaPlanner.Planner.MultiGoalHelpers do
 
       iex> AriaPlanner.Planner.MultiGoalHelpers.is_multigoal_array([["location", "agent", "kitchen"]])
       true
-      
+
       iex> AriaPlanner.Planner.MultiGoalHelpers.is_multigoal_array(["location", "agent", "kitchen"])
       false
-      
+
       iex> AriaPlanner.Planner.MultiGoalHelpers.is_multigoal_array(%{"item" => [["location", "agent", "kitchen"]], "goal_tag" => "tag1"})
       true
   """
@@ -63,7 +63,7 @@ defmodule AriaPlanner.Planner.MultiGoalHelpers do
 
       iex> AriaPlanner.Planner.MultiGoalHelpers.get_goal_tag(%{"item" => [["location", "agent", "kitchen"]], "goal_tag" => "tag1"})
       "tag1"
-      
+
       iex> AriaPlanner.Planner.MultiGoalHelpers.get_goal_tag([["location", "agent", "kitchen"]])
       ""
   """
@@ -89,7 +89,7 @@ defmodule AriaPlanner.Planner.MultiGoalHelpers do
       iex> multigoal = [["location", "agent", "kitchen"]]
       iex> AriaPlanner.Planner.MultiGoalHelpers.set_goal_tag(multigoal, "tag1")
       %{"item" => [["location", "agent", "kitchen"]], "goal_tag" => "tag1"}
-      
+
       iex> wrapped = %{"item" => [["location", "agent", "kitchen"]], "goal_tag" => "old"}
       iex> AriaPlanner.Planner.MultiGoalHelpers.set_goal_tag(wrapped, "new")
       %{"item" => [["location", "agent", "kitchen"]], "goal_tag" => "new"}

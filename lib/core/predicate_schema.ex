@@ -8,7 +8,7 @@ defmodule AriaCore.PredicateSchema do
   Predicates define relationships and properties in the planning domain. This struct follows
   ETNF (Essential Tuple Normal Form) with single-attribute primary keys and proper validation
   constraints for predicate names and categories.
-  
+
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
 

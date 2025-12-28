@@ -120,7 +120,7 @@ defmodule AriaCore.FactsAllocentric do
   # Check for conflicting facts about same subject
   assert FactsAllocentric.conflicting_facts(fact_subject_id) == []
   ```
-  
+
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
 
