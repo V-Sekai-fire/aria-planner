@@ -30,9 +30,7 @@ defmodule AriaCore.ExecutionState do
           is_thundering: boolean(),
           discovered_locations: MapSet.t(String.t()),
           entities: %{optional(String.t()) => AriaCore.Execution.Entity.t()},
-          players: %{optional(String.t()) => AriaCore.Execution.Entity.t()},
           total_entities: integer(),
-          total_players: integer(),
           total_mobs_killed: integer(),
           total_entity_deaths: integer()
         }
@@ -53,9 +51,7 @@ defmodule AriaCore.ExecutionState do
             is_thundering: false,
             discovered_locations: MapSet.new(),
             entities: %{},
-            players: %{},
             total_entities: 0,
-            total_players: 0,
             total_mobs_killed: 0,
             total_entity_deaths: 0
 
@@ -88,36 +84,11 @@ defmodule AriaCore.ExecutionState do
   end
 
   @doc """
-  Add a player to the execution state (deprecated, use add_entity instead).
-  """
-  @spec add_player(t(), String.t(), AriaCore.Entity.t()) :: t()
-  def add_player(%__MODULE__{} = state, player_id, player) do
-    updated_players = Map.put(state.players, player_id, player)
-    updated_entities = Map.put(state.entities, player_id, player)
-
-    %{
-      state
-      | players: updated_players,
-        entities: updated_entities,
-        total_players: map_size(updated_players),
-        total_entities: map_size(updated_entities)
-    }
-  end
-
-  @doc """
   Get an entity from the execution state.
   """
   @spec get_entity(t(), String.t()) :: AriaCore.Entity.t() | nil
   def get_entity(%__MODULE__{} = state, entity_id) do
     Map.get(state.entities, entity_id)
-  end
-
-  @doc """
-  Get a player from the execution state (deprecated, use get_entity instead).
-  """
-  @spec get_player(t(), String.t()) :: AriaCore.Entity.t() | nil
-  def get_player(%__MODULE__{} = state, player_id) do
-    get_entity(state, player_id)
   end
 
   @doc """
@@ -134,14 +105,6 @@ defmodule AriaCore.ExecutionState do
         updated_entities = Map.put(state.entities, entity_id, updated_entity)
         %{state | entities: updated_entities}
     end
-  end
-
-  @doc """
-  Update a player in the execution state (deprecated, use update_entity instead).
-  """
-  @spec update_player(t(), String.t(), (AriaCore.Entity.t() -> AriaCore.Entity.t())) :: t()
-  def update_player(%__MODULE__{} = state, player_id, update_fn) do
-    update_entity(state, player_id, update_fn)
   end
 
   @doc """

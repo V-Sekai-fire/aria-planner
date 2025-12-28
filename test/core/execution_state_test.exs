@@ -22,8 +22,8 @@ defmodule AriaCore.ExecutionStateTest do
       assert state.difficulty == "normal"
       assert state.temperature == 20.0
       assert state.discovered_locations == MapSet.new()
-      assert state.players == %{}
-      assert state.total_players == 0
+      assert state.entities == %{}
+      assert state.total_entities == 0
     end
   end
 
@@ -45,67 +45,67 @@ defmodule AriaCore.ExecutionStateTest do
     end
   end
 
-  describe "add_player/3" do
-    test "adds player to execution state" do
+  describe "add_entity/3" do
+    test "adds entity to execution state" do
       state = ExecutionState.new()
       player = Entity.new(1, "TestPlayer", :player)
 
-      updated = ExecutionState.add_player(state, "player_1", player)
+      updated = ExecutionState.add_entity(state, "player_1", player)
 
-      assert updated.players["player_1"] == player
-      assert updated.total_players == 1
+      assert updated.entities["player_1"] == player
+      assert updated.total_entities == 1
     end
 
-    test "updates total_players count" do
+    test "updates total_entities count" do
       state = ExecutionState.new()
       player1 = Entity.new(1, "Player1", :player)
       player2 = Entity.new(2, "Player2", :player)
 
-      state = ExecutionState.add_player(state, "player_1", player1)
-      state = ExecutionState.add_player(state, "player_2", player2)
+      state = ExecutionState.add_entity(state, "player_1", player1)
+      state = ExecutionState.add_entity(state, "player_2", player2)
 
-      assert state.total_players == 2
+      assert state.total_entities == 2
     end
   end
 
-  describe "get_player/2" do
-    test "returns player when exists" do
+  describe "get_entity/2" do
+    test "returns entity when exists" do
       state = ExecutionState.new()
       player = Entity.new(1, "TestPlayer", :player)
-      state = ExecutionState.add_player(state, "player_1", player)
+      state = ExecutionState.add_entity(state, "player_1", player)
 
-      assert ExecutionState.get_player(state, "player_1") == player
+      assert ExecutionState.get_entity(state, "player_1") == player
     end
 
-    test "returns nil when player doesn't exist" do
+    test "returns nil when entity doesn't exist" do
       state = ExecutionState.new()
 
-      assert ExecutionState.get_player(state, "nonexistent") == nil
+      assert ExecutionState.get_entity(state, "nonexistent") == nil
     end
   end
 
-  describe "update_player/3" do
-    test "updates existing player" do
+  describe "update_entity/3" do
+    test "updates existing entity" do
       state = ExecutionState.new()
       player = Entity.new(1, "TestPlayer", :player)
-      state = ExecutionState.add_player(state, "player_1", player)
+      state = ExecutionState.add_entity(state, "player_1", player)
 
       updated =
-        ExecutionState.update_player(state, "player_1", fn p ->
+        ExecutionState.update_entity(state, "player_1", fn p ->
           # Return unchanged since entity has no modifiable attributes
           p
         end)
 
-      updated_player = ExecutionState.get_player(updated, "player_1")
+      updated_entity = ExecutionState.get_entity(updated, "player_1")
       # Should be unchanged
-      assert updated_player == player
+      assert updated_entity == player
     end
 
-    test "returns unchanged state when player doesn't exist" do
+    test "returns unchanged state when entity doesn't exist" do
       state = ExecutionState.new()
 
       updated =
-        ExecutionState.update_player(state, "nonexistent", fn p ->
+        ExecutionState.update_entity(state, "nonexistent", fn p ->
           # Return unchanged
           p
         end)

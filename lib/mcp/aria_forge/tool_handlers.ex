@@ -268,8 +268,8 @@ defmodule MCP.AriaForge.ToolHandlers do
       current_time: DateTime.utc_now(),
       weather: "clear",
       temperature: 20,
-      total_players: 0,
-      players: %{}
+      total_entities: 0,
+      entities: %{}
     }
 
     result = %{
