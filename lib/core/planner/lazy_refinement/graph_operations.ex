@@ -166,7 +166,7 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
     # BFS search starting from root (node 0)
     queue = :queue.in(0, :queue.new())
     visited = MapSet.new([0])
-    
+
     do_bfs_search(solution_graph, queue, visited)
   end
 
@@ -174,7 +174,7 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
     case :queue.out(queue) do
       {{:value, node_id}, remaining_queue} ->
         node = Map.get(solution_graph, node_id)
-        
+
         if node == nil do
           # Node doesn't exist, continue BFS
           do_bfs_search(solution_graph, remaining_queue, visited)
@@ -196,7 +196,7 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
             do_bfs_search(solution_graph, new_queue, new_visited)
           end
         end
-      
+
       {:empty, _} ->
         Logger.info("find_open_node: no open nodes found in entire graph")
         :no_open_node

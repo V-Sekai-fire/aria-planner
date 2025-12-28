@@ -6,7 +6,7 @@ defmodule AriaCore.Planner.State do
   Represents the planner's state, including current time, timeline, and entity capabilities.
   """
   defstruct [:current_time, :timeline, :entity_capabilities, :facts]
-  
+
   defimpl Jason.Encoder, for: __MODULE__ do
     def encode(value, opts) do
       # Convert DateTime to ISO8601 string for JSON encoding
@@ -15,7 +15,7 @@ defmodule AriaCore.Planner.State do
       else
         nil
       end
-      
+
       Jason.Encode.map(%{
         current_time: current_time_str,
         timeline: value.timeline,

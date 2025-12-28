@@ -163,7 +163,7 @@ IO.puts(String.duplicate("=", 80))
 
 Enum.each(trajectory, fn step ->
   IO.puts("\n--- Step #{step.step} (Time: #{:erlang.float_to_binary(step.time, decimals: 2)}s) ---")
-  
+
   IO.puts("\nEntities:")
   Enum.each(step.entities, fn entity ->
     {px, py, pz} = entity.position
@@ -173,7 +173,7 @@ Enum.each(trajectory, fn step ->
     IO.puts("    Rotation: (#{:erlang.float_to_binary(rx, decimals: 3)}, #{:erlang.float_to_binary(ry, decimals: 3)}, #{:erlang.float_to_binary(rz, decimals: 3)}) [index: #{entity.rotation_index}]")
     IO.puts("    Speed: #{:erlang.float_to_binary(entity.speed, decimals: 1)} m/s, Type: #{entity.movement_type}")
   end)
-  
+
   IO.puts("\nWaypoints:")
   Enum.each(step.waypoints, fn waypoint ->
     {px, py, pz} = waypoint.position
@@ -198,13 +198,13 @@ IO.puts("Waypoints: #{trajectory |> List.first() |> Map.get(:waypoints, []) |> l
 if length(trajectory) > 0 do
   first_step = List.first(trajectory)
   last_step = List.last(trajectory)
-  
+
   if length(first_step.entities) > 0 do
     first_entity = List.first(first_step.entities)
     last_entity = List.first(last_step.entities)
     {fx, fy, fz} = first_entity.position
     {lx, ly, lz} = last_entity.position
-    
+
     distance = :math.sqrt((lx - fx) * (lx - fx) + (ly - fy) * (ly - fy) + (lz - fz) * (lz - fz))
     IO.puts("\nEntity Path:")
     IO.puts("  Start: (#{:erlang.float_to_binary(fx, decimals: 3)}, #{:erlang.float_to_binary(fy, decimals: 3)}, #{:erlang.float_to_binary(fz, decimals: 3)})")
