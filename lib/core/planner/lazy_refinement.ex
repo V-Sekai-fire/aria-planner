@@ -84,7 +84,13 @@ defmodule AriaCore.Planner.LazyRefinement do
     planning_duration_ms =
       Enum.reduce(Map.values(final_solution_graph), 0, fn node, acc ->
         if node.type == :A and Map.has_key?(node, :duration) do
-          acc + node.duration
+          duration = node.duration
+          # Handle non-numeric durations (shouldn't happen, but be safe)
+          if is_number(duration) and duration >= 0 do
+            acc + duration
+          else
+            acc
+          end
         else
           acc
         end
@@ -99,8 +105,15 @@ defmodule AriaCore.Planner.LazyRefinement do
       |> Map.put(:solution_graph_data, final_solution_graph)
       # Store final state snapshot
       |> Map.put(:planner_state_snapshot, Jason.encode!(final_state))
-      # Store the extracted plan
-      |> Map.put(:solution_plan, Jason.encode!(solution_plan))
+      # Store the extracted plan (convert tuples to lists for JSON encoding)
+      solution_plan_json = solution_plan
+        |> Enum.map(fn
+          tuple when is_tuple(tuple) -> Tuple.to_list(tuple)
+          other -> other
+        end)
+      
+      final_plan
+      |> Map.put(:solution_plan, Jason.encode!(solution_plan_json))
       # Store the total duration
       |> Map.put(:planning_duration_ms, planning_duration_ms)
 
@@ -143,10 +156,10 @@ defmodule AriaCore.Planner.LazyRefinement do
          actions,
          iter
        ) do
-    # Find the first Open node (BFS-like)
-    Logger.info("planning_loop_recursive: id=#{id}, parent_node_id=#{parent_node_id}, iter=#{iter}")
+    # Find the first Open node using BFS on entire solution graph (IPyHOP algorithm)
+    Logger.info("planning_loop_recursive: id=#{id}, iter=#{iter}")
 
-    case GraphOperations.find_open_node(solution_graph, parent_node_id) do
+    case GraphOperations.find_open_node(solution_graph) do
       {:ok, curr_node_id} ->
         Logger.info("Iteration #{iter}, Refining node #{inspect(Map.get(solution_graph, curr_node_id).info)}")
         curr_node = Map.get(solution_graph, curr_node_id)
@@ -186,10 +199,11 @@ defmodule AriaCore.Planner.LazyRefinement do
                 {new_id, new_solution_graph} =
                   GraphOperations.add_nodes_and_edges(id, curr_node_id, subtasks, solution_graph, methods, actions)
 
+                # Continue BFS search from root after refining node
                 # Fix _id, _iter
                 planning_loop_recursive(
                   new_id,
-                  curr_node_id,
+                  0,  # Restart BFS from root
                   current_state,
                   new_solution_graph,
                   blacklisted_commands,
@@ -201,7 +215,7 @@ defmodule AriaCore.Planner.LazyRefinement do
               _ ->
                 Logger.warning("Task #{inspect(curr_node.info)} refinement failed. Backtracking.")
 
-                {new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+                {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
                   Backtracking.backtrack(
                     solution_graph,
                     parent_node_id,
@@ -210,10 +224,11 @@ defmodule AriaCore.Planner.LazyRefinement do
                     blacklisted_commands
                   )
 
+                # Continue BFS search from root after backtracking
                 # Fix _id, _iter
                 planning_loop_recursive(
                   id,
-                  new_parent_node_id,
+                  0,  # Restart BFS from root
                   new_current_state,
                   new_solution_graph,
                   new_blacklisted_commands,
@@ -228,7 +243,7 @@ defmodule AriaCore.Planner.LazyRefinement do
             if MapSet.member?(blacklisted_commands, curr_node.info) do
               Logger.warning("Action #{inspect(curr_node.info)} is blacklisted. Backtracking.")
 
-              {new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+                {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
                 Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,
@@ -237,10 +252,11 @@ defmodule AriaCore.Planner.LazyRefinement do
                   blacklisted_commands
                 )
 
+              # Continue BFS search from root after backtracking
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                new_parent_node_id,
+                0,  # Restart BFS from root
                 new_current_state,
                 new_solution_graph,
                 new_blacklisted_commands,
@@ -253,11 +269,11 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Assuming action functions will check for required capabilities within their logic
               # For now, directly call the action
               case apply(curr_node.action, [current_state | Tuple.to_list(curr_node.info)]) do
-                {:ok, _new_state, duration} ->
+                {:ok, new_state, duration} ->
                   Logger.info("Action #{inspect(curr_node.info)} successful with duration #{duration}ms.")
-                  # Update current_time in state
-                  new_current_time = DateTime.add(current_state.current_time, duration, :millisecond)
-                  updated_state = %{current_state | current_time: new_current_time}
+                  # Use the new_state returned by the action, but update current_time
+                  new_current_time = DateTime.add(new_state.current_time, duration, :millisecond)
+                  updated_state = %{new_state | current_time: new_current_time}
 
                   solution_graph =
                     Map.put(solution_graph, curr_node_id, %{
@@ -271,7 +287,7 @@ defmodule AriaCore.Planner.LazyRefinement do
                   # Fix _id, _iter
                   planning_loop_recursive(
                     id,
-                    parent_node_id,
+                    0,  # Restart BFS from root
                     updated_state,
                     solution_graph,
                     blacklisted_commands,
@@ -283,7 +299,7 @@ defmodule AriaCore.Planner.LazyRefinement do
                 {:error, reason} ->
                   Logger.warning("Action #{inspect(curr_node.info)} failed: #{reason}. Backtracking.")
 
-                  {new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
+                  {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
                    new_blacklisted_commands} =
                     Backtracking.backtrack(
                       solution_graph,
@@ -293,10 +309,11 @@ defmodule AriaCore.Planner.LazyRefinement do
                       blacklisted_commands
                     )
 
+                  # Continue BFS search from root after backtracking
                   # Fix _id, _iter
                   planning_loop_recursive(
                     id,
-                    new_parent_node_id,
+                    0,  # Restart BFS from root
                     new_current_state,
                     new_solution_graph,
                     new_blacklisted_commands,
@@ -338,7 +355,7 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 new_id,
-                curr_node_id,
+                0,  # Restart BFS from root
                 current_state,
                 new_solution_graph,
                 blacklisted_commands,
@@ -378,7 +395,7 @@ defmodule AriaCore.Planner.LazyRefinement do
                 _ ->
                   Logger.warning("Goal #{inspect(curr_node.info)} refinement failed. Backtracking.")
 
-                  {new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
+                  {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
                    new_blacklisted_commands} =
                     Backtracking.backtrack(
                       solution_graph,
@@ -388,10 +405,11 @@ defmodule AriaCore.Planner.LazyRefinement do
                       blacklisted_commands
                     )
 
+                  # Continue BFS search from root after backtracking
                   # Fix _id, _iter
                   planning_loop_recursive(
                     id,
-                    new_parent_node_id,
+                    0,  # Restart BFS from root
                     new_current_state,
                     new_solution_graph,
                     new_blacklisted_commands,
@@ -414,7 +432,7 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 new_id,
-                curr_node_id,
+                0,  # Restart BFS from root
                 current_state,
                 new_solution_graph,
                 blacklisted_commands,
@@ -454,7 +472,7 @@ defmodule AriaCore.Planner.LazyRefinement do
                 _ ->
                   Logger.warning("MultiGoal #{inspect(curr_node.info)} refinement failed. Backtracking.")
 
-                  {new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
+                  {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
                    new_blacklisted_commands} =
                     Backtracking.backtrack(
                       solution_graph,
@@ -464,10 +482,11 @@ defmodule AriaCore.Planner.LazyRefinement do
                       blacklisted_commands
                     )
 
+                  # Continue BFS search from root after backtracking
                   # Fix _id, _iter
                   planning_loop_recursive(
                     id,
-                    new_parent_node_id,
+                    0,  # Restart BFS from root
                     new_current_state,
                     new_solution_graph,
                     new_blacklisted_commands,
@@ -504,7 +523,7 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                parent_node_id,
+                0,  # Restart BFS from root
                 current_state,
                 solution_graph,
                 blacklisted_commands,
@@ -515,7 +534,7 @@ defmodule AriaCore.Planner.LazyRefinement do
             else
               Logger.warning("Goal #{inspect(goal_node.info)} verification failed. Backtracking.")
 
-              {new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+                {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
                 Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,
@@ -524,10 +543,11 @@ defmodule AriaCore.Planner.LazyRefinement do
                   blacklisted_commands
                 )
 
+              # Continue BFS search from root after backtracking
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                new_parent_node_id,
+                0,  # Restart BFS from root
                 new_current_state,
                 new_solution_graph,
                 new_blacklisted_commands,
@@ -547,7 +567,7 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                parent_node_id,
+                0,  # Restart BFS from root
                 current_state,
                 solution_graph,
                 blacklisted_commands,
@@ -558,7 +578,7 @@ defmodule AriaCore.Planner.LazyRefinement do
             else
               Logger.warning("MultiGoal #{inspect(multigoal_node.info)} verification failed. Backtracking.")
 
-              {new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+                {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
                 Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,
@@ -567,10 +587,11 @@ defmodule AriaCore.Planner.LazyRefinement do
                   blacklisted_commands
                 )
 
+              # Continue BFS search from root after backtracking
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                new_parent_node_id,
+                0,  # Restart BFS from root
                 new_current_state,
                 new_solution_graph,
                 new_blacklisted_commands,
@@ -583,13 +604,14 @@ defmodule AriaCore.Planner.LazyRefinement do
           # Other node types (D)
           _ ->
             # For now, just fail and backtrack
-            {new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+                {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
               Backtracking.backtrack(solution_graph, parent_node_id, curr_node_id, current_state, blacklisted_commands)
 
+            # Continue BFS search from root after backtracking
             # Fix _id, _iter
             planning_loop_recursive(
               id,
-              new_parent_node_id,
+              0,  # Restart BFS from root
               new_current_state,
               new_solution_graph,
               new_blacklisted_commands,
@@ -600,29 +622,10 @@ defmodule AriaCore.Planner.LazyRefinement do
         end
 
       :no_open_node ->
-        # If no open node found, try to move up the tree (backtrack to parent's parent)
-        case Map.get(solution_graph, parent_node_id) do
-          # If parent is root, planning complete
-          %{type: :D} ->
-            # Fix _iter
-            {current_state, solution_graph, blacklisted_commands, iter}
-
-          _ ->
-            # Move to predecessor of parent_node_id
-            # This assumes a simple tree structure where each node has one predecessor
-            new_parent_node_id = GraphOperations.find_predecessor(solution_graph, parent_node_id)
-            # Fix _id, _iter
-            planning_loop_recursive(
-              id,
-              new_parent_node_id,
-              current_state,
-              solution_graph,
-              blacklisted_commands,
-              methods,
-              actions,
-              iter + 1
-            )
-        end
+        # If BFS found no open nodes in entire graph, planning is complete
+        # All nodes are closed (completed or failed)
+        Logger.info("No open nodes found in entire graph - planning complete")
+        {current_state, solution_graph, blacklisted_commands, iter}
     end
   end
 

@@ -121,7 +121,8 @@ defmodule AriaCore.Plan do
       "list_test_domain",
       "filter_test_domain",
       "restore_domain",
-      "backtrack_domain"
+      "backtrack_domain",
+      "locomotion"
     ]
 
     errors =
