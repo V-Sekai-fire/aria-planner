@@ -5,7 +5,7 @@ defmodule AriaPlanner.Domains.AircraftDisassemblyTest do
   use ExUnit.Case, async: true
 
   alias AriaPlanner.Domains.AircraftDisassembly
-  alias AriaPlanner.Domains.AircraftDisassembly.Commands.{StartActivity, CompleteActivity, AssignResource}
+  alias AriaPlanner.Domains.AircraftDisassembly.Commands.{AssignResource, CompleteActivity, StartActivity}
   alias AriaPlanner.Domains.AircraftDisassembly.StateInitialization
 
   describe "domain creation" do
@@ -184,4 +184,3 @@ defmodule AriaPlanner.Domains.AircraftDisassemblyTest do
     end
   end
 end
-

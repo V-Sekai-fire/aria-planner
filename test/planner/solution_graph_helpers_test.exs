@@ -5,7 +5,7 @@ defmodule AriaPlanner.Planner.SolutionGraphHelpersTest do
   use ExUnit.Case, async: true
   doctest AriaPlanner.Planner.SolutionGraphHelpers
 
-  alias AriaPlanner.Planner.{SolutionGraphHelpers, PlannerMetadata, EntityRequirement, TimeRange}
+  alias AriaPlanner.Planner.{EntityRequirement, PlannerMetadata, SolutionGraphHelpers, TimeRange}
 
   describe "apply_temporal_metadata/2" do
     test "applies temporal metadata to node" do

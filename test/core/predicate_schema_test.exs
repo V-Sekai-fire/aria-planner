@@ -193,4 +193,3 @@ defmodule AriaCore.PredicateSchemaTest do
     end
   end
 end
-

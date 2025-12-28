@@ -4,8 +4,8 @@
 defmodule AriaPlanner.Planner.PlannerMetadataTest do
   use ExUnit.Case, async: true
 
-  alias AriaPlanner.Planner.PlannerMetadata
   alias AriaPlanner.Planner.EntityRequirement
+  alias AriaPlanner.Planner.PlannerMetadata
 
   describe "new!/3" do
     test "creates metadata successfully with valid inputs" do

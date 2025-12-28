@@ -20,8 +20,8 @@ defmodule AriaPlanner.Domains.TinyCvrpTest do
   alias AriaPlanner.Domains.TinyCvrp.Tasks.RouteVehicles
 
   alias AriaPlanner.Domains.TinyCvrp.Predicates.{
-    VehicleAt,
     CustomerVisited,
+    VehicleAt,
     VehicleCapacity
   }
 

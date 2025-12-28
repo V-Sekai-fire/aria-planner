@@ -317,4 +317,3 @@ defmodule AriaCore.FactsAllocentricTest do
     end
   end
 end
-

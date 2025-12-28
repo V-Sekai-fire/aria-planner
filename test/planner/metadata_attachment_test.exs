@@ -5,7 +5,7 @@ defmodule AriaPlanner.Planner.MetadataAttachmentTest do
   use ExUnit.Case, async: true
   doctest AriaPlanner.Planner.MetadataAttachment
 
-  alias AriaPlanner.Planner.{MetadataAttachment, PlannerMetadata, EntityRequirement}
+  alias AriaPlanner.Planner.{EntityRequirement, MetadataAttachment, PlannerMetadata}
 
   describe "attach_metadata/3" do
     test "attaches metadata to action tuple" do

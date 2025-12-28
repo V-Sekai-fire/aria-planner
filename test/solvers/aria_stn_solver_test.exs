@@ -4,8 +4,8 @@
 defmodule AriaStnSolverTest do
   use ExUnit.Case, async: true
 
-  alias AriaStnSolver
   alias AriaPlanner.Planner.Temporal.STN
+  alias AriaStnSolver
 
   describe "solve_stn/1" do
     test "returns STN struct for consistent STN" do
@@ -133,4 +133,3 @@ defmodule AriaStnSolverTest do
     end
   end
 end
-

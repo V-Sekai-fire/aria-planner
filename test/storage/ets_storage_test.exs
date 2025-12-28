@@ -129,4 +129,3 @@ defmodule AriaPlanner.Storage.EtsStorageTest do
     end
   end
 end
-

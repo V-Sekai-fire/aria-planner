@@ -135,7 +135,7 @@ defmodule AriaCore.ItemTest do
         assert is_list(spo)
         assert length(spo) >= 0
       rescue
-        BadMapError -> 
+        BadMapError ->
           # Expected if AriaCore.Predicate/Subject/Object modules don't exist
           :ok
         UndefinedFunctionError ->
@@ -145,4 +145,3 @@ defmodule AriaCore.ItemTest do
     end
   end
 end
-

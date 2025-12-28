@@ -112,4 +112,3 @@ defmodule AriaCore.LocationTest do
     end
   end
 end
-

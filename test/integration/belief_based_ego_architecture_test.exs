@@ -11,7 +11,7 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
   """
 
   use ExUnit.Case, async: false
-  alias AriaCore.{Persona, Plan, FactsAllocentric}
+  alias AriaCore.{FactsAllocentric, Persona, Plan}
 
   setup do
     # Clean up any test data

@@ -3,8 +3,8 @@
 
 defmodule AriaPlanner.PlanManagerTest do
   use ExUnit.Case, async: true
-  alias AriaPlanner.PlanManager
   alias AriaCore.Plan
+  alias AriaPlanner.PlanManager
 
   describe "create_plan/4" do
     test "creates plan with required parameters" do
@@ -107,4 +107,3 @@ defmodule AriaPlanner.PlanManagerTest do
     end
   end
 end
-
