@@ -334,4 +334,145 @@ defmodule AriaCore.PlanTest do
     end
   end
 
+  describe "plan creation with different domain types" do
+    test "creates plan for blocks_world domain" do
+      {:ok, plan} = Plan.create(%{
+        name: "Blocks World Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "blocks_world",
+        objectives: ["move_block_a_to_b"]
+      })
+
+      assert plan.domain_type == "blocks_world"
+      assert plan.objectives == ["move_block_a_to_b"]
+    end
+
+    test "creates plan for navigation domain" do
+      {:ok, plan} = Plan.create(%{
+        name: "Navigation Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "navigation",
+        objectives: ["reach_destination"]
+      })
+
+      assert plan.domain_type == "navigation"
+    end
+
+    test "creates plan for social domain" do
+      {:ok, plan} = Plan.create(%{
+        name: "Social Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "social",
+        objectives: ["build_alliance"]
+      })
+
+      assert plan.domain_type == "social"
+    end
+
+    test "creates plan for economic domain" do
+      {:ok, plan} = Plan.create(%{
+        name: "Economic Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "economic",
+        objectives: ["maximize_profit"]
+      })
+
+      assert plan.domain_type == "economic"
+    end
+
+    test "creates plan for exploration domain" do
+      {:ok, plan} = Plan.create(%{
+        name: "Exploration Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "exploration",
+        objectives: ["discover_new_areas"]
+      })
+
+      assert plan.domain_type == "exploration"
+    end
+
+    test "creates plan for stealth domain" do
+      {:ok, plan} = Plan.create(%{
+        name: "Stealth Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "stealth",
+        objectives: ["infiltrate_base"]
+      })
+
+      assert plan.domain_type == "stealth"
+    end
+
+    test "creates plan for pert_planner domain" do
+      {:ok, plan} = Plan.create(%{
+        name: "PERT Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "pert_planner",
+        objectives: ["complete_project"]
+      })
+
+      assert plan.domain_type == "pert_planner"
+    end
+
+    test "creates plan for workflow_test_domain" do
+      {:ok, plan} = Plan.create(%{
+        name: "Workflow Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "workflow_test_domain",
+        objectives: ["execute_workflow"]
+      })
+
+      assert plan.domain_type == "workflow_test_domain"
+    end
+  end
+
+  describe "plan get/1 and all/0" do
+    test "gets plan by ID" do
+      {:ok, plan} = Plan.create(%{
+        name: "Test Plan",
+        persona_id: UUIDv7.generate(),
+        domain_type: "tactical"
+      })
+
+      {:ok, retrieved} = Plan.get(plan.id)
+      assert retrieved.id == plan.id
+      assert retrieved.name == "Test Plan"
+    end
+
+    test "returns error for non-existent plan" do
+      assert {:error, :not_found} = Plan.get(UUIDv7.generate())
+    end
+
+    test "gets all plans" do
+      {:ok, plan1} = Plan.create(%{
+        name: "Plan 1",
+        persona_id: UUIDv7.generate(),
+        domain_type: "tactical"
+      })
+
+      {:ok, plan2} = Plan.create(%{
+        name: "Plan 2",
+        persona_id: UUIDv7.generate(),
+        domain_type: "navigation"
+      })
+
+      all_plans = Plan.all()
+      assert length(all_plans) >= 2
+      assert Enum.any?(all_plans, &(&1.id == plan1.id))
+      assert Enum.any?(all_plans, &(&1.id == plan2.id))
+    end
+  end
+
+  describe "plan delete/1" do
+    test "deletes plan by ID" do
+      {:ok, plan} = Plan.create(%{
+        name: "To Delete",
+        persona_id: UUIDv7.generate(),
+        domain_type: "tactical"
+      })
+
+      :ok = Plan.delete(plan.id)
+      assert {:error, :not_found} = Plan.get(plan.id)
+    end
+  end
+
 end

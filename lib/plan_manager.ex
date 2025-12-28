@@ -16,17 +16,16 @@ defmodule AriaPlanner.PlanManager do
   @spec create_plan(String.t(), String.t(), String.t(), keyword()) ::
           {:ok, Plan.t()} | {:error, any()}
   def create_plan(persona_id, name, domain_type, opts \\ []) do
-    todo = Keyword.get(opts, :todo, [])
+    objectives = Keyword.get(opts, :objectives, Keyword.get(opts, :todo, []))
     success_probability = Keyword.get(opts, :success_probability, 0.5)
 
     Plan.create(%{
       persona_id: persona_id,
       name: name,
       domain_type: domain_type,
-      objectives: [],
-      todo: todo,
+      objectives: objectives,
       success_probability: success_probability,
-      planning_timestamp: DateTime.utc_now()
+      planning_timestamp: NaiveDateTime.utc_now()
     })
   end
 end
