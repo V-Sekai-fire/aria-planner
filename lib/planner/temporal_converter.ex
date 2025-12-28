@@ -187,14 +187,14 @@ defmodule AriaPlanner.Planner.TemporalConverter do
 
   ## Returns
 
-  - Method function that returns {:ok, todo_items, metadata}
+  - Method function that returns {:ok, objective_items, metadata}
   """
   def build_method_decomposition(durative_action) do
     # Create a method function that returns proper HTN planner elements
     fn _state, _args ->
-      todo_items = extract_todo_items(durative_action)
+      objective_items = extract_objective_items(durative_action)
       metadata = create_method_metadata(durative_action)
-      {:ok, todo_items, metadata}
+      {:ok, objective_items, metadata}
     end
   end
 
@@ -216,8 +216,8 @@ defmodule AriaPlanner.Planner.TemporalConverter do
     simple_action.name == original.name &&
       is_function(method_fn) &&
       case method_fn.(%{}, []) do
-        {:ok, todo_items, metadata} ->
-          is_list(todo_items) && is_map(metadata)
+        {:ok, objective_items, metadata} ->
+          is_list(objective_items) && is_map(metadata)
 
         _ ->
           false
@@ -242,10 +242,10 @@ defmodule AriaPlanner.Planner.TemporalConverter do
 
   # Private helper functions
 
-  defp extract_todo_items(durative_action) do
+  defp extract_objective_items(durative_action) do
     # Convert durative action temporal logic into HTN planner elements
-    # Each todo item is represented as a JSON object with action name as key and arguments array as value
-    todo_items = []
+    # Each objective item is represented as a JSON object with action name as key and arguments array as value
+    objective_items = []
 
     # Add prerequisite unigoals for at_start conditions
     at_start_conditions = durative_action[:conditions][:at_start] || []
@@ -259,7 +259,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
       end)
       |> Enum.reject(&is_nil/1)
 
-    todo_items = todo_items ++ prerequisite_unigoals
+    objective_items = objective_items ++ prerequisite_unigoals
 
     # Add monitoring unigoals for over_all conditions
     over_all_conditions = durative_action[:conditions][:over_all] || []
@@ -273,11 +273,11 @@ defmodule AriaPlanner.Planner.TemporalConverter do
       end)
       |> Enum.reject(&is_nil/1)
 
-    todo_items = todo_items ++ monitoring_unigoals
+    objective_items = objective_items ++ monitoring_unigoals
 
     # Add the main action
     main_action = {:action, durative_action[:name], []}
-    todo_items = todo_items ++ [main_action]
+    objective_items = objective_items ++ [main_action]
 
     # Add verification unigoals for at_end conditions
     at_end_conditions = durative_action[:conditions][:at_end] || []
@@ -291,7 +291,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
       end)
       |> Enum.reject(&is_nil/1)
 
-    todo_items = todo_items ++ verification_unigoals
+    objective_items = objective_items ++ verification_unigoals
 
     # Add cleanup unigoals for at_end effects
     at_end_effects = durative_action[:effects][:at_end] || []
@@ -305,9 +305,9 @@ defmodule AriaPlanner.Planner.TemporalConverter do
       end)
       |> Enum.reject(&is_nil/1)
 
-    todo_items = todo_items ++ cleanup_unigoals
+    objective_items = objective_items ++ cleanup_unigoals
 
-    todo_items
+    objective_items
   end
 
   defp create_method_metadata(durative_action) do

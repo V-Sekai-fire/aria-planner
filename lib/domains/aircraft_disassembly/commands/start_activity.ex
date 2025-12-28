@@ -156,7 +156,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
     if Enum.empty?(capabilities), do: [:disassembly, :mechanical], else: capabilities
   end
 
-  # Constraint checking functions (planner todo type - preconditions)
+  # Constraint checking functions (planner objective type - preconditions)
 
   @spec check_precedence_constraints(map(), integer()) :: :ok | {:error, String.t()}
   defp check_precedence_constraints(state, activity) do

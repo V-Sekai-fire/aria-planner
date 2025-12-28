@@ -118,13 +118,13 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
       assert is_function(method_fn)
 
       # Test calling the method function
-      {:ok, todo_items, metadata} = method_fn.(%{}, [])
+      {:ok, objective_items, metadata} = method_fn.(%{}, [])
 
-      assert is_list(todo_items)
+      assert is_list(objective_items)
       assert is_map(metadata)
     end
 
-    test "includes main action in todo items" do
+    test "includes main action in objective items" do
       durative_action = %{
         name: :cook_meal,
         duration: "PT1H",
@@ -133,10 +133,10 @@ defmodule AriaPlanner.Planner.TemporalConverterTest do
       }
 
       method_fn = TemporalConverter.build_method_decomposition(durative_action)
-      {:ok, todo_items, _metadata} = method_fn.(%{}, [])
+      {:ok, objective_items, _metadata} = method_fn.(%{}, [])
 
       # Should include the main action
-      assert {:action, :cook_meal, []} in todo_items
+      assert {:action, :cook_meal, []} in objective_items
     end
 
     test "converts at_start conditions to prerequisite unigoals" do
