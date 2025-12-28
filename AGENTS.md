@@ -504,14 +504,11 @@ Domains are registered with the planning system:
 Each predicate has its own database table:
 
 ```elixir
-# Example: Position predicate
+# Example: Position predicate (plain struct, no database)
 defmodule AriaPlanner.Domains.BlocksWorld.Predicates.Pos do
-  use Ecto.Schema
-
-  schema "blocks_world_pos" do
-    field(:entity_id, :string)
-    field(:value, :string)
-  end
+  defstruct [:entity_id, :value]
+  
+  # Stored in ETS (Elixir Term Storage) for in-memory persistence
 end
 ```
 

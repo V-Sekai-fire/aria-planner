@@ -3,7 +3,7 @@
 
 defmodule AriaCore.FactsAllocentric do
   @moduledoc """
-  Allocentric facts schema - Platonic truth/shared reality for multiagent gameplay.
+  Allocentric facts struct - Platonic truth/shared reality for multiagent gameplay.
 
   This represents the true world state accessible to all personas. Agent states
   are hidden from each other, but the allocentric facts represent what can be
@@ -120,50 +120,61 @@ defmodule AriaCore.FactsAllocentric do
   # Check for conflicting facts about same subject
   assert FactsAllocentric.conflicting_facts(fact_subject_id) == []
   ```
+  
+  Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
 
-  use Ecto.Schema
-  import Ecto.Changeset
-  import Ecto.Query
-  alias AriaPlanner.Repo
+  alias AriaPlanner.Storage.EtsStorage
 
-  @primary_key {:id, :string, autogenerate: false}
+  @type t :: %__MODULE__{
+          id: String.t(),
+          fact_id: String.t(),
+          fact_type: String.t(),
+          subject_id: String.t(),
+          subject_type: String.t(),
+          predicate: String.t(),
+          object_value: String.t(),
+          object_type: String.t(),
+          confidence: float(),
+          expires_at: DateTime.t() | nil,
+          metadata: map(),
+          game_session_id: String.t() | nil,
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 
-  schema "facts_allocentric" do
-    # Fact identity and updates
-    field(:fact_id, :string)
-    field(:fact_type, :string)
-    field(:subject_id, :string)
-    field(:subject_type, :string)
-    field(:predicate, :string)
-    field(:object_value, :string)
-    field(:object_type, :string)
-    field(:confidence, :float, default: 1.0)
-    field(:expires_at, :utc_datetime_usec)
-    field(:metadata, :map, default: %{})
-    field(:game_session_id, :string)
+  defstruct [
+    :id,
+    :fact_id,
+    :fact_type,
+    :subject_id,
+    :subject_type,
+    :predicate,
+    :object_value,
+    :object_type,
+    :expires_at,
+    :game_session_id,
+    :inserted_at,
+    :updated_at,
+    confidence: 1.0,
+    metadata: %{}
+  ]
 
-    timestamps(type: :utc_datetime_usec)
-  end
+  @doc """
+  Validates fact attributes and returns {:ok, fact} or {:error, reason}.
+  """
+  @spec validate(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
+  def validate(attrs) do
+    errors = []
 
-  @spec changeset(fact :: %__MODULE__{}, attrs :: map()) :: Ecto.Changeset.t()
-  def changeset(fact \\ %__MODULE__{}, attrs) do
-    fact
-    |> cast(attrs, [
-      :id,
-      :fact_id,
-      :fact_type,
-      :subject_id,
-      :subject_type,
-      :predicate,
-      :object_value,
-      :object_type,
-      :confidence,
-      :expires_at,
-      :metadata,
-      :game_session_id
-    ])
-    |> validate_required([
+    errors =
+      if Map.has_key?(attrs, :id) and not valid_uuid_v7?(attrs.id) do
+        ["id must be a valid RFC 9562 UUIDv7" | errors]
+      else
+        errors
+      end
+
+    required_fields = [
       :id,
       :fact_id,
       :fact_type,
@@ -172,41 +183,152 @@ defmodule AriaCore.FactsAllocentric do
       :predicate,
       :object_value,
       :object_type
-    ])
-    |> AriaCore.Validator.validate_uuid_v7(:id)
-    |> validate_inclusion(:fact_type, ["terrain", "object", "environmental", "event", "agent_observable"])
-    |> validate_inclusion(:subject_type, ["persona", "item", "location", "environmental"])
-    |> validate_inclusion(:object_type, ["string", "number", "boolean", "location", "entity_ref"])
-    |> validate_number(:confidence, greater_than_or_equal_to: 0.0, less_than_or_equal_to: 1.0)
-    |> put_change(:updated_at, DateTime.utc_now())
+    ]
+
+    errors =
+      Enum.reduce(required_fields, errors, fn field, acc ->
+        if not Map.has_key?(attrs, field) or Map.get(attrs, field) == nil do
+          ["#{field} is required" | acc]
+        else
+          acc
+        end
+      end)
+
+    valid_fact_types = ["terrain", "object", "environmental", "event", "agent_observable"]
+    errors =
+      if Map.has_key?(attrs, :fact_type) and attrs.fact_type not in valid_fact_types do
+        ["fact_type must be one of: #{Enum.join(valid_fact_types, ", ")}" | errors]
+      else
+        errors
+      end
+
+    valid_subject_types = ["persona", "item", "location", "environmental"]
+    errors =
+      if Map.has_key?(attrs, :subject_type) and attrs.subject_type not in valid_subject_types do
+        ["subject_type must be one of: #{Enum.join(valid_subject_types, ", ")}" | errors]
+      else
+        errors
+      end
+
+    valid_object_types = ["string", "number", "boolean", "location", "entity_ref"]
+    errors =
+      if Map.has_key?(attrs, :object_type) and attrs.object_type not in valid_object_types do
+        ["object_type must be one of: #{Enum.join(valid_object_types, ", ")}" | errors]
+      else
+        errors
+      end
+
+    errors =
+      if Map.has_key?(attrs, :confidence) and
+           (attrs.confidence < 0.0 or attrs.confidence > 1.0) do
+        ["confidence must be between 0.0 and 1.0" | errors]
+      else
+        errors
+      end
+
+    if Enum.empty?(errors) do
+      now = DateTime.utc_now()
+      fact = %__MODULE__{
+        id: Map.get(attrs, :id),
+        fact_id: Map.get(attrs, :fact_id),
+        fact_type: Map.get(attrs, :fact_type),
+        subject_id: Map.get(attrs, :subject_id),
+        subject_type: Map.get(attrs, :subject_type),
+        predicate: Map.get(attrs, :predicate),
+        object_value: Map.get(attrs, :object_value),
+        object_type: Map.get(attrs, :object_type),
+        confidence: Map.get(attrs, :confidence, 1.0),
+        expires_at: Map.get(attrs, :expires_at),
+        metadata: Map.get(attrs, :metadata, %{}),
+        game_session_id: Map.get(attrs, :game_session_id),
+        inserted_at: Map.get(attrs, :inserted_at, now),
+        updated_at: now
+      }
+
+      {:ok, fact}
+    else
+      {:error, Enum.join(errors, "; ")}
+    end
   end
+
+  defp valid_uuid_v7?(value) when is_binary(value) do
+    String.match?(value, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+  end
+
+  defp valid_uuid_v7?(_), do: false
 
   @doc """
   Creates new allocentric fact.
   """
-  @spec create(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec create(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def create(attrs) do
     attrs =
-      if Map.has_key?(attrs, :id) do
+      if Map.has_key?(attrs, :id) or Map.has_key?(attrs, "id") do
         attrs
       else
         id = UUIDv7.generate()
         Map.put(attrs, :id, id)
       end
 
-    %__MODULE__{}
-    |> changeset(attrs)
-    |> apply_action(:insert)
+    case validate(attrs) do
+      {:ok, fact} ->
+        case EtsStorage.insert(:facts_allocentric, fact.id, fact) do
+          {:ok, _} -> {:ok, fact}
+          error -> error
+        end
+
+      error ->
+        error
+    end
   end
 
   @doc """
   Updates existing allocentric fact.
   """
-  @spec update(fact :: %__MODULE__{}, attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec update(fact :: %__MODULE__{}, attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def update(fact, attrs) do
-    fact
-    |> changeset(attrs)
-    |> apply_action(:update)
+    # Merge existing fact with new attrs
+    merged_attrs =
+      fact
+      |> Map.from_struct()
+      |> Map.merge(attrs)
+      |> Map.put(:id, fact.id)
+      |> Map.put(:inserted_at, fact.inserted_at)
+
+    case validate(merged_attrs) do
+      {:ok, updated_fact} ->
+        case EtsStorage.insert(:facts_allocentric, updated_fact.id, updated_fact) do
+          {:ok, _} -> {:ok, updated_fact}
+          error -> error
+        end
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Gets a fact by ID.
+  """
+  @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
+  def get(id) do
+    EtsStorage.get(:facts_allocentric, id)
+  end
+
+  @doc """
+  Gets all facts.
+  """
+  @spec all() :: [%__MODULE__{}]
+  def all do
+    EtsStorage.all(:facts_allocentric)
+  end
+
+  @doc """
+  Deletes a fact by ID.
+  """
+  @spec delete(String.t()) :: :ok | {:error, :not_found}
+  def delete(id) do
+    EtsStorage.delete(:facts_allocentric, id)
   end
 
   @doc """
@@ -215,7 +337,7 @@ defmodule AriaCore.FactsAllocentric do
   Some communications become observable facts that all personas can observe,
   serving as temporal bridges for belief updating.
   """
-  @spec record_communication(map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec record_communication(map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def record_communication(message) do
     # Create allocentric fact from communication
     sender_id =
@@ -254,11 +376,11 @@ defmodule AriaCore.FactsAllocentric do
       now = DateTime.utc_now()
 
       facts =
-        from(f in __MODULE__,
-          where: is_nil(f.expires_at) or f.expires_at > ^now,
-          order_by: [desc: f.updated_at]
-        )
-        |> Repo.all()
+        all()
+        |> Enum.filter(fn fact ->
+          fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt
+        end)
+        |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
 
       {:ok, facts}
     rescue
@@ -279,14 +401,13 @@ defmodule AriaCore.FactsAllocentric do
       now = DateTime.utc_now()
 
       facts =
-        from(f in __MODULE__,
-          where:
-            (f.subject_id == ^entity_id or
-               (f.object_type == "entity_ref" and f.object_value == ^entity_id)) and
-              (is_nil(f.expires_at) or f.expires_at > ^now),
-          order_by: [desc: f.updated_at]
-        )
-        |> Repo.all()
+        all()
+        |> Enum.filter(fn fact ->
+          (fact.subject_id == entity_id or
+             (fact.object_type == "entity_ref" and fact.object_value == entity_id)) and
+            (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
+        end)
+        |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
 
       {:ok, facts}
     rescue
@@ -348,13 +469,12 @@ defmodule AriaCore.FactsAllocentric do
       now = DateTime.utc_now()
 
       facts =
-        from(f in __MODULE__,
-          where:
-            f.subject_id == ^target_entity_id and f.fact_type in ^observable_types and
-              (is_nil(f.expires_at) or f.expires_at > ^now),
-          order_by: [desc: f.updated_at]
-        )
-        |> Repo.all()
+        all()
+        |> Enum.filter(fn fact ->
+          fact.subject_id == target_entity_id and fact.fact_type in observable_types and
+            (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
+        end)
+        |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
 
       {:ok, facts}
     rescue
@@ -378,14 +498,19 @@ defmodule AriaCore.FactsAllocentric do
       # Check for conflicting facts (same subject + predicate with different values)
       now = DateTime.utc_now()
 
+      active_facts =
+        all()
+        |> Enum.filter(fn fact ->
+          fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt
+        end)
+
       conflicts =
-        from(f in __MODULE__,
-          where: is_nil(f.expires_at) or f.expires_at > ^now,
-          group_by: [f.subject_id, f.predicate],
-          having: count(f.id) > 1,
-          select: [f.subject_id, f.predicate, count(f.id)]
-        )
-        |> Repo.all()
+        active_facts
+        |> Enum.group_by(fn fact -> {fact.subject_id, fact.predicate} end)
+        |> Enum.filter(fn {_key, facts} -> length(facts) > 1 end)
+        |> Enum.map(fn {{subject_id, predicate}, facts} ->
+          {subject_id, predicate, length(facts)}
+        end)
 
       if Enum.empty?(conflicts) do
         :consistent
@@ -408,25 +533,25 @@ defmodule AriaCore.FactsAllocentric do
       now = DateTime.utc_now()
 
       # Find predicates with multiple values for the same subject
+      active_facts =
+        all()
+        |> Enum.filter(fn fact ->
+          fact.subject_id == subject_id and
+            (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
+        end)
+
       predicates_with_conflicts =
-        from(f in __MODULE__,
-          where: f.subject_id == ^subject_id and (is_nil(f.expires_at) or f.expires_at > ^now),
-          group_by: f.predicate,
-          having: count(f.id) > 1,
-          select: f.predicate
-        )
-        |> Repo.all()
+        active_facts
+        |> Enum.group_by(& &1.predicate)
+        |> Enum.filter(fn {_predicate, facts} -> length(facts) > 1 end)
+        |> Enum.map(fn {predicate, _facts} -> predicate end)
 
       # Get all facts for those predicates
       if Enum.empty?(predicates_with_conflicts) do
         []
       else
-        from(f in __MODULE__,
-          where:
-            f.subject_id == ^subject_id and f.predicate in ^predicates_with_conflicts and
-              (is_nil(f.expires_at) or f.expires_at > ^now)
-        )
-        |> Repo.all()
+        active_facts
+        |> Enum.filter(fn fact -> fact.predicate in predicates_with_conflicts end)
       end
     rescue
       _ -> []
@@ -441,7 +566,7 @@ defmodule AriaCore.FactsAllocentric do
   Environmental events are observable by all personas and serve as
   temporal bridges for belief updating.
   """
-  @spec record_event(map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec record_event(map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def record_event(event) when is_map(event) do
     region = Map.get(event, :region, "unknown")
     event_type = Map.get(event, :type, "environmental_change")

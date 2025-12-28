@@ -12,16 +12,30 @@ defmodule AriaPlanner.Storage.EtsStorage do
 
   @tables %{
     plans: :aria_planner_plans,
-    entities: :aria_planner_entities,
-    predicates: :aria_planner_predicates
+    personas: :aria_planner_personas,
+    facts_allocentric: :aria_planner_facts_allocentric,
+    predicates: :aria_planner_predicates,
+    planning_domains: :aria_planner_planning_domains,
+    locations: :aria_planner_locations,
+    items: :aria_planner_items
   }
 
-  def start_link do
-    # Create ETS tables for each schema
+  # Initialize tables on module load
+  def init do
     for {_name, table} <- @tables do
-      :ets.new(table, [:named_table, :set, :public])
+      case :ets.whereis(table) do
+        :undefined ->
+          :ets.new(table, [:named_table, :set, :public])
+        _ ->
+          :ok
+      end
     end
+    :ok
+  end
 
+  def start_link do
+    # Initialize tables
+    init()
     {:ok, self()}
   end
 

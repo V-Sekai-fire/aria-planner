@@ -11,12 +11,12 @@ defmodule AriaPlanner.Planner.Application do
   @impl true
   @spec start(Application.start_type(), term()) :: {:ok, pid()} | {:ok, pid(), term()} | {:error, term()}
   def start(_type, _args) do
+    # Initialize ETS storage
+    AriaPlanner.Storage.EtsStorage.start_link()
+
     children = [
-      # Start the Ecto repository
-      AriaPlanner.Repo,
       # Domain Registry for dynamic domain discovery
       AriaPlanner.Planner.DomainRegistry
-
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -9,7 +9,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Predicates.EastFox do
   """
 
   # Test-only: Simple in-memory state
-  # In a full implementation, this would use Ecto.Schema like blocks_world
+  # Uses plain structs with ETS storage (no database)
 
   @doc """
   Gets the current value of east_fox from state.

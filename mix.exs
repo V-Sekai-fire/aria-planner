@@ -42,7 +42,6 @@ defmodule AriaPlanner.MixProject do
 
   defp deps do
     [
-      {:ecto_sql, "~> 3.13"},
       {:jason, "~> 1.4"},
       {:axon, "~> 0.7.0"},
       {:timex, "~> 3.7.13"},
@@ -50,10 +49,6 @@ defmodule AriaPlanner.MixProject do
       {:nx, "~> 0.10"},
       {:torchx, "~> 0.10", optional: true},
       {:aria_math, git: "https://github.com/V-Sekai-fire/aria-math.git"},
-      # Added for SQLite3 adapter
-      {:exqlite, "~> 0.33.1"},
-      # Added for SQLite3 Ecto adapter
-      {:ecto_sqlite3, "~> 0.22.0"},
       {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
       {:abnf_parsec, "~> 2.1"},
       {:sourceror, "~> 1.10"},

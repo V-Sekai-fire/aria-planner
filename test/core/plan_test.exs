@@ -50,67 +50,61 @@ defmodule AriaCore.PlanTest do
 
     test "validates required fields" do
       invalid_attrs = %{name: "Test Plan"}
-      {:error, changeset} = Plan.create(invalid_attrs)
+      {:error, error_message} = Plan.create(invalid_attrs)
 
-      errors = errors_on(changeset)
-      assert "can't be blank" in errors.persona_id
-      assert "can't be blank" in errors.domain_type
+      assert String.contains?(error_message, "persona_id is required")
+      assert String.contains?(error_message, "domain_type is required")
     end
 
     test "validates domain_type inclusion" do
-      attrs = %{name: "Test", persona_id: "uuid", domain_type: "invalid"}
-      {:error, changeset} = Plan.create(attrs)
+      attrs = %{name: "Test", persona_id: UUIDv7.generate(), domain_type: "invalid"}
+      {:error, error_message} = Plan.create(attrs)
 
-      errors = errors_on(changeset)
-      assert "is invalid" in errors.domain_type
+      assert String.contains?(error_message, "domain_type must be one of")
     end
 
     test "validates execution_status inclusion" do
       attrs = %{
         name: "Test",
-        persona_id: "uuid",
+        persona_id: UUIDv7.generate(),
         domain_type: "tactical",
         execution_status: "invalid"
       }
 
-      {:error, changeset} = Plan.create(attrs)
+      {:error, error_message} = Plan.create(attrs)
 
-      errors = errors_on(changeset)
-      assert "is invalid" in errors.execution_status
+      assert String.contains?(error_message, "execution_status must be one of")
     end
 
     test "validates success_probability range" do
       # Test upper bound
       attrs = %{
         name: "Test",
-        persona_id: "uuid",
+        persona_id: UUIDv7.generate(),
         domain_type: "tactical",
         success_probability: 1.5
       }
 
-      {:error, changeset} = Plan.create(attrs)
-      errors = errors_on(changeset)
-      assert "must be less than or equal to 1.0" in errors.success_probability
+      {:error, error_message} = Plan.create(attrs)
+      assert String.contains?(error_message, "success_probability must be between 0.0 and 1.0")
 
       # Test lower bound
       attrs = Map.put(attrs, :success_probability, -0.1)
-      {:error, changeset} = Plan.create(attrs)
-      errors = errors_on(changeset)
-      assert "must be greater than or equal to 0.0" in errors.success_probability
+      {:error, error_message} = Plan.create(attrs)
+      assert String.contains?(error_message, "success_probability must be between 0.0 and 1.0")
     end
 
     test "validates UUIDv7 format" do
       attrs = %{
         id: "invalid-uuid",
         name: "Test",
-        persona_id: "uuid",
+        persona_id: UUIDv7.generate(),
         domain_type: "tactical"
       }
 
-      {:error, changeset} = Plan.create(attrs)
+      {:error, error_message} = Plan.create(attrs)
 
-      errors = errors_on(changeset)
-      assert "must be a valid RFC 9562 UUIDv7" in errors.id
+      assert String.contains?(error_message, "id must be a valid RFC 9562 UUIDv7")
     end
 
     test "updates existing plan successfully" do
@@ -340,12 +334,4 @@ defmodule AriaCore.PlanTest do
     end
   end
 
-  # Helper function to extract errors from changeset
-  defp errors_on(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
-        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
-      end)
-    end)
-  end
 end

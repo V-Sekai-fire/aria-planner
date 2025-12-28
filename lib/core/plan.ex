@@ -3,84 +3,109 @@
 
 defmodule AriaCore.Plan do
   @moduledoc """
-  Ecto schema for persona-specific plans using RFC 9562 UUIDv7 primary keys.
+  Plain struct for persona-specific plans using RFC 9562 UUIDv7 primary keys.
 
   Plans are ego-centric structures representing individual persona perspectives,
   while run_lazy handles allocentric world execution. Plans contain solution
   tensor graphs and execution metadata.
+  
+  Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
 
-  use Ecto.Schema
-  import Ecto.Changeset
   require Logger
+  alias AriaPlanner.Storage.EtsStorage
 
-  @primary_key {:id, :string, autogenerate: false}
-  @foreign_key_type :string
+  @type t :: %__MODULE__{
+          id: String.t(),
+          name: String.t(),
+          persona_id: String.t(),
+          domain_type: String.t(),
+          objectives: list(),
+          constraints: map(),
+          temporal_constraints: map(),
+          entity_capabilities: map(),
+          solution_graph_data: map(),
+          solution_plan: String.t(),
+          planning_timestamp: NaiveDateTime.t() | nil,
+          planning_duration_ms: integer() | nil,
+          planner_state_snapshot: String.t(),
+          execution_status: String.t(),
+          execution_started_at: NaiveDateTime.t() | nil,
+          execution_completed_at: NaiveDateTime.t() | nil,
+          success_probability: float(),
+          risk_assessment: map(),
+          performance_metrics: map(),
+          inserted_at: NaiveDateTime.t(),
+          updated_at: NaiveDateTime.t()
+        }
 
-  schema "plans" do
-    field(:name, :string)
-    field(:persona_id, :string)
+  defstruct [
+    :id,
+    :name,
+    :persona_id,
+    :domain_type,
+    :planning_timestamp,
+    :planning_duration_ms,
+    :execution_started_at,
+    :execution_completed_at,
+    :inserted_at,
+    :updated_at,
+    objectives: [],
+    constraints: %{},
+    temporal_constraints: %{},
+    entity_capabilities: %{},
+    solution_graph_data: %{},
+    solution_plan: "[]",
+    planner_state_snapshot: "{}",
+    execution_status: "planned",
+    success_probability: 0.0,
+    risk_assessment: %{},
+    performance_metrics: %{}
+  ]
 
-    # Ego-centric planning data (persona perspective)
-    # tactical, navigation, social, etc.
-    field(:domain_type, :string)
-    field(:objectives, AriaCore.Types.JsonArray, default: [])
-    field(:constraints, :map, default: %{})
-    field(:temporal_constraints, :map, default: %{})
-    field(:entity_capabilities, :map, default: %{})
+  @doc """
+  Validates plan attributes and returns {:ok, plan} or {:error, reason}.
+  """
+  @spec validate(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
+  def validate(attrs) do
+    errors = []
 
-    # Solution tensor graph (persisted as tokenized representation)
-    # Nx tensors exported to maps
-    field(:solution_graph_data, :map, default: %{})
-    field(:solution_plan, :string, default: "[]")
+    errors =
+      if Map.has_key?(attrs, :id) and not valid_uuid_v7?(attrs.id) do
+        ["id must be a valid RFC 9562 UUIDv7" | errors]
+      else
+        errors
+      end
 
-    # Planning metadata
-    field(:planning_timestamp, :naive_datetime_usec)
-    field(:planning_duration_ms, :integer)
-    field(:planner_state_snapshot, :string, default: "{}")
+    errors =
+      if not Map.has_key?(attrs, :id) or attrs.id == nil do
+        ["id is required" | errors]
+      else
+        errors
+      end
 
-    # Execution state (allocentric when run_lazy processes)
-    # planned, executing, completed, failed
-    field(:execution_status, :string, default: "planned")
-    field(:execution_started_at, :naive_datetime_usec)
-    field(:execution_completed_at, :naive_datetime_usec)
+    errors =
+      if not Map.has_key?(attrs, :name) or attrs.name == nil or String.length(attrs.name) < 1 do
+        ["name is required and must be at least 1 character" | errors]
+      else
+        errors
+      end
 
-    # Success metrics
-    field(:success_probability, :float, default: 0.0)
-    field(:risk_assessment, :map, default: %{})
-    field(:performance_metrics, :map, default: %{})
+    errors =
+      if not Map.has_key?(attrs, :persona_id) or attrs.persona_id == nil do
+        ["persona_id is required" | errors]
+      else
+        errors
+      end
 
-    timestamps(type: :naive_datetime_usec)
-  end
+    errors =
+      if not Map.has_key?(attrs, :domain_type) or attrs.domain_type == nil do
+        ["domain_type is required" | errors]
+      else
+        errors
+      end
 
-  @spec changeset(plan :: %__MODULE__{}, attrs :: map()) :: Ecto.Changeset.t()
-  def changeset(plan \\ %__MODULE__{}, attrs) do
-    plan
-    |> cast(attrs, [
-      :id,
-      :name,
-      :persona_id,
-      :domain_type,
-      :objectives,
-      :constraints,
-      :temporal_constraints,
-      :entity_capabilities,
-      :solution_graph_data,
-      :solution_plan,
-      :planning_timestamp,
-      :planning_duration_ms,
-      :planner_state_snapshot,
-      :execution_status,
-      :execution_started_at,
-      :execution_completed_at,
-      :success_probability,
-      :risk_assessment,
-      :performance_metrics
-    ])
-    |> validate_required([:id, :name, :persona_id, :domain_type])
-    |> validate_length(:name, min: 1)
-    |> validate_uuid_v7(:id)
-    |> validate_inclusion(:domain_type, [
+    valid_domain_types = [
       "tactical",
       "navigation",
       "social",
@@ -97,52 +122,147 @@ defmodule AriaCore.Plan do
       "filter_test_domain",
       "restore_domain",
       "backtrack_domain"
-    ])
-    |> validate_inclusion(:execution_status, ["planned", "executing", "completed", "failed"])
-    |> validate_number(:success_probability, greater_than_or_equal_to: 0.0, less_than_or_equal_to: 1.0)
-    |> validate_number(:planning_duration_ms, greater_than: 0)
-    |> put_change(:updated_at, NaiveDateTime.utc_now())
+    ]
+
+    errors =
+      if Map.has_key?(attrs, :domain_type) and attrs.domain_type not in valid_domain_types do
+        ["domain_type must be one of: #{Enum.join(valid_domain_types, ", ")}" | errors]
+      else
+        errors
+      end
+
+    valid_statuses = ["planned", "executing", "completed", "failed"]
+    errors =
+      if Map.has_key?(attrs, :execution_status) and attrs.execution_status not in valid_statuses do
+        ["execution_status must be one of: #{Enum.join(valid_statuses, ", ")}" | errors]
+      else
+        errors
+      end
+
+    errors =
+      if Map.has_key?(attrs, :success_probability) and
+           (attrs.success_probability < 0.0 or attrs.success_probability > 1.0) do
+        ["success_probability must be between 0.0 and 1.0" | errors]
+      else
+        errors
+      end
+
+    errors =
+      if Map.has_key?(attrs, :planning_duration_ms) and attrs.planning_duration_ms <= 0 do
+        ["planning_duration_ms must be greater than 0" | errors]
+      else
+        errors
+      end
+
+    if Enum.empty?(errors) do
+      now = NaiveDateTime.utc_now()
+      plan = %__MODULE__{
+        id: Map.get(attrs, :id),
+        name: Map.get(attrs, :name),
+        persona_id: Map.get(attrs, :persona_id),
+        domain_type: Map.get(attrs, :domain_type),
+        objectives: Map.get(attrs, :objectives, []),
+        constraints: Map.get(attrs, :constraints, %{}),
+        temporal_constraints: Map.get(attrs, :temporal_constraints, %{}),
+        entity_capabilities: Map.get(attrs, :entity_capabilities, %{}),
+        solution_graph_data: Map.get(attrs, :solution_graph_data, %{}),
+        solution_plan: Map.get(attrs, :solution_plan, "[]"),
+        planning_timestamp: Map.get(attrs, :planning_timestamp),
+        planning_duration_ms: Map.get(attrs, :planning_duration_ms),
+        planner_state_snapshot: Map.get(attrs, :planner_state_snapshot, "{}"),
+        execution_status: Map.get(attrs, :execution_status, "planned"),
+        execution_started_at: Map.get(attrs, :execution_started_at),
+        execution_completed_at: Map.get(attrs, :execution_completed_at),
+        success_probability: Map.get(attrs, :success_probability, 0.0),
+        risk_assessment: Map.get(attrs, :risk_assessment, %{}),
+        performance_metrics: Map.get(attrs, :performance_metrics, %{}),
+        inserted_at: Map.get(attrs, :inserted_at, now),
+        updated_at: now
+      }
+
+      {:ok, plan}
+    else
+      {:error, Enum.join(errors, "; ")}
+    end
   end
+
+  defp valid_uuid_v7?(value) when is_binary(value) do
+    String.match?(value, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+  end
+
+  defp valid_uuid_v7?(_), do: false
 
   @doc """
   Creates new plan with UUIDv7 ID.
   """
-  @spec create(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec create(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def create(attrs) do
     attrs =
-      if Map.has_key?(attrs, :id) do
+      if Map.has_key?(attrs, :id) or Map.has_key?(attrs, "id") do
         attrs
       else
         id = UUIDv7.generate()
         Map.put(attrs, :id, id)
       end
 
-    %__MODULE__{}
-    |> changeset(attrs)
-    |> AriaPlanner.Repo.insert()
+    case validate(attrs) do
+      {:ok, plan} ->
+        case EtsStorage.insert(:plans, plan.id, plan) do
+          {:ok, _} -> {:ok, plan}
+          error -> error
+        end
+
+      error ->
+        error
+    end
   end
 
   @doc """
   Updates existing plan.
   """
-  @spec update(plan :: %__MODULE__{}, attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, Ecto.Changeset.t()}
+  @spec update(plan :: %__MODULE__{}, attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def update(plan, attrs) do
-    plan
-    |> changeset(attrs)
-    |> AriaPlanner.Repo.update()
+    # Merge existing plan with new attrs
+    merged_attrs =
+      plan
+      |> Map.from_struct()
+      |> Map.merge(attrs)
+      |> Map.put(:id, plan.id)
+      |> Map.put(:inserted_at, plan.inserted_at)
+
+    case validate(merged_attrs) do
+      {:ok, updated_plan} ->
+        case EtsStorage.insert(:plans, updated_plan.id, updated_plan) do
+          {:ok, _} -> {:ok, updated_plan}
+          error -> error
+        end
+
+      error ->
+        error
+    end
   end
 
-  # UUID v7 validation
-  @spec validate_uuid_v7(Ecto.Changeset.t(), atom()) :: Ecto.Changeset.t()
-  def validate_uuid_v7(changeset, field) do
-    Ecto.Changeset.validate_change(changeset, field, fn _, value ->
-      if String.match?(value, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/) do
-        []
-      else
-        [{field, "must be a valid RFC 9562 UUIDv7"}]
-      end
-    end)
+  @doc """
+  Gets a plan by ID.
+  """
+  @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
+  def get(id) do
+    EtsStorage.get(:plans, id)
   end
 
-  # UUID entries are generated using UUIDv7.generate()
+  @doc """
+  Gets all plans.
+  """
+  @spec all() :: [%__MODULE__{}]
+  def all do
+    EtsStorage.all(:plans)
+  end
+
+  @doc """
+  Deletes a plan by ID.
+  """
+  @spec delete(String.t()) :: :ok | {:error, :not_found}
+  def delete(id) do
+    EtsStorage.delete(:plans, id)
+  end
 end
