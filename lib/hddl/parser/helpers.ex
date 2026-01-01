@@ -10,7 +10,15 @@ defmodule AriaPlanner.HDDL.Parser.Helpers do
   """
 
   # Basic utilities
-  defdelegate keyword_to_atom(str), to: AriaPlanner.HDDL.Parser.Helpers.Utils
+  @spec keyword_to_atom(String.t()) :: atom()
+  def keyword_to_atom(str) when is_binary(str) do
+    str
+    |> String.slice(1..-1//1)
+    |> String.to_atom()
+  end
+
+  # NOTE: The following functions were removed as they're no longer needed
+  # with the Sourceror-style parser. They're kept as stubs for backward compatibility.
   defdelegate wrap_in_list(value), to: AriaPlanner.HDDL.Parser.Helpers.Utils
   defdelegate wrap_domain_name(name), to: AriaPlanner.HDDL.Parser.Helpers.Utils
   defdelegate concat_any_reduce(acc), to: AriaPlanner.HDDL.Parser.Helpers.Utils
