@@ -44,96 +44,79 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.StateInitialization do
   @doc """
   Initializes the aircraft disassembly state with given parameters.
   """
-  @spec initialize_state(params()) :: {:ok, state()} | {:error, String.t()}
+  @spec initialize_state(params()) :: {:ok, state()}
   def initialize_state(params) when is_map(params) do
-    try do
-      num_activities = extract_integer(params, [:num_activities, :nActs], 0)
-      num_resources = extract_integer(params, [:num_resources, :nResources], 0)
+    num_activities = extract_integer(params, [:num_activities, :nActs], 0)
+    num_resources = extract_integer(params, [:num_resources, :nResources], 0)
 
-      durations = extract_list(params, [:durations, :dur], [])
-      precedences = extract_list(params, [:precedences], [])
-      locations = extract_list(params, [:locations, :loc], [])
-      location_capacities = extract_list(params, [:location_capacities, :loc_cap], [])
+    durations = extract_list(params, [:durations, :dur], [])
+    precedences = extract_list(params, [:precedences], [])
+    locations = extract_list(params, [:locations, :loc], [])
+    location_capacities = extract_list(params, [:location_capacities, :loc_cap], [])
 
-      activity_status_facts = build_activity_status_facts(num_activities)
-      facts = %{"activity_status" => activity_status_facts}
-      precedence = build_precedence_map(precedences)
-      resource_assigned = build_resource_assigned_map(num_activities, num_resources)
-      location_capacity = build_location_capacity_map(location_capacities)
+    activity_status_facts = build_activity_status_facts(num_activities)
+    facts = %{"activity_status" => activity_status_facts}
+    precedence = build_precedence_map(precedences)
+    resource_assigned = build_resource_assigned_map(num_activities, num_resources)
+    location_capacity = build_location_capacity_map(location_capacities)
 
-      # Extract additional fields with meaningful defaults
-      n_skills = extract_integer(params, [:nSkills], 3)
-      n_unavailable = extract_integer(params, [:nUnavailable], 0)
-      n_unrels = extract_integer(params, [:nUnrels], 0)
-      maxt = extract_integer(params, [:maxt], 1920)
+    # Extract additional fields with meaningful defaults
+    n_skills = extract_integer(params, [:nSkills], 3)
+    n_unavailable = extract_integer(params, [:nUnavailable], 0)
+    n_unrels = extract_integer(params, [:nUnrels], 0)
+    maxt = extract_integer(params, [:maxt], 1920)
 
-      # Extract optional fields (return nil if not present)
-      sreq = extract_list(params, [:sreq], nil)
-      mastery = extract_list(params, [:mastery], nil)
-      mass = extract_list(params, [:mass], nil)
-      max_diff = extract_list(params, [:maxDiff], nil)
-      mapset_m = extract_mapset(params, :M)
-      comp_prod = extract_list(params, [:comp_prod], nil)
-      useful_res = extract_useful_res(params)
-      potential_act = extract_potential_act(params)
-      resource_cost = extract_list(params, [:resource_cost], nil)
-      unavailable_resource = extract_list(params, [:unavailable_resource], nil)
-      unavailable_start = extract_list(params, [:unavailable_start], nil)
-      unavailable_end = extract_list(params, [:unavailable_end], nil)
-      unrelated = extract_list(params, [:unrelated], nil)
-      occupancy = extract_list(params, [:occupancy], nil)
+    # Extract optional fields (return nil if not present)
+    sreq = extract_list(params, [:sreq], nil)
+    mastery = extract_list(params, [:mastery], nil)
+    mass = extract_list(params, [:mass], nil)
+    max_diff = extract_list(params, [:maxDiff], nil)
+    mapset_m = extract_mapset(params, :M)
+    comp_prod = extract_list(params, [:comp_prod], nil)
+    useful_res = extract_useful_res(params)
+    potential_act = extract_potential_act(params)
+    resource_cost = extract_list(params, [:resource_cost], nil)
+    unavailable_resource = extract_list(params, [:unavailable_resource], nil)
+    unavailable_start = extract_list(params, [:unavailable_start], nil)
+    unavailable_end = extract_list(params, [:unavailable_end], nil)
+    unrelated = extract_list(params, [:unrelated], nil)
+    occupancy = extract_list(params, [:occupancy], nil)
 
-      # Build base state with required fields
-      state =
-        %{
-          num_activities: num_activities,
-          durations: durations,
-          precedences: precedences,
-          num_resources: num_resources,
-          locations: locations,
-          num_locations: length(location_capacities),
-          facts: facts,
-          precedence: precedence,
-          resource_assigned: resource_assigned,
-          location_capacity: location_capacity,
-          current_time: 0,
-          nSkills: n_skills,
-          nUnavailable: n_unavailable,
-          nUnrels: n_unrels,
-          maxt: maxt
-        }
-        |> maybe_put(:sreq, sreq)
-        |> maybe_put(:mastery, mastery)
-        |> maybe_put(:mass, mass)
-        |> maybe_put(:maxDiff, max_diff)
-        |> maybe_put(:M, mapset_m)
-        |> maybe_put(:comp_prod, comp_prod)
-        |> maybe_put(:useful_res, useful_res)
-        |> maybe_put(:potential_act, potential_act)
-        |> maybe_put(:resource_cost, resource_cost)
-        |> maybe_put(:unavailable_resource, unavailable_resource)
-        |> maybe_put(:unavailable_start, unavailable_start)
-        |> maybe_put(:unavailable_end, unavailable_end)
-        |> maybe_put(:unrelated, unrelated)
-        |> maybe_put(:occupancy, occupancy)
+    # Build base state with required fields
+    state =
+      %{
+        num_activities: num_activities,
+        durations: durations,
+        precedences: precedences,
+        num_resources: num_resources,
+        locations: locations,
+        num_locations: length(location_capacities),
+        facts: facts,
+        precedence: precedence,
+        resource_assigned: resource_assigned,
+        location_capacity: location_capacity,
+        current_time: 0,
+        nSkills: n_skills,
+        nUnavailable: n_unavailable,
+        nUnrels: n_unrels,
+        maxt: maxt
+      }
+      |> maybe_put(:sreq, sreq)
+      |> maybe_put(:mastery, mastery)
+      |> maybe_put(:mass, mass)
+      |> maybe_put(:maxDiff, max_diff)
+      |> maybe_put(:M, mapset_m)
+      |> maybe_put(:comp_prod, comp_prod)
+      |> maybe_put(:useful_res, useful_res)
+      |> maybe_put(:potential_act, potential_act)
+      |> maybe_put(:resource_cost, resource_cost)
+      |> maybe_put(:unavailable_resource, unavailable_resource)
+      |> maybe_put(:unavailable_start, unavailable_start)
+      |> maybe_put(:unavailable_end, unavailable_end)
+      |> maybe_put(:unrelated, unrelated)
+      |> maybe_put(:occupancy, occupancy)
 
-      {:ok, state}
-    rescue
-      e ->
-        error_msg =
-          case e do
-            %MatchError{term: term} ->
-              "MatchError with term: #{inspect(term)}. This usually means a pattern match failed. Check if all required params are provided."
-
-            %KeyError{key: key} ->
-              "KeyError: missing key #{inspect(key)}. Available keys: #{inspect(Map.keys(params))}"
-
-            _ ->
-              "#{inspect(e.__struct__)}: #{Exception.message(e)}"
-          end
-
-        {:error, "Failed to initialize state: #{error_msg}"}
-    end
+    {:ok, state}
   end
 
   # Helper functions with type specs

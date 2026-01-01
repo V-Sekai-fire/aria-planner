@@ -111,50 +111,45 @@ defmodule AriaPlanner.Domains.TinyCvrp do
   @doc """
   Initializes the CVRP state with given parameters.
   """
-  @spec initialize_state(params :: map()) :: {:ok, map()} | {:error, String.t()}
-  def initialize_state(params) do
-    try do
-      num_vehicles = params.num_vehicles || 1
-      num_customers = params.num_customers || 0
-      total_places = num_customers + 1
+  @spec initialize_state(params :: map()) :: {:ok, map()}
+  def initialize_state(params) when is_map(params) do
+    num_vehicles = params.num_vehicles || 1
+    num_customers = params.num_customers || 0
+    total_places = num_customers + 1
 
-      # Initialize vehicle positions (all at depot = 1)
-      vehicle_at =
-        for v <- 1..num_vehicles, into: %{} do
-          {v, 1}
-        end
+    # Initialize vehicle positions (all at depot = 1)
+    vehicle_at =
+      for v <- 1..num_vehicles, into: %{} do
+        {v, 1}
+      end
 
-      # Initialize customer visited status (all false)
-      customer_visited =
-        for c <- 2..total_places, into: %{} do
-          {c, false}
-        end
+    # Initialize customer visited status (all false)
+    customer_visited =
+      for c <- 2..total_places, into: %{} do
+        {c, false}
+      end
 
-      # Initialize vehicle capacities
-      vehicle_capacities = params.vehicle_capacities || [500]
+    # Initialize vehicle capacities
+    vehicle_capacities = params.vehicle_capacities || [500]
 
-      vehicle_capacity =
-        for {capacity, v} <- Enum.with_index(vehicle_capacities, 1), into: %{} do
-          {v, capacity}
-        end
+    vehicle_capacity =
+      for {capacity, v} <- Enum.with_index(vehicle_capacities, 1), into: %{} do
+        {v, capacity}
+      end
 
-      state = %{
-        num_vehicles: num_vehicles,
-        num_customers: num_customers,
-        total_places: total_places,
-        vehicle_at: vehicle_at,
-        customer_visited: customer_visited,
-        vehicle_capacity: vehicle_capacity,
-        predicted_demands: Map.get(params, :predicted_demands) || [],
-        predicted_ETAs: Map.get(params, :predicted_ETAs) || %{},
-        initial_capacities: vehicle_capacity
-      }
+    state = %{
+      num_vehicles: num_vehicles,
+      num_customers: num_customers,
+      total_places: total_places,
+      vehicle_at: vehicle_at,
+      customer_visited: customer_visited,
+      vehicle_capacity: vehicle_capacity,
+      predicted_demands: Map.get(params, :predicted_demands) || [],
+      predicted_ETAs: Map.get(params, :predicted_ETAs) || %{},
+      initial_capacities: vehicle_capacity
+    }
 
-      {:ok, state}
-    rescue
-      e ->
-        {:error, "Failed to initialize state: #{inspect(e)}"}
-    end
+    {:ok, state}
   end
 
   @doc """

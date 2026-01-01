@@ -94,25 +94,20 @@ defmodule AriaPlanner.Domains.Neighbours do
   @doc """
   Initializes the neighbours state with given grid dimensions.
   """
-  @spec initialize_state(n :: integer(), m :: integer()) :: {:ok, map()} | {:error, String.t()}
+  @spec initialize_state(n :: integer(), m :: integer()) :: {:ok, map()}
   def initialize_state(n, m) when n > 0 and m > 0 do
-    try do
-      grid =
-        for i <- 1..n, j <- 1..m, into: %{} do
-          {{i, j}, 0}
-        end
+    grid =
+      for i <- 1..n, j <- 1..m, into: %{} do
+        {{i, j}, 0}
+      end
 
-      state = %{
-        n: n,
-        m: m,
-        grid: grid
-      }
+    state = %{
+      n: n,
+      m: m,
+      grid: grid
+    }
 
-      {:ok, state}
-    rescue
-      e ->
-        {:error, "Failed to initialize state: #{inspect(e)}"}
-    end
+    {:ok, state}
   end
 
   @doc """

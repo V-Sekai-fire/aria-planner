@@ -49,14 +49,12 @@ defmodule AriaPlanner.Planner.Temporal.STN.Consistency do
 
   # Safely convert string to atom, avoiding atom table exhaustion
   defp safe_string_to_atom(str) when is_binary(str) do
-    try do
-      String.to_existing_atom(str)
-    rescue
-      ArgumentError ->
-        # Atom doesn't exist yet, create it (but this should be rare)
-        # In production, prefer pre-defining atoms or using string keys
-        String.to_atom(str)
-    end
+    String.to_existing_atom(str)
+  rescue
+    ArgumentError ->
+      # Atom doesn't exist yet, create it (but this should be rare)
+      # In production, prefer pre-defining atoms or using string keys
+      String.to_atom(str)
   end
 
   defp safe_string_to_atom(atom) when is_atom(atom), do: atom

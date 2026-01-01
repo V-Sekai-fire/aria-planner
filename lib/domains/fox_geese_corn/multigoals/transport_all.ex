@@ -10,8 +10,6 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Multigoals.TransportAll do
   Returns a list of goals to achieve.
   """
 
-  alias AriaPlanner.Domains.FoxGeeseCorn
-
   alias AriaPlanner.Domains.FoxGeeseCorn.Predicates.{
     WestCorn,
     WestFox,

@@ -125,28 +125,23 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn do
   @doc """
   Initializes the fox-geese-corn state with given parameters.
   """
-  @spec initialize_state(params :: map()) :: {:ok, map()} | {:error, String.t()}
-  def initialize_state(params) do
-    try do
-      state = %{
-        west_fox: params.f || 0,
-        west_geese: params.g || 0,
-        west_corn: params.c || 0,
-        east_fox: 0,
-        east_geese: 0,
-        east_corn: 0,
-        boat_location: "west",
-        boat_capacity: params.k || 2,
-        pf: params.pf || 1,
-        pg: params.pg || 1,
-        pc: params.pc || 1
-      }
+  @spec initialize_state(params :: map()) :: {:ok, map()}
+  def initialize_state(params) when is_map(params) do
+    state = %{
+      west_fox: params.f || 0,
+      west_geese: params.g || 0,
+      west_corn: params.c || 0,
+      east_fox: 0,
+      east_geese: 0,
+      east_corn: 0,
+      boat_location: "west",
+      boat_capacity: params.k || 2,
+      pf: params.pf || 1,
+      pg: params.pg || 1,
+      pc: params.pc || 1
+    }
 
-      {:ok, state}
-    rescue
-      e ->
-        {:error, "Failed to initialize state: #{inspect(e)}"}
-    end
+    {:ok, state}
   end
 
   @doc """

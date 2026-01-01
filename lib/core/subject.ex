@@ -63,17 +63,21 @@ defmodule AriaCore.Subject do
   """
   @spec validate(map()) :: {:ok, t()} | {:error, String.t()}
   def validate(attrs) when is_map(attrs) do
-    try do
-      subject = new(attrs)
-      # Simple validation checks
-      if String.length(subject.identifier) == 0 do
-        {:error, "identifier cannot be empty"}
-      else
-        {:ok, subject}
-      end
-    rescue
-      KeyError -> {:error, "identifier and subject_type are required"}
-      _ -> {:error, "invalid subject attributes"}
+    case {Map.has_key?(attrs, :identifier), Map.has_key?(attrs, :subject_type)} do
+      {false, _} ->
+        {:error, "identifier and subject_type are required"}
+
+      {_, false} ->
+        {:error, "identifier and subject_type are required"}
+
+      {true, true} ->
+        subject = new(attrs)
+
+        if String.length(subject.identifier) == 0 do
+          {:error, "identifier cannot be empty"}
+        else
+          {:ok, subject}
+        end
     end
   end
 

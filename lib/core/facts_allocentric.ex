@@ -378,22 +378,18 @@ defmodule AriaCore.FactsAllocentric do
   Allows personas to observe the shared allocentric reality,
   creating the foundation for ego belief formation.
   """
-  @spec get_all_facts() :: {:ok, [%__MODULE__{}]} | {:error, String.t()}
+  @spec get_all_facts() :: {:ok, [%__MODULE__{}]}
   def get_all_facts do
-    try do
-      now = DateTime.utc_now()
+    now = DateTime.utc_now()
 
-      facts =
-        all()
-        |> Enum.filter(fn fact ->
-          fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt
-        end)
-        |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
+    facts =
+      all()
+      |> Enum.filter(fn fact ->
+        fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt
+      end)
+      |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
 
-      {:ok, facts}
-    rescue
-      e -> {:error, "Failed to query facts: #{inspect(e)}"}
-    end
+    {:ok, facts}
   end
 
   @doc """
@@ -403,24 +399,20 @@ defmodule AriaCore.FactsAllocentric do
   allowing personas to build beliefs about specific other entities.
   Returns facts where entity is subject or mentioned in object.
   """
-  @spec get_facts_about(String.t()) :: {:ok, [%__MODULE__{}]} | {:error, String.t()}
+  @spec get_facts_about(String.t()) :: {:ok, [%__MODULE__{}]}
   def get_facts_about(entity_id) when is_binary(entity_id) do
-    try do
-      now = DateTime.utc_now()
+    now = DateTime.utc_now()
 
-      facts =
-        all()
-        |> Enum.filter(fn fact ->
-          (fact.subject_id == entity_id or
-             (fact.object_type == "entity_ref" and fact.object_value == entity_id)) and
-            (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
-        end)
-        |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
+    facts =
+      all()
+      |> Enum.filter(fn fact ->
+        (fact.subject_id == entity_id or
+           (fact.object_type == "entity_ref" and fact.object_value == entity_id)) and
+          (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
+      end)
+      |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
 
-      {:ok, facts}
-    rescue
-      e -> {:error, "Failed to query facts about entity: #{inspect(e)}"}
-    end
+    {:ok, facts}
   end
 
   def get_facts_about(_), do: {:error, "Invalid entity_id"}
@@ -467,27 +459,23 @@ defmodule AriaCore.FactsAllocentric do
   Returns facts compatible with persona's observation capabilities.
   Filters facts based on fact_type (agent_observable, event, environmental are always observable).
   """
-  @spec query_observable(String.t(), String.t()) :: {:ok, [%__MODULE__{}]} | {:error, String.t()}
+  @spec query_observable(String.t(), String.t()) :: {:ok, [%__MODULE__{}]}
   def query_observable(observer_persona_id, target_entity_id)
       when is_binary(observer_persona_id) and is_binary(target_entity_id) do
-    try do
-      # Observable fact types: agent_observable, event, environmental are always observable
-      # Terrain and object facts are observable by all
-      observable_types = ["agent_observable", "event", "environmental", "terrain", "object"]
-      now = DateTime.utc_now()
+    # Observable fact types: agent_observable, event, environmental are always observable
+    # Terrain and object facts are observable by all
+    observable_types = ["agent_observable", "event", "environmental", "terrain", "object"]
+    now = DateTime.utc_now()
 
-      facts =
-        all()
-        |> Enum.filter(fn fact ->
-          fact.subject_id == target_entity_id and fact.fact_type in observable_types and
-            (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
-        end)
-        |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
+    facts =
+      all()
+      |> Enum.filter(fn fact ->
+        fact.subject_id == target_entity_id and fact.fact_type in observable_types and
+          (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
+      end)
+      |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
 
-      {:ok, facts}
-    rescue
-      e -> {:error, "Failed to query observable facts: #{inspect(e)}"}
-    end
+    {:ok, facts}
   end
 
   def query_observable(_, _), do: {:error, "Invalid persona_id or entity_id"}
@@ -502,31 +490,27 @@ defmodule AriaCore.FactsAllocentric do
   """
   @spec validate_world_state() :: :consistent | {:inconsistent, String.t()}
   def validate_world_state do
-    try do
-      # Check for conflicting facts (same subject + predicate with different values)
-      now = DateTime.utc_now()
+    # Check for conflicting facts (same subject + predicate with different values)
+    now = DateTime.utc_now()
 
-      active_facts =
-        all()
-        |> Enum.filter(fn fact ->
-          fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt
-        end)
+    active_facts =
+      all()
+      |> Enum.filter(fn fact ->
+        fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt
+      end)
 
-      conflicts =
-        active_facts
-        |> Enum.group_by(fn fact -> {fact.subject_id, fact.predicate} end)
-        |> Enum.filter(fn {_key, facts} -> length(facts) > 1 end)
-        |> Enum.map(fn {{subject_id, predicate}, facts} ->
-          {subject_id, predicate, length(facts)}
-        end)
+    conflicts =
+      active_facts
+      |> Enum.group_by(fn fact -> {fact.subject_id, fact.predicate} end)
+      |> Enum.filter(fn {_key, facts} -> length(facts) > 1 end)
+      |> Enum.map(fn {{subject_id, predicate}, facts} ->
+        {subject_id, predicate, length(facts)}
+      end)
 
-      if Enum.empty?(conflicts) do
-        :consistent
-      else
-        {:inconsistent, "Found conflicting facts: #{inspect(conflicts)}"}
-      end
-    rescue
-      e -> {:inconsistent, "Validation error: #{inspect(e)}"}
+    if Enum.empty?(conflicts) do
+      :consistent
+    else
+      {:inconsistent, "Found conflicting facts: #{inspect(conflicts)}"}
     end
   end
 
@@ -537,32 +521,28 @@ defmodule AriaCore.FactsAllocentric do
   """
   @spec conflicting_facts(String.t()) :: [%__MODULE__{}]
   def conflicting_facts(subject_id) when is_binary(subject_id) do
-    try do
-      now = DateTime.utc_now()
+    now = DateTime.utc_now()
 
-      # Find predicates with multiple values for the same subject
-      active_facts =
-        all()
-        |> Enum.filter(fn fact ->
-          fact.subject_id == subject_id and
-            (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
-        end)
+    # Find predicates with multiple values for the same subject
+    active_facts =
+      all()
+      |> Enum.filter(fn fact ->
+        fact.subject_id == subject_id and
+          (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
+      end)
 
-      predicates_with_conflicts =
-        active_facts
-        |> Enum.group_by(& &1.predicate)
-        |> Enum.filter(fn {_predicate, facts} -> length(facts) > 1 end)
-        |> Enum.map(fn {predicate, _facts} -> predicate end)
+    predicates_with_conflicts =
+      active_facts
+      |> Enum.group_by(& &1.predicate)
+      |> Enum.filter(fn {_predicate, facts} -> length(facts) > 1 end)
+      |> Enum.map(fn {predicate, _facts} -> predicate end)
 
-      # Get all facts for those predicates
-      if Enum.empty?(predicates_with_conflicts) do
-        []
-      else
-        active_facts
-        |> Enum.filter(fn fact -> fact.predicate in predicates_with_conflicts end)
-      end
-    rescue
-      _ -> []
+    # Get all facts for those predicates
+    if Enum.empty?(predicates_with_conflicts) do
+      []
+    else
+      active_facts
+      |> Enum.filter(fn fact -> fact.predicate in predicates_with_conflicts end)
     end
   end
 
