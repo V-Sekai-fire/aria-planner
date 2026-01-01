@@ -26,7 +26,7 @@ defmodule AriaPlanner.HDDL.Parser do
     |> ascii_string([not: ?\n], min: 0)
     |> ignore()
 
-  skip_ws = repeat(choice([whitespace, comment])) |> ignore()
+  # skip_ws combinator - inline where used due to NimbleParsec scoping
 
   identifier =
     ascii_string([?a..?z, ?A..?Z, ?_], min: 1)
@@ -59,14 +59,14 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :sexp,
     ignore(string("("))
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> choice([
       # Keyword list (starts with :)
       parsec(:keyword_list),
       # Regular list
       parsec(:list)
     ])
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> ignore(string(")"))
   )
 
@@ -75,7 +75,7 @@ defmodule AriaPlanner.HDDL.Parser do
     lookahead(string(":"))
     |> tag(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:keyword_value_pair),
           keyword |> tag(:keyword)
@@ -89,7 +89,7 @@ defmodule AriaPlanner.HDDL.Parser do
     :list,
     tag(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:sexp),
           parsec(:atom)
@@ -112,7 +112,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :keyword_value_pair,
     keyword
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       choice([
         parsec(:sexp),
@@ -158,10 +158,10 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :requirements,
     string(":requirements")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> keyword
       )
     )
@@ -172,10 +172,10 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :predicates,
     string(":predicates")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:sexp)
       )
     )
@@ -186,12 +186,12 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :action,
     string(":action")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:parameters),
           parsec(:precondition),
@@ -206,12 +206,12 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :durative_action,
     string(":durative-action")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:parameters),
           parsec(:duration),
@@ -227,12 +227,12 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :command,
     string(":command")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:parameters),
           parsec(:precondition),
@@ -249,12 +249,12 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :method,
     string(":method")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:parameters),
           parsec(:task),
@@ -269,12 +269,12 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :durative_method,
     string(":durative-method")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:parameters),
           parsec(:task),
@@ -290,12 +290,12 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :goal_method,
     string(":goal-method")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:parameters),
           parsec(:goal),
@@ -311,12 +311,12 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :multigoal,
     string(":multigoal")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:goal_tag),
           parsec(:goals),
@@ -330,12 +330,12 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :multigoal_method,
     string(":multigoal-method")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:parameters),
           parsec(:multigoal_ref),
@@ -351,10 +351,10 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :entities,
     string(":entities")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:entity_declaration)
       )
     )
@@ -365,12 +365,12 @@ defmodule AriaPlanner.HDDL.Parser do
     :entity_declaration,
     ignore(string("("))
     |> ignore(string(":entity"))
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:entity_type),
           parsec(:entity_capabilities),
@@ -384,7 +384,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :entity_type,
     string(":type")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
     |> tag(:type)
   )
@@ -392,11 +392,11 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :entity_capabilities,
     string(":capabilities")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       ignore(string("("))
       |> repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> identifier
       )
       |> ignore(string(")"))
@@ -407,7 +407,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :entity_metadata,
     string(":metadata")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:metadata)
   )
@@ -416,10 +416,10 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :aria_domain_metadata,
     string(":aria-domain-metadata")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:keyword_value_pair)
       )
     )
@@ -429,10 +429,10 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :aria_predicate_schemas,
     string(":aria-predicate-schemas")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:predicate_schema)
       )
     )
@@ -443,12 +443,12 @@ defmodule AriaPlanner.HDDL.Parser do
     :predicate_schema,
     ignore(string("("))
     |> ignore(string(":predicate"))
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:keyword_value_pair)
       )
     )
@@ -458,11 +458,11 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :aria_temporal_metadata,
     string(":aria-temporal-metadata")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       ignore(string("("))
       |> repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:duration_iso8601),
           parsec(:start_time_iso8601),
@@ -478,11 +478,11 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :aria_command_metadata,
     string(":aria-command-metadata")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       ignore(string("("))
       |> repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:keyword_value_pair)
       )
       |> ignore(string(")"))
@@ -493,7 +493,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :aria_temporal_constraints,
     string(":aria-temporal-constraints")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:aria_temporal_constraints)
   )
@@ -501,10 +501,10 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :aria_initial_state,
     string(":aria-initial-state")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> choice([
           parsec(:current_time_iso8601),
           parsec(:timeline),
@@ -519,10 +519,10 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :aria_plan,
     string(":aria-plan")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:keyword_value_pair)
       )
     )
@@ -532,10 +532,10 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :aria_blacklist,
     string(":aria-blacklist")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:keyword_value_pair)
       )
     )
@@ -546,7 +546,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :parameters,
     string(":parameters")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:parameters)
   )
@@ -554,7 +554,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :precondition,
     string(":precondition")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:precondition)
   )
@@ -562,7 +562,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :condition,
     string(":condition")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:condition)
   )
@@ -570,7 +570,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :effect,
     string(":effect")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:effect)
   )
@@ -578,7 +578,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :duration,
     string(":duration")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:duration)
   )
@@ -586,7 +586,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :task,
     string(":task")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:task)
   )
@@ -594,7 +594,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :goal,
     string(":goal")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:goal)
   )
@@ -602,7 +602,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :goal_tag,
     string(":goal-tag")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
     |> tag(:goal_tag)
   )
@@ -610,7 +610,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :goals,
     string(":goals")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:goals)
   )
@@ -618,7 +618,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :multigoal_ref,
     string(":multigoal")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
     |> tag(:multigoal_ref)
   )
@@ -626,7 +626,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :subtasks,
     string(":subtasks")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:subtasks)
   )
@@ -634,7 +634,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :domain_reference,
     string(":domain")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
     |> tag(:domain)
   )
@@ -643,7 +643,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :duration_iso8601,
     string(":duration")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(string_literal)
     |> tag(:duration)
   )
@@ -651,7 +651,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :start_time_iso8601,
     string(":start-time")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(string_literal)
     |> tag(:start_time)
   )
@@ -659,7 +659,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :end_time_iso8601,
     string(":end-time")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(string_literal)
     |> tag(:end_time)
   )
@@ -667,7 +667,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :current_time_iso8601,
     string(":current-time")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(string_literal)
     |> tag(:current_time)
   )
@@ -675,11 +675,11 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :requires_entities,
     string(":requires-entities")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       ignore(string("("))
       |> repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:entity_requirement)
       )
       |> ignore(string(")"))
@@ -691,12 +691,12 @@ defmodule AriaPlanner.HDDL.Parser do
     :entity_requirement,
     ignore(string("("))
     |> ignore(string(":entity"))
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(identifier)
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:entity_capabilities)
       )
     )
@@ -706,7 +706,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :timeline,
     string(":timeline")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:timeline)
   )
@@ -714,7 +714,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :entity_capabilities_list,
     string(":entity-capabilities")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:entity_capabilities)
   )
@@ -722,7 +722,7 @@ defmodule AriaPlanner.HDDL.Parser do
   defparsecp(
     :facts,
     string(":facts")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(parsec(:sexp))
     |> tag(:facts)
   )
@@ -732,18 +732,18 @@ defmodule AriaPlanner.HDDL.Parser do
     :define_domain,
     skip_ws
     |> string("define")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> ignore(string("("))
     |> ignore(string("domain"))
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> ignore(string("("))
     |> concat(identifier)
     |> ignore(string(")"))
     |> ignore(string(")"))
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:domain_element)
       )
     )
@@ -754,18 +754,18 @@ defmodule AriaPlanner.HDDL.Parser do
     :define_problem,
     skip_ws
     |> string("define")
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> ignore(string("("))
     |> ignore(string("problem"))
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> ignore(string("("))
     |> concat(identifier)
     |> ignore(string(")"))
     |> ignore(string(")"))
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> concat(
       repeat(
-        skip_ws
+        repeat(choice([whitespace, comment])) |> ignore()
         |> parsec(:problem_element)
       )
     )
@@ -779,7 +779,7 @@ defmodule AriaPlanner.HDDL.Parser do
       parsec(:define_domain),
       parsec(:define_problem)
     ])
-    |> skip_ws
+    |> repeat(choice([whitespace, comment])) |> ignore()
     |> eos()
   )
 

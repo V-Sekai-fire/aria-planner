@@ -500,6 +500,19 @@ defmodule AriaPlanner.HDDL.Importer do
     end
   end
 
+  defp extract_temporal_metadata(elements) do
+    case find_element(elements, :aria_temporal_metadata) do
+      {:aria_temporal_metadata, _} = temporal_ast ->
+        case import_temporal_metadata(temporal_ast) do
+          {:ok, metadata} -> metadata
+          _ -> nil
+        end
+
+      _ ->
+        nil
+    end
+  end
+
   defp extract_domain_reference(elements) do
     case find_element(elements, :domain) do
       {:domain, domain} when is_atom(domain) -> Atom.to_string(domain)

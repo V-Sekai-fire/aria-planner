@@ -338,7 +338,7 @@ Domain-level metadata including ID, version, state, and type. This is an aria_pl
     :version 1
     :state active                                ; active, archived, deprecated
     :metadata (
-      :author "aria_planner"
+      :copyright "aria_planner"
       :created-at "2025-01-01T10:00:00Z"
     )
   )
@@ -792,7 +792,7 @@ This example demonstrates all aria_planner features in HDDL format:
     :version 1
     :state active
     :metadata (
-      :author "aria_planner"
+      :copyright "aria_planner"
       :created-at "2025-01-01T10:00:00Z"
     )
   )
