@@ -104,8 +104,9 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
 
   # Accumulate identifier/keyword/number/variable (works for both empty and non-empty current)
   # This must come before the "unknown character" patterns
+  # Support common operators: <, >, <=, >=, =, +, -, *, /
   defp tokenize([char | rest], current, acc)
-       when char in ?a..?z or char in ?A..?Z or char in ?0..?9 or char in [?_, ?:, ?-, ??] do
+       when char in ?a..?z or char in ?A..?Z or char in ?0..?9 or char in [?_, ?:, ?-, ??, ?=, ?<, ?>, ?+, ?*, ?/] do
     tokenize(rest, [char | current], acc)
   end
 
@@ -136,10 +137,23 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
     str = List.to_string(Enum.reverse(chars))
 
     cond do
-      String.starts_with?(str, ":") -> {:keyword, String.to_atom(String.slice(str, 1..-1//1))}
-      String.starts_with?(str, "?") -> {:variable, str}
-      String.match?(str, ~r/^-?\d+$/) -> {:number, String.to_integer(str)}
-      true -> {:identifier, String.to_atom(str)}
+      String.starts_with?(str, ":") ->
+        keyword_str = String.slice(str, 1..-1//1)
+        # Convert hyphens to underscores for keyword atoms
+        keyword_atom = keyword_str |> String.replace("-", "_") |> String.to_atom()
+        {:keyword, keyword_atom}
+
+      String.starts_with?(str, "?") ->
+        {:variable, str}
+
+      String.match?(str, ~r/^-?\d+$/) ->
+        {:number, String.to_integer(str)}
+
+      str == "=" ->
+        {:identifier, :=}
+
+      true ->
+        {:identifier, String.to_atom(str)}
     end
   end
 
@@ -186,10 +200,12 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
   @spec transform_define_statement(list()) :: hddl_ast()
   defp transform_define_statement([{:identifier, :define}, list_sexp | rest]) do
     # Filter out empty lists from rest (empty () becomes {[], _})
-    filtered_rest = Enum.reject(rest, fn
-      {elem_list, _} when is_list(elem_list) -> elem_list == []
-      _ -> false
-    end)
+    filtered_rest =
+      Enum.reject(rest, fn
+        {elem_list, _} when is_list(elem_list) -> elem_list == []
+        _ -> false
+      end)
+
     transform_define_content(list_sexp, filtered_rest)
   end
 
@@ -197,11 +213,14 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
     # Handle case where list_sexp might be a token instead of a tuple
     case rest do
       [list_sexp | remaining] ->
-        filtered_rest = Enum.reject(remaining, fn
-          {elem_list, _} when is_list(elem_list) -> elem_list == []
-          _ -> false
-        end)
+        filtered_rest =
+          Enum.reject(remaining, fn
+            {elem_list, _} when is_list(elem_list) -> elem_list == []
+            _ -> false
+          end)
+
         transform_define_content(list_sexp, filtered_rest)
+
       _ ->
         {:domain, :unknown, []}
     end
@@ -212,19 +231,23 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
   @spec transform_define_content(parsed_sexp(), list()) :: hddl_ast()
   defp transform_define_content({domain_list, _}, rest) when is_list(domain_list) do
     # Filter out empty lists from rest before transforming
-    filtered_rest = Enum.reject(rest, fn
-      {elem_list, _} when is_list(elem_list) -> elem_list == []
-      _ -> false
-    end)
+    filtered_rest =
+      Enum.reject(rest, fn
+        {elem_list, _} when is_list(elem_list) -> elem_list == []
+        _ -> false
+      end)
+
     transform_domain_or_problem(domain_list, filtered_rest)
   end
 
   defp transform_define_content(domain_list, rest) when is_list(domain_list) do
     # Filter out empty lists from rest before transforming
-    filtered_rest = Enum.reject(rest, fn
-      {elem_list, _} when is_list(elem_list) -> elem_list == []
-      _ -> false
-    end)
+    filtered_rest =
+      Enum.reject(rest, fn
+        {elem_list, _} when is_list(elem_list) -> elem_list == []
+        _ -> false
+      end)
+
     transform_domain_or_problem(domain_list, filtered_rest)
   end
 
@@ -239,7 +262,35 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
 
   defp transform_domain_or_problem([{:identifier, :problem}, name_token | _], rest) do
     name = extract_name(name_token)
-    elements = transform_elements(rest)
+    # Keep :domain reference in problem elements (tests expect it)
+    # Transform domain reference to {:domain, domain_name} format
+    transformed_rest =
+      Enum.map(rest, fn
+        {list, _} when is_list(list) ->
+          case list do
+            [{:keyword, :domain}, domain_name_token | _] ->
+              domain_name = extract_name(domain_name_token)
+              {:domain, domain_name}
+
+            _ ->
+              {list, []}
+          end
+
+        list when is_list(list) ->
+          case list do
+            [{:keyword, :domain}, domain_name_token | _] ->
+              domain_name = extract_name(domain_name_token)
+              {:domain, domain_name}
+
+            _ ->
+              list
+          end
+
+        other ->
+          other
+      end)
+
+    elements = transform_elements(transformed_rest)
     {:problem, name, elements}
   end
 
@@ -260,10 +311,12 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
         # parse_list accumulates items directly (not wrapped in {item, remaining} tuples)
         # So elem_list is already a list of tokens, not a list of {item, remaining} tuples
         transform_list_element(elem_list)
+
       elem_list when is_list(elem_list) ->
         # Handle case where rest contains plain lists (not wrapped in tuples)
         # This happens when parse_list returns a list directly
         transform_list_element(elem_list)
+
       other ->
         transform_element(other)
     end)
@@ -314,12 +367,16 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
 
   @spec transform_list_element(list()) :: term()
   # Specific patterns must come first - use function clause pattern matching
+
+  # Standard HDDL constructs
   defp transform_list_element([{:keyword, :requirements} | rest]) do
     # Extract all requirement atoms
-    reqs = Enum.map(rest, fn
-      {:keyword, req} -> req
-      other -> transform_element(other)
-    end)
+    reqs =
+      Enum.map(rest, fn
+        {:keyword, req} -> req
+        other -> transform_element(other)
+      end)
+
     {:requirements, reqs}
   end
 
@@ -332,6 +389,195 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
     {:action, name, elements}
   end
 
+  defp transform_list_element([{:keyword, :durative_action}, {:identifier, name} | action_elements]) do
+    elements = transform_keyword_list(action_elements)
+    {:durative_action, name, elements}
+  end
+
+  defp transform_list_element([{:keyword, :method}, {:identifier, name} | method_elements]) do
+    elements = transform_keyword_list(method_elements)
+    {:method, name, elements}
+  end
+
+  defp transform_list_element([{:keyword, :durative_method}, {:identifier, name} | method_elements]) do
+    elements = transform_keyword_list(method_elements)
+    {:durative_method, name, elements}
+  end
+
+  defp transform_list_element([{:keyword, :task}, task_spec | _rest]) do
+    {:task, transform_element(task_spec)}
+  end
+
+  # aria_planner extensions - Commands
+  defp transform_list_element([{:keyword, :command}, {:identifier, name} | command_elements]) do
+    elements = transform_keyword_list(command_elements)
+    {:command, name, elements}
+  end
+
+  # aria_planner extensions - Multigoals
+  defp transform_list_element([{:keyword, :multigoal}, {:identifier, name} | multigoal_elements]) do
+    elements = transform_keyword_list(multigoal_elements)
+    {:multigoal, name, elements}
+  end
+
+  # aria_planner extensions - Goal methods
+  defp transform_list_element([{:keyword, :goal_method}, {:identifier, name} | method_elements]) do
+    elements = transform_keyword_list(method_elements)
+    {:goal_method, name, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"goal-method"}, {:identifier, name} | method_elements]) do
+    elements = transform_keyword_list(method_elements)
+    {:goal_method, name, elements}
+  end
+
+  # aria_planner extensions - Multigoal methods
+  defp transform_list_element([{:keyword, :multigoal_method}, {:identifier, name} | method_elements]) do
+    elements = transform_keyword_list(method_elements)
+    {:multigoal_method, name, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"multigoal-method"}, {:identifier, name} | method_elements]) do
+    elements = transform_keyword_list(method_elements)
+    {:multigoal_method, name, elements}
+  end
+
+  # aria_planner extensions - Domain metadata
+  defp transform_list_element([{:keyword, :aria_domain_metadata} | metadata_elements]) do
+    elements = transform_keyword_list(metadata_elements)
+    {:aria_domain_metadata, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-domain-metadata"} | metadata_elements]) do
+    elements = transform_keyword_list(metadata_elements)
+    {:aria_domain_metadata, elements}
+  end
+
+  # aria_planner extensions - Entities
+  defp transform_list_element([{:keyword, :entities} | entity_list]) do
+    entities =
+      Enum.map(entity_list, fn
+        {list, _} when is_list(list) -> transform_entity(list)
+        list when is_list(list) -> transform_entity(list)
+        other -> transform_element(other)
+      end)
+
+    {:entities, entities}
+  end
+
+  # aria_planner extensions - Predicate schemas
+  defp transform_list_element([{:keyword, :aria_predicate_schemas} | schema_list]) do
+    schemas =
+      Enum.map(schema_list, fn
+        {list, _} when is_list(list) -> transform_predicate_schema(list)
+        list when is_list(list) -> transform_predicate_schema(list)
+        other -> transform_element(other)
+      end)
+
+    {:aria_predicate_schemas, schemas}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-predicate-schemas"} | schema_list]) do
+    schemas =
+      Enum.map(schema_list, fn
+        {list, _} when is_list(list) -> transform_predicate_schema(list)
+        list when is_list(list) -> transform_predicate_schema(list)
+        other -> transform_element(other)
+      end)
+
+    {:aria_predicate_schemas, schemas}
+  end
+
+  # aria_planner extensions - Planner state
+  defp transform_list_element([{:keyword, :aria_initial_state} | state_elements]) do
+    elements = transform_keyword_list(state_elements)
+    {:aria_initial_state, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-initial-state"} | state_elements]) do
+    elements = transform_keyword_list(state_elements)
+    {:aria_initial_state, elements}
+  end
+
+  # aria_planner extensions - Plans
+  defp transform_list_element([{:keyword, :aria_plan} | plan_elements]) do
+    elements = transform_keyword_list(plan_elements)
+    {:aria_plan, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-plan"} | plan_elements]) do
+    elements = transform_keyword_list(plan_elements)
+    {:aria_plan, elements}
+  end
+
+  # aria_planner extensions - Blacklisting
+  defp transform_list_element([{:keyword, :aria_blacklist} | blacklist_elements]) do
+    elements = transform_keyword_list(blacklist_elements)
+    {:aria_blacklist, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-blacklist"} | blacklist_elements]) do
+    elements = transform_keyword_list(blacklist_elements)
+    {:aria_blacklist, elements}
+  end
+
+  # aria_planner extensions - Solution graph
+  defp transform_list_element([{:keyword, :aria_solution_graph} | graph_elements]) do
+    nodes =
+      Enum.map(graph_elements, fn
+        {list, _} when is_list(list) -> transform_solution_node(list)
+        list when is_list(list) -> transform_solution_node(list)
+        other -> transform_element(other)
+      end)
+
+    {:aria_solution_graph, nodes}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-solution-graph"} | graph_elements]) do
+    nodes =
+      Enum.map(graph_elements, fn
+        {list, _} when is_list(list) -> transform_solution_node(list)
+        list when is_list(list) -> transform_solution_node(list)
+        other -> transform_element(other)
+      end)
+
+    {:aria_solution_graph, nodes}
+  end
+
+  # aria_planner extensions - STN temporal constraints
+  defp transform_list_element([{:keyword, :aria_temporal_constraints} | constraint_elements]) do
+    elements = transform_keyword_list(constraint_elements)
+    {:aria_temporal_constraints, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-temporal-constraints"} | constraint_elements]) do
+    elements = transform_keyword_list(constraint_elements)
+    {:aria_temporal_constraints, elements}
+  end
+
+  # aria_planner extensions - Temporal metadata (used in actions, methods, etc.)
+  defp transform_list_element([{:keyword, :aria_temporal_metadata} | metadata_elements]) do
+    elements = transform_keyword_list(metadata_elements)
+    {:aria_temporal_metadata, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-temporal-metadata"} | metadata_elements]) do
+    elements = transform_keyword_list(metadata_elements)
+    {:aria_temporal_metadata, elements}
+  end
+
+  # aria_planner extensions - Command metadata
+  defp transform_list_element([{:keyword, :aria_command_metadata} | metadata_elements]) do
+    elements = transform_keyword_list(metadata_elements)
+    {:aria_command_metadata, elements}
+  end
+
+  defp transform_list_element([{:keyword, :"aria-command-metadata"} | metadata_elements]) do
+    elements = transform_keyword_list(metadata_elements)
+    {:aria_command_metadata, elements}
+  end
+
+  # Generic keyword pattern (must come after specific patterns)
   defp transform_list_element([{:keyword, key} | values]) do
     {key, Enum.map(values, &transform_element/1)}
   end
@@ -344,13 +590,508 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
 
   @spec transform_keyword_list(list()) :: list()
   defp transform_keyword_list(list) do
-    list
-    |> Enum.chunk_every(2)
-    |> Enum.reduce([], fn
-      [{:keyword, key}, value], acc -> [{key, transform_element(value)} | acc]
-      [{:keyword, key}], acc -> [{key, true} | acc]
-      _other, acc -> acc
-    end)
-    |> Enum.reverse()
+    transform_keyword_list(list, [])
   end
+
+  @spec transform_keyword_list(list(), list()) :: list()
+  defp transform_keyword_list([], acc), do: Enum.reverse(acc)
+
+  defp transform_keyword_list([{:keyword, key}, value | rest], acc) do
+    transformed_value =
+      case value do
+        {list, _} when is_list(list) -> transform_nested_structure(list, key)
+        list when is_list(list) -> transform_nested_structure(list, key)
+        other -> transform_element(other)
+      end
+
+    transform_keyword_list(rest, [{key, transformed_value} | acc])
+  end
+
+  defp transform_keyword_list([{:keyword, key} | rest], acc) do
+    transform_keyword_list(rest, [{key, true} | acc])
+  end
+
+  defp transform_keyword_list([other | rest], acc) do
+    # Handle nested lists (like aria extensions) that appear as values
+    transformed =
+      case other do
+        {list, _} when is_list(list) ->
+          # Check if this is an aria extension list
+          case list do
+            [{:keyword, aria_key} | aria_rest]
+            when aria_key in [
+                   :aria_temporal_metadata,
+                   :aria_command_metadata,
+                   :"aria-temporal-metadata",
+                   :"aria-command-metadata"
+                 ] ->
+              # Transform as aria extension
+              elements = transform_keyword_list(aria_rest)
+              {aria_key, elements}
+
+            _ ->
+              # Transform as regular nested structure
+              transform_list_element(list)
+          end
+
+        list when is_list(list) ->
+          # Check if this is an aria extension list
+          case list do
+            [{:keyword, aria_key} | aria_rest]
+            when aria_key in [
+                   :aria_temporal_metadata,
+                   :aria_command_metadata,
+                   :"aria-temporal-metadata",
+                   :"aria-command-metadata"
+                 ] ->
+              # Transform as aria extension
+              elements = transform_keyword_list(aria_rest)
+              {aria_key, elements}
+
+            _ ->
+              # Transform as regular nested structure
+              transform_list_element(list)
+          end
+
+        {:keyword, :domain} ->
+          # Domain reference in problem - include as-is
+          {:domain, true}
+
+        _ ->
+          transform_element(other)
+      end
+
+    transform_keyword_list(rest, [transformed | acc])
+  end
+
+  # Transform nested structures based on key context
+  @spec transform_nested_structure(list(), atom()) :: term()
+  defp transform_nested_structure(list, :requires_entities) do
+    # Transform (:entity type :capabilities (cap1 cap2 ...))
+    Enum.map(list, fn
+      {entity_list, _} when is_list(entity_list) -> transform_entity_requirement(entity_list)
+      entity_list when is_list(entity_list) -> transform_entity_requirement(entity_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, :entity_capabilities) do
+    # Transform (:entity id :capabilities (cap1 cap2 ...))
+    Enum.map(list, fn
+      {entity_list, _} when is_list(entity_list) -> transform_entity_capability(entity_list)
+      entity_list when is_list(entity_list) -> transform_entity_capability(entity_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, :facts) do
+    # Transform (:fact subject predicate :value value)
+    Enum.map(list, fn
+      {fact_list, _} when is_list(fact_list) -> transform_fact(fact_list)
+      fact_list when is_list(fact_list) -> transform_fact(fact_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, :timeline) do
+    # Transform (:event name :time "ISO8601")
+    Enum.map(list, fn
+      {event_list, _} when is_list(event_list) -> transform_timeline_event(event_list)
+      event_list when is_list(event_list) -> transform_timeline_event(event_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, :objectives) do
+    # Transform list of goal expressions
+    Enum.map(list, &transform_element/1)
+  end
+
+  defp transform_nested_structure(list, :goals) do
+    # Transform list of goal expressions
+    Enum.map(list, &transform_element/1)
+  end
+
+  defp transform_nested_structure(list, :subtasks) do
+    # Transform list of task expressions
+    Enum.map(list, &transform_element/1)
+  end
+
+  defp transform_nested_structure(list, :constraints) do
+    # Transform (:constraint name :type type :value value)
+    Enum.map(list, fn
+      {constraint_list, _} when is_list(constraint_list) -> transform_constraint(constraint_list)
+      constraint_list when is_list(constraint_list) -> transform_constraint(constraint_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, :temporal_constraints) do
+    # Transform (:constraint name :value "ISO8601")
+    Enum.map(list, fn
+      {constraint_list, _} when is_list(constraint_list) -> transform_temporal_constraint(constraint_list)
+      constraint_list when is_list(constraint_list) -> transform_temporal_constraint(constraint_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, :risk_assessment) do
+    # Transform (:risk name :probability prob)
+    Enum.map(list, fn
+      {risk_list, _} when is_list(risk_list) -> transform_risk(risk_list)
+      risk_list when is_list(risk_list) -> transform_risk(risk_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, :performance_metrics) do
+    # Transform (:metric name :value value)
+    Enum.map(list, fn
+      {metric_list, _} when is_list(metric_list) -> transform_metric(metric_list)
+      metric_list when is_list(metric_list) -> transform_metric(metric_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, :blacklisted_commands) do
+    # Transform list of command expressions
+    Enum.map(list, &transform_element/1)
+  end
+
+  defp transform_nested_structure(list, :blacklisted_methods) do
+    # Transform list of method expressions
+    Enum.map(list, &transform_element/1)
+  end
+
+  defp transform_nested_structure(list, :stn) do
+    # Transform STN structure with time points and constraints
+    Enum.map(list, fn
+      {stn_list, _} when is_list(stn_list) -> transform_stn_element(stn_list)
+      stn_list when is_list(stn_list) -> transform_stn_element(stn_list)
+      other -> transform_element(other)
+    end)
+  end
+
+  defp transform_nested_structure(list, _key) do
+    # Default: transform as list of elements
+    Enum.map(list, &transform_element/1)
+  end
+
+  # Transform entity requirement: (:entity type :capabilities (cap1 cap2 ...))
+  @spec transform_entity_requirement(list()) :: map()
+  defp transform_entity_requirement([{:keyword, :entity}, type | rest]) do
+    elements = transform_keyword_list(rest)
+    %{type: :entity, entity_type: transform_element(type), capabilities: extract_capabilities(elements)}
+  end
+
+  defp transform_entity_requirement([{:identifier, :entity}, type | rest]) do
+    elements = transform_keyword_list(rest)
+    %{type: :entity, entity_type: transform_element(type), capabilities: extract_capabilities(elements)}
+  end
+
+  defp transform_entity_requirement(other), do: transform_element(other)
+
+  # Transform entity capability: (:entity id :capabilities (cap1 cap2 ...))
+  @spec transform_entity_capability(list()) :: map()
+  defp transform_entity_capability([{:keyword, :entity}, id | rest]) do
+    elements = transform_keyword_list(rest)
+    %{type: :entity, entity_id: transform_element(id), capabilities: extract_capabilities(elements)}
+  end
+
+  defp transform_entity_capability([{:identifier, :entity}, id | rest]) do
+    elements = transform_keyword_list(rest)
+    %{type: :entity, entity_id: transform_element(id), capabilities: extract_capabilities(elements)}
+  end
+
+  defp transform_entity_capability(other), do: transform_element(other)
+
+  # Extract capabilities from keyword list
+  @spec extract_capabilities(list()) :: [atom()]
+  defp extract_capabilities(elements) do
+    case Keyword.get(elements, :capabilities) do
+      list when is_list(list) ->
+        Enum.map(list, fn
+          {:keyword, cap} -> cap
+          {:identifier, cap} -> cap
+          atom when is_atom(atom) -> atom
+          other -> transform_element(other)
+        end)
+
+      _ ->
+        []
+    end
+  end
+
+  # Transform entity: (:entity name :type type :capabilities (cap1 cap2 ...))
+  @spec transform_entity(list()) :: map()
+  defp transform_entity([{:keyword, :entity}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :entity,
+      name: transform_element(name),
+      entity_type: Keyword.get(elements, :type),
+      capabilities: extract_capabilities(elements),
+      metadata: Keyword.get(elements, :metadata, %{})
+    }
+  end
+
+  defp transform_entity([{:identifier, :entity}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :entity,
+      name: transform_element(name),
+      entity_type: Keyword.get(elements, :type),
+      capabilities: extract_capabilities(elements),
+      metadata: Keyword.get(elements, :metadata, %{})
+    }
+  end
+
+  defp transform_entity(other), do: transform_element(other)
+
+  # Transform predicate schema: (:predicate name :category cat :multi-valued bool)
+  @spec transform_predicate_schema(list()) :: map()
+  defp transform_predicate_schema([{:keyword, :predicate}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :predicate,
+      name: transform_element(name),
+      category: Keyword.get(elements, :category),
+      multi_valued: Keyword.get(elements, :"multi-valued", false),
+      metadata: Keyword.get(elements, :metadata, %{})
+    }
+  end
+
+  defp transform_predicate_schema([{:identifier, :predicate}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :predicate,
+      name: transform_element(name),
+      category: Keyword.get(elements, :category),
+      multi_valued: Keyword.get(elements, :"multi-valued", false),
+      metadata: Keyword.get(elements, :metadata, %{})
+    }
+  end
+
+  defp transform_predicate_schema(other), do: transform_element(other)
+
+  # Transform fact: (:fact subject predicate :value value)
+  # Note: HDDL syntax is (:fact subject :value value) - predicate is implicit
+  @spec transform_fact(list()) :: map()
+  defp transform_fact([{:keyword, :fact}, subject | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :fact,
+      subject: transform_element(subject),
+      predicate: Keyword.get(elements, :predicate),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_fact([{:identifier, :fact}, subject | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :fact,
+      subject: transform_element(subject),
+      predicate: Keyword.get(elements, :predicate),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_fact(other), do: transform_element(other)
+
+  # Transform timeline event: (:event name :time "ISO8601")
+  @spec transform_timeline_event(list()) :: map()
+  defp transform_timeline_event([{:keyword, :event}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :event,
+      name: transform_element(name),
+      time: Keyword.get(elements, :time)
+    }
+  end
+
+  defp transform_timeline_event([{:identifier, :event}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :event,
+      name: transform_element(name),
+      time: Keyword.get(elements, :time)
+    }
+  end
+
+  defp transform_timeline_event(other), do: transform_element(other)
+
+  # Transform constraint: (:constraint name :type type :value value)
+  @spec transform_constraint(list()) :: map()
+  defp transform_constraint([{:keyword, :constraint}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :constraint,
+      name: transform_element(name),
+      constraint_type: Keyword.get(elements, :type),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_constraint([{:identifier, :constraint}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :constraint,
+      name: transform_element(name),
+      constraint_type: Keyword.get(elements, :type),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_constraint(other), do: transform_element(other)
+
+  # Transform temporal constraint: (:constraint name :value "ISO8601")
+  @spec transform_temporal_constraint(list()) :: map()
+  defp transform_temporal_constraint([{:keyword, :constraint}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :temporal_constraint,
+      name: transform_element(name),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_temporal_constraint([{:identifier, :constraint}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :temporal_constraint,
+      name: transform_element(name),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_temporal_constraint(other), do: transform_element(other)
+
+  # Transform risk: (:risk name :probability prob)
+  @spec transform_risk(list()) :: map()
+  defp transform_risk([{:keyword, :risk}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :risk,
+      name: transform_element(name),
+      probability: Keyword.get(elements, :probability)
+    }
+  end
+
+  defp transform_risk([{:identifier, :risk}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :risk,
+      name: transform_element(name),
+      probability: Keyword.get(elements, :probability)
+    }
+  end
+
+  defp transform_risk(other), do: transform_element(other)
+
+  # Transform metric: (:metric name :value value)
+  @spec transform_metric(list()) :: map()
+  defp transform_metric([{:keyword, :metric}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :metric,
+      name: transform_element(name),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_metric([{:identifier, :metric}, name | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :metric,
+      name: transform_element(name),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_metric(other), do: transform_element(other)
+
+  # Transform solution node: (:node id :type type :status status :info info :successors (id1 id2))
+  @spec transform_solution_node(list()) :: map()
+  defp transform_solution_node([{:keyword, :node}, id | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :node,
+      node_id: transform_element(id),
+      node_type: Keyword.get(elements, :type),
+      status: Keyword.get(elements, :status),
+      info: Keyword.get(elements, :info),
+      successors: Keyword.get(elements, :successors, []),
+      duration: Keyword.get(elements, :duration)
+    }
+  end
+
+  defp transform_solution_node([{:identifier, :node}, id | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :node,
+      node_id: transform_element(id),
+      node_type: Keyword.get(elements, :type),
+      status: Keyword.get(elements, :status),
+      info: Keyword.get(elements, :info),
+      successors: Keyword.get(elements, :successors, []),
+      duration: Keyword.get(elements, :duration)
+    }
+  end
+
+  defp transform_solution_node(other), do: transform_element(other)
+
+  # Transform STN element: (:time-point name) or (:constraint start end min max)
+  @spec transform_stn_element(list()) :: map()
+  defp transform_stn_element([{:keyword, :time_point}, name]) do
+    %{type: :time_point, name: transform_element(name)}
+  end
+
+  defp transform_stn_element([{:keyword, :"time-point"}, name]) do
+    %{type: :time_point, name: transform_element(name)}
+  end
+
+  defp transform_stn_element([{:keyword, :constraint}, start, end_point, min, max]) do
+    %{
+      type: :stn_constraint,
+      start: transform_element(start),
+      end: transform_element(end_point),
+      min: transform_element(min),
+      max: transform_element(max)
+    }
+  end
+
+  defp transform_stn_element([{:identifier, :time_point}, name]) do
+    %{type: :time_point, name: transform_element(name)}
+  end
+
+  defp transform_stn_element([{:identifier, :constraint}, start, end_point, min, max]) do
+    %{
+      type: :stn_constraint,
+      start: transform_element(start),
+      end: transform_element(end_point),
+      min: transform_element(min),
+      max: transform_element(max)
+    }
+  end
+
+  defp transform_stn_element(other), do: transform_element(other)
 end

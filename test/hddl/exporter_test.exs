@@ -13,7 +13,7 @@ defmodule AriaPlanner.HDDL.ExporterTest do
       {:ok, domain} =
         PlanningDomain.create(%{
           id: UUIDv7.generate(),
-          domain_type: "test",
+          domain_type: "custom",
           name: "test_domain",
           description: "Test domain"
         })
@@ -27,13 +27,14 @@ defmodule AriaPlanner.HDDL.ExporterTest do
       {:ok, domain} =
         PlanningDomain.create(%{
           id: UUIDv7.generate(),
-          domain_type: "test",
+          domain_type: "custom",
           name: "test_domain",
           entities: [
             %{
               id: UUIDv7.generate(),
               type: "agent",
-              capabilities: [:navigation, :transport]
+              capabilities: [:navigation, :transport],
+              metadata: %{}
             }
           ]
         })
@@ -47,7 +48,7 @@ defmodule AriaPlanner.HDDL.ExporterTest do
       {:ok, domain} =
         PlanningDomain.create(%{
           id: UUIDv7.generate(),
-          domain_type: "test",
+          domain_type: "custom",
           name: "test_domain",
           actions: [
             %{
@@ -68,7 +69,7 @@ defmodule AriaPlanner.HDDL.ExporterTest do
       {:ok, domain} =
         PlanningDomain.create(%{
           id: UUIDv7.generate(),
-          domain_type: "test",
+          domain_type: "custom",
           name: "test_domain",
           commands: [
             %{
@@ -89,7 +90,7 @@ defmodule AriaPlanner.HDDL.ExporterTest do
       {:ok, domain} =
         PlanningDomain.create(%{
           id: UUIDv7.generate(),
-          domain_type: "test",
+          domain_type: "custom",
           name: "test_domain",
           multigoals: [
             %{
@@ -114,7 +115,7 @@ defmodule AriaPlanner.HDDL.ExporterTest do
           id: UUIDv7.generate(),
           name: "test_plan",
           persona_id: UUIDv7.generate(),
-          domain_type: "test"
+          domain_type: "blocks_world"
         })
 
       hddl = Exporter.export_problem(plan)
