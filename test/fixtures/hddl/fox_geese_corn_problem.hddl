@@ -1,0 +1,55 @@
+(define (problem fox_geese_corn_problem)
+  (:domain fox_geese_corn)
+
+  ; Plan structure
+  (:aria-plan
+    :id "01234567-89ab-cdef-0123-456789abcdef"
+    :name "Transport All Items Plan"
+    :persona-id "persona_123"
+    :domain-type navigation
+    :objectives (
+      (transport_all items)
+    )
+    :constraints (
+      (:constraint safe_state :type boolean :value true)
+    )
+    :temporal-constraints (
+      (:constraint max_duration :value "PT1H")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :transport))
+    )
+    :execution-status planned
+    :success-probability 0.85
+    :risk-assessment (
+      (:risk unsafe_state :probability 0.15)
+    )
+    :performance-metrics (
+      (:metric expected_duration :value "PT45M")
+    )
+  )
+
+  ; Initial planner state
+  (:aria-initial-state
+    :current-time "2025-01-01T10:00:00Z"
+    :timeline (
+      (:event start :time "2025-01-01T10:00:00Z")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :transport))
+    )
+    :facts (
+      (:fact west_fox :value 1)
+      (:fact west_geese :value 1)
+      (:fact west_corn :value 1)
+      (:fact boat_location :value west)
+    )
+  )
+
+  ; Blacklist (for failure handling)
+  (:aria-blacklist
+    :blacklisted-commands ()
+    :blacklisted-methods ()
+  )
+)
+

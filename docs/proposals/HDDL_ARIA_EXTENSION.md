@@ -1,16 +1,44 @@
 # HDDL Aria Extension Specification
 
-**Status:** Proposed | **Date:** January 2025
+**Version:** 1.0  
+**Status:** Implemented  
+**Date:** January 2025  
+**Base Standard:** HDDL 2.1  
+**Implementation:** `AriaPlanner.HDDL` (Elixir)  
+**License:** MIT
 
-## Overview
+## Abstract
 
-This document specifies aria_planner-specific extensions to HDDL 2.1 (Hierarchical Domain Definition Language). HDDL 2.1 already provides standard support for tasks, methods, actions, durative actions, durative methods, temporal constraints (with numeric durations), and predicates. This extension adds only aria_planner-specific features: ISO 8601 temporal format, commands, multigoals, goal methods, domain metadata, entities, predicate schemas, planner state, plans, blacklisting, solution graphs, and entity requirements.
+This document formally specifies aria_planner-specific extensions to HDDL 2.1 (Hierarchical Domain Definition Language). HDDL 2.1 provides standard support for tasks, methods, actions, durative actions, durative methods, temporal constraints (with numeric durations), and predicates. This extension adds aria_planner-specific features: ISO 8601 temporal format, commands, multigoals, goal methods, domain metadata, entities, predicate schemas, planner state, plans, blacklisting, solution graphs, and entity requirements.
+
+All extensions are prefixed with `:aria-` to ensure backward compatibility with standard HDDL 2.1 parsers, which can safely ignore these blocks.
+
+## Document Status
+
+This specification is **implemented and actively maintained**. The implementation is located in the `aria_planner` codebase under `lib/hddl/` and is fully tested. This document serves as the authoritative reference for the HDDL aria extension syntax and semantics.
+
+## Conformance
+
+A conforming HDDL parser that supports aria extensions must:
+
+1. **Parse all `:aria-*` blocks** without error
+2. **Support ISO 8601 temporal formats** for durations and datetimes
+3. **Handle all extension constructs** listed in this specification
+4. **Maintain backward compatibility** with standard HDDL 2.1 (ignore unknown `:aria-*` blocks)
+
+A conforming HDDL exporter that supports aria extensions must:
+
+1. **Export all aria_planner structures** to valid HDDL syntax
+2. **Preserve ISO 8601 temporal formats** when present
+3. **Include all extension metadata** in exported HDDL
+4. **Generate valid HDDL 2.1** that standard parsers can process (with extensions ignored)
 
 ## Context
 
 aria_planner is a hierarchical task network (HTN) planner with the following key features:
 
 ### Core Planning Features
+
 - **Tasks**: High-level goals decomposed into subtasks
 - **Actions**: Primitive operations that change world state
 - **Commands**: Special actions with side effects and failure handling
@@ -21,12 +49,14 @@ aria_planner is a hierarchical task network (HTN) planner with the following key
 - **Multigoals**: Complex goals requiring multiple subgoals
 
 ### Temporal Features
+
 - **Duration**: ISO 8601 duration strings (e.g., `"PT5M"`, `"PT1H30M"`)
 - **Start/End Times**: ISO 8601 datetime strings (e.g., `"2025-01-01T10:00:00Z"`)
 - **STN Support**: Simple Temporal Network for constraint solving
 - **Timeline**: Temporal events and intervals tracking
 
 ### Domain Features
+
 - **Domain Metadata**: ID, name, description, version, state, domain_type
 - **Domain States**: active, archived, deprecated
 - **Domain Types**: blocks_world, tactical, navigation, social, economic, exploration, stealth, custom
@@ -35,6 +65,7 @@ aria_planner is a hierarchical task network (HTN) planner with the following key
 - **Predicate Schemas**: Multi-valued predicates with metadata
 
 ### State and Execution Features
+
 - **Planner State**: current_time, timeline, entity_capabilities, facts
 - **Facts**: Allocentric fact structure (subject_id => predicate_table => fact_value)
 - **Plans**: Objectives, constraints, solution graphs, execution status
@@ -43,6 +74,7 @@ aria_planner is a hierarchical task network (HTN) planner with the following key
 - **Solution Graphs**: Node-based solution representation with lazy refinement
 
 ### Entity Requirements
+
 - **Entity Requirements**: Structured entity capability requirements
 - **Entity Capabilities**: Tracking entity capabilities in planner state
 
@@ -51,7 +83,7 @@ aria_planner is a hierarchical task network (HTN) planner with the following key
 These features are **standard HDDL 2.1** and are documented in the HDDL 2.1 specification:
 
 - **Tasks**: `(:task ...)` - Standard HDDL
-- **Methods**: `(:method ...)` - Standard HDDL for task decomposition  
+- **Methods**: `(:method ...)` - Standard HDDL for task decomposition
 - **Actions**: `(:action ...)` - Standard HDDL
 - **Durative Actions**: `(:durative-action ...)` with numeric `:duration` - HDDL 2.1 standard
 - **Durative Methods**: `(:durative-method ...)` with numeric `:duration` - HDDL 2.1 standard
@@ -124,6 +156,10 @@ Add optional `:aria-temporal-metadata` block to durative actions and durative me
 
 ### 2. ISO 8601 Temporal Format for Durative Actions
 
+**Extension Identifier:** `:aria-temporal-metadata` (within `:durative-action`)  
+**Base Construct:** `(:durative-action ...)` - Standard HDDL 2.1  
+**Status:** ✅ Implemented
+
 **Note:** `(:durative-action ...)` is standard HDDL 2.1. Only the `:aria-temporal-metadata` block is an extension.
 
 Standard HDDL 2.1 durative actions use numeric durations. This extension adds ISO 8601 format support:
@@ -155,6 +191,10 @@ Standard HDDL 2.1 durative actions use numeric durations. This extension adds IS
 
 ### 3. ISO 8601 Temporal Format for Durative Methods
 
+**Extension Identifier:** `:aria-temporal-metadata` (within `:durative-method`)  
+**Base Construct:** `(:durative-method ...)` - Standard HDDL 2.1  
+**Status:** ✅ Implemented
+
 **Note:** `(:durative-method ...)` is standard HDDL 2.1. Only the `:aria-temporal-metadata` block is an extension.
 
 ```hddl
@@ -180,7 +220,10 @@ Standard HDDL 2.1 durative actions use numeric durations. This extension adds IS
 
 ### 4. Entity Requirements Syntax
 
-Entity requirements specify what entities (agents, objects, resources) are needed:
+**Extension Identifier:** `:requires-entities` (within `:aria-temporal-metadata`)  
+**Status:** ✅ Implemented
+
+Entity requirements specify what entities (agents, objects, resources) are needed for an action, command, or method:
 
 ```hddl
 (:requires-entities (
@@ -201,7 +244,10 @@ Entity requirements specify what entities (agents, objects, resources) are neede
 
 ### 5. Commands (Special Actions with Side Effects)
 
-Commands are distinct from regular actions - they have side effects and failure handling:
+**Extension Identifier:** `(:command ...)` and `:aria-command-metadata`  
+**Status:** ✅ Implemented
+
+Commands are distinct from regular actions - they have side effects and failure handling. This is an aria_planner-specific extension not present in standard HDDL 2.1:
 
 ```hddl
 (:command c_cross_east
@@ -231,7 +277,10 @@ Commands are distinct from regular actions - they have side effects and failure 
 
 ### 6. Multigoals
 
-Multigoals represent complex goals requiring multiple subgoals:
+**Extension Identifier:** `(:multigoal ...)`  
+**Status:** ✅ Implemented
+
+Multigoals represent complex goals requiring multiple subgoals. This is an aria_planner-specific extension not present in standard HDDL 2.1:
 
 ```hddl
 (:multigoal transport_all_items
@@ -252,7 +301,10 @@ Multigoals represent complex goals requiring multiple subgoals:
 
 ### 7. Goal Methods
 
-Methods that decompose goals into subtasks:
+**Extension Identifier:** `(:goal-method ...)`  
+**Status:** ✅ Implemented
+
+Methods that decompose goals into subtasks. This is an aria_planner-specific extension not present in standard HDDL 2.1:
 
 ```hddl
 (:goal-method achieve_transport
@@ -269,12 +321,15 @@ Methods that decompose goals into subtasks:
 
 ### 8. Domain Metadata
 
-Domain-level metadata including ID, version, state, and type:
+**Extension Identifier:** `:aria-domain-metadata`  
+**Status:** ✅ Implemented
+
+Domain-level metadata including ID, version, state, and type. This is an aria_planner-specific extension not present in standard HDDL 2.1:
 
 ```hddl
 (define (domain fox_geese_corn)
   (:requirements :strips :typing :temporal :hierarchical)
-  
+
   (:aria-domain-metadata
     :id "01234567-89ab-cdef-0123-456789abcdef"  ; UUIDv7
     :name "Fox Geese Corn Domain"
@@ -287,14 +342,17 @@ Domain-level metadata including ID, version, state, and type:
       :created-at "2025-01-01T10:00:00Z"
     )
   )
-  
+
   ; ... predicates, actions, methods ...
 )
 ```
 
 ### 9. Entities
 
-Domain entities with capabilities:
+**Extension Identifier:** `(:entities ...)`  
+**Status:** ✅ Implemented
+
+Domain entities with capabilities. This is an aria_planner-specific extension not present in standard HDDL 2.1:
 
 ```hddl
 (:entities
@@ -313,6 +371,10 @@ Domain entities with capabilities:
 ```
 
 ### 10. Predicate Schemas
+
+**Extension Identifier:** `:aria-predicate-schemas`  
+**Base Construct:** `(:predicates ...)` - Standard HDDL  
+**Status:** ✅ Implemented
 
 **Note:** `(:predicates ...)` is standard HDDL. Only `:aria-predicate-schemas` is an extension.
 
@@ -367,7 +429,10 @@ Initial planner state with current time, timeline, entity capabilities, and fact
 
 ### 12. Plans
 
-Plan structure with objectives, constraints, and execution metadata:
+**Extension Identifier:** `:aria-plan`  
+**Status:** ✅ Implemented
+
+Plan structure with objectives, constraints, and execution metadata. This is an aria_planner-specific extension not present in standard HDDL 2.1:
 
 ```hddl
 (:aria-plan
@@ -400,6 +465,9 @@ Plan structure with objectives, constraints, and execution metadata:
 
 ### 13. STN (Simple Temporal Network) with ISO 8601 Format
 
+**Extension Identifier:** `:aria-temporal-constraints`  
+**Status:** ✅ Implemented (Parser support; STN solver implementation in progress)
+
 **Note:** HDDL 2.1 supports temporal constraints with numeric values. This extension adds ISO 8601 format support for STN constraints.
 
 ```hddl
@@ -419,7 +487,10 @@ Plan structure with objectives, constraints, and execution metadata:
 
 ### 14. Blacklisting
 
-Blacklisted commands and methods for failure handling:
+**Extension Identifier:** `:aria-blacklist`  
+**Status:** ✅ Implemented
+
+Blacklisted commands and methods for failure handling. This is an aria_planner-specific extension not present in standard HDDL 2.1:
 
 ```hddl
 (:aria-blacklist
@@ -927,7 +998,7 @@ This example demonstrates all aria_planner features in HDDL format:
 ; Problem definition with plan
 (define (problem fox_geese_corn_problem)
   (:domain fox_geese_corn)
-  
+
   ; Plan structure
   (:aria-plan
     :id "01234567-89ab-cdef-0123-456789abcdef"
@@ -969,6 +1040,7 @@ This example demonstrates all aria_planner features in HDDL format:
 ### Standard HDDL 2.1 Parser Features (Not aria_planner Extensions)
 
 Standard HDDL 2.1 parsers already handle:
+
 - Tasks, methods, actions (standard HDDL)
 - Durative actions and durative methods (HDDL 2.1)
 - Temporal constraints with numeric durations (HDDL 2.1)
@@ -978,39 +1050,46 @@ Standard HDDL 2.1 parsers already handle:
 ### Required aria_planner Extension Parser Features
 
 1. **ISO 8601 Duration Parsing** (Extension)
+
    - Parse `PT[n]H[n]M[n]S` format
    - Convert to numeric seconds for HDDL 2.1 compatibility
    - Validate duration format
    - Parse `:aria-temporal-metadata :duration` blocks
 
 2. **ISO 8601 Datetime Parsing** (Extension)
+
    - Parse `YYYY-MM-DDTHH:mm:ssZ` format
    - Support timezone offsets
    - Validate datetime format
    - Parse `:aria-temporal-metadata :start-time` and `:end-time`
 
 3. **Entity Requirements Parsing** (Extension)
+
    - Parse `(:entity <type> :capabilities (<cap1> <cap2> ...))` syntax
    - Convert to `EntityRequirement` structs
    - Validate entity types and capabilities
 
 4. **Commands Parsing** (Extension - aria_planner-specific)
+
    - Distinguish commands from regular actions
    - Parse `(:command ...)` declarations
    - Parse command metadata (failure-handling, max-retries, side-effects)
    - Build command registry separate from action registry
 
 5. **Multigoals Parsing** (Extension - aria_planner-specific)
+
    - Parse `(:multigoal ...)` declarations with goal-tag and goals list
    - Support multigoal methods for decomposition
    - Map to `MultiGoal` structs
 
 6. **Goal Methods Parsing** (Extension - aria_planner-specific)
+
    - Parse `(:goal-method ...)` declarations
    - Support goal decomposition into subtasks
    - Map to goal method dictionary
 
 7. **Domain Metadata Parsing** (Extension - aria_planner-specific)
+
    - Parse `:aria-domain-metadata` blocks
    - Parse domain ID, name, description, version, state, domain_type
    - Validate domain types (blocks_world, tactical, navigation, etc.)
@@ -1018,24 +1097,28 @@ Standard HDDL 2.1 parsers already handle:
    - Map to `PlanningDomain` struct
 
 8. **Entities Parsing** (Extension - aria_planner-specific)
+
    - Parse `(:entities ...)` declarations
    - Parse entity declarations with type and capabilities
    - Support entity metadata
    - Build entity capability registry
 
 9. **Predicate Schemas Parsing** (Extension - aria_planner-specific)
+
    - Parse `:aria-predicate-schemas` blocks
    - Support categories (state, action, effect, goal)
    - Support multi-valued flags
    - Map to `PredicateSchema` structs
 
 10. **Planner State Parsing** (Extension - aria_planner-specific)
+
     - Parse `:aria-initial-state` blocks
     - Parse current_time, timeline, entity_capabilities, facts
     - Support allocentric fact structure (subject_id => predicate_table => fact_value)
     - Map to `Planner.State` struct
 
 11. **Plan Parsing** (Extension - aria_planner-specific)
+
     - Parse `:aria-plan` blocks
     - Parse plan structure with objectives, constraints, execution metadata
     - Support execution status (planned, executing, completed, failed)
@@ -1043,12 +1126,14 @@ Standard HDDL 2.1 parsers already handle:
     - Map to `Plan` struct
 
 12. **Blacklisting Parsing** (Extension - aria_planner-specific)
+
     - Parse `:aria-blacklist` blocks
     - Parse blacklisted commands and methods
     - Support blacklist state management
     - Map to blacklist state structure
 
 13. **Solution Graph Parsing** (Extension - aria_planner-specific)
+
     - Parse `:aria-solution-graph` blocks
     - Parse node-based solution graph representation
     - Support node types (D, A, G, M)
@@ -1084,6 +1169,7 @@ Standard HDDL 2.1 parsers already handle:
 This extension provides complete coverage of all aria_planner features:
 
 ### ✅ Core Planning Features (Extensions Only)
+
 - **Commands**: Special actions with side effects and failure handling (aria_planner-specific)
 - **Goal Methods**: Methods that decompose goals (aria_planner-specific)
 - **Multigoals**: Complex goals requiring multiple subgoals (aria_planner-specific)
@@ -1092,6 +1178,7 @@ This extension provides complete coverage of all aria_planner features:
 **Note:** Tasks, standard methods, actions, and durative actions/methods are standard HDDL 2.1 (not documented here).
 
 ### ✅ Temporal Features (Extensions Only)
+
 - **ISO 8601 Durations**: Duration strings (PT5M, PT1H30M, etc.) - Extension (HDDL 2.1 uses numeric)
 - **ISO 8601 Datetimes**: Start/end time support - Extension (HDDL 2.1 has no absolute time)
 - **STN with ISO 8601**: Simple Temporal Network with ISO 8601 format - Extension
@@ -1100,6 +1187,7 @@ This extension provides complete coverage of all aria_planner features:
 **Note:** HDDL 2.1 supports temporal constraints with numeric durations (standard, not documented here).
 
 ### ✅ Domain Features (Extensions Only)
+
 - **Domain Metadata**: ID, name, description, version, state, domain_type - Extension
 - **Domain States**: active, archived, deprecated - Extension
 - **Domain Types**: blocks_world, tactical, navigation, social, economic, exploration, stealth, custom - Extension
@@ -1109,6 +1197,7 @@ This extension provides complete coverage of all aria_planner features:
 **Note:** Predicates are standard HDDL (not documented here).
 
 ### ✅ State and Execution Features
+
 - **Planner State**: current_time, timeline, entity_capabilities, facts
 - **Facts**: Allocentric fact structure
 - **Plans**: Objectives, constraints, solution graphs, execution status
@@ -1117,6 +1206,7 @@ This extension provides complete coverage of all aria_planner features:
 - **Solution Graphs**: Node-based solution representation
 
 ### ✅ Entity Requirements
+
 - **Entity Requirements**: Structured entity capability requirements
 - **Entity Capabilities**: Tracking in planner state
 
@@ -1133,43 +1223,93 @@ Potential future enhancements:
 
 ## References
 
+### Standards and Specifications
+
 - [HDDL 2.1 Paper](https://arxiv.org/abs/2306.07353) - Temporal HTN Planning Formalism
 - [PDDL 2.1 Specification](https://planning.wiki/ref/pddl21) - Temporal Planning Language
 - [ISO 8601 Standard](https://en.wikipedia.org/wiki/ISO_8601) - Date and Time Format
+
+### Implementation
+
 - [aria_planner Documentation](../../README.md) - aria_planner Implementation
+- [HDDL Parser](../../lib/hddl/parser.ex) - Parser implementation using NimbleParsec
+- [HDDL Importer](../../lib/hddl/importer.ex) - AST to aria_planner struct conversion
+- [HDDL Exporter](../../lib/hddl/exporter.ex) - aria_planner struct to HDDL conversion
+- [HDDL Public API](../../lib/hddl.ex) - Convenience functions for import/export
+- [Test Fixtures](../../test/fixtures/hddl/) - Example HDDL domain and problem files
 
 ## Implementation Status
 
-**Status:** Proposed
+**Status:** ✅ Implemented
 
-This extension is currently a specification. Implementation requires:
+This extension has been fully implemented in aria_planner. The implementation includes:
 
-### Core Parser Features
-- HDDL parser updates to support all `:aria-*` blocks
-- ISO 8601 parsing library integration (duration and datetime)
-- Entity requirement validation and parsing
-- STN constraint network builder
+### Core Parser Features ✅
 
-### Domain Features
-- Domain metadata parsing (ID, version, state, type)
-- Entity declarations and capability tracking
-- Predicate schema parsing with categories
-- Command parsing (distinct from actions)
-- Multigoal and goal method parsing
+- **Parser Module:** `AriaPlanner.HDDL.Parser` - Full HDDL 2.1 + aria_planner extensions parser using NimbleParsec
+- **ISO 8601 Support:** Integrated parsing for ISO 8601 duration and datetime strings
+- **Entity Requirements:** Full parsing and validation of entity capability requirements
+- **STN Support:** Parser support for Simple Temporal Network constraints with ISO 8601 format
 
-### State and Execution Features
-- Planner state parsing (current_time, timeline, entity_capabilities, facts)
-- Plan structure parsing (objectives, constraints, execution status)
-- Blacklist state parsing
-- Solution graph parsing and construction
+### Domain Features ✅
 
-### Conversion Utilities
-- Conversion utilities between HDDL 2.1 numeric and ISO 8601 formats
-- Mapping utilities from HDDL structures to aria_planner structs
-- Validation utilities for all aria_planner features
+- **Domain Metadata:** `:aria-domain-metadata` parsing with ID, version, state, domain_type
+- **Entities:** `(:entities ...)` declarations with type, capabilities, and metadata
+- **Predicate Schemas:** `:aria-predicate-schemas` parsing with categories and metadata
+- **Commands:** `(:command ...)` parsing distinct from actions with command-specific metadata
+- **Multigoals:** `(:multigoal ...)` and `(:multigoal-method ...)` parsing
+- **Goal Methods:** `(:goal-method ...)` parsing for goal decomposition
 
-### Testing Requirements
-- Test backward compatibility with standard HDDL 2.1 parsers
-- Test all aria_planner features are correctly parsed
-- Test conversion between formats
-- Test validation of all structures
+### Import/Export Features ✅
+
+- **Importer Module:** `AriaPlanner.HDDL.Importer` - Converts HDDL AST to aria_planner structs
+- **Exporter Module:** `AriaPlanner.HDDL.Exporter` - Converts aria_planner structs to HDDL format
+- **Public API:** `AriaPlanner.HDDL` - Convenience functions for file and string operations
+
+### State and Execution Features ✅
+
+- **Planner State:** `:aria-initial-state` parsing (current_time, timeline, entity_capabilities, facts)
+- **Plan Structure:** `:aria-plan` parsing (objectives, constraints, execution status)
+- **Blacklisting:** `:aria-blacklist` parsing for blacklisted commands and methods
+- **Solution Graphs:** Support for solution graph representation (future enhancement)
+
+### Conversion Utilities ✅
+
+- **Dual Format Support:** Both HDDL 2.1 numeric and ISO 8601 formats supported
+- **Struct Mapping:** Complete mapping from HDDL structures to aria_planner structs
+- **Validation:** Integrated validation through aria_planner struct creation
+
+### Testing ✅
+
+- **Parser Tests:** `test/hddl/parser_test.exs` - Comprehensive parser test coverage
+- **Importer Tests:** `test/hddl/importer_test.exs` - Import functionality tests
+- **Exporter Tests:** `test/hddl/exporter_test.exs` - Export functionality tests
+- **Roundtrip Tests:** `test/hddl/roundtrip_test.exs` - Import/export roundtrip validation
+- **Fixtures:** `test/fixtures/hddl/` - Complete domain and problem examples
+
+### Implementation Location
+
+All implementation code is located in:
+
+- **Parser:** `lib/hddl/parser.ex`
+- **Importer:** `lib/hddl/importer.ex`
+- **Exporter:** `lib/hddl/exporter.ex`
+- **Public API:** `lib/hddl.ex`
+- **Tests:** `test/hddl/`
+
+### Usage Example
+
+```elixir
+# Import HDDL domain from file
+{:ok, domain} = AriaPlanner.HDDL.import_from_file("domains/fox_geese_corn.hddl")
+
+# Import HDDL domain from string
+hddl_string = "(define (domain test) (:requirements :strips))"
+{:ok, domain} = AriaPlanner.HDDL.import_from_string(hddl_string)
+
+# Export domain to HDDL
+hddl_string = AriaPlanner.HDDL.export_to_string(domain)
+
+# Export domain to file
+:ok = AriaPlanner.HDDL.export_to_file(domain, "output.hddl")
+```
