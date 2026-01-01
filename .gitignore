@@ -68,3 +68,4 @@ priv/**/*.dll
 
 # Escript executables
 aria_dungeon_optimizer
+thirdparty/aria_planner/
