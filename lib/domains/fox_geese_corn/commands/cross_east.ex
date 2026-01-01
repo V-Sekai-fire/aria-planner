@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossEast do
   @moduledoc """
@@ -52,7 +56,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossEast do
         |> BoatLocation.set("east")
 
       # Check safety constraints
-      if FoxGeeseCorn.is_safe?(new_state) do
+      if FoxGeeseCorn.safe?(new_state) do
         {:ok, new_state}
       else
         {:error, "Crossing would result in unsafe state"}

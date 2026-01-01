@@ -174,7 +174,7 @@ defmodule AriaPlanner.Domains.NeighboursTest do
       {:ok, state} = AssignValue.c_assign_value(state, 2, 1, 1)
       {:ok, state} = AssignValue.c_assign_value(state, 2, 2, 2)
 
-      assert Neighbours.is_complete?(state)
+      assert Neighbours.complete?(state)
       objective = Neighbours.calculate_objective(state)
       assert objective == 6
     end

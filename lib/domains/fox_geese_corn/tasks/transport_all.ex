@@ -110,7 +110,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Tasks.TransportAll do
         boat_location: "east"
     }
 
-    FoxGeeseCorn.is_safe?(new_state)
+    FoxGeeseCorn.safe?(new_state)
   end
 
   defp generate_east_to_west_crossing(state) do

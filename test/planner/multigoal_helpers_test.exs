@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Planner.MultiGoalHelpersTest do
   use ExUnit.Case, async: true
@@ -7,33 +11,33 @@ defmodule AriaPlanner.Planner.MultiGoalHelpersTest do
 
   alias AriaPlanner.Planner.{MultiGoalHelpers, State}
 
-  describe "is_multigoal_array/1" do
+  describe "multigoal_array?/1" do
     test "returns true for multigoal array" do
       multigoal = [["location", "agent", "kitchen"], ["location", "agent", "bedroom"]]
-      assert MultiGoalHelpers.is_multigoal_array(multigoal) == true
+      assert MultiGoalHelpers.multigoal_array?(multigoal) == true
     end
 
     test "returns false for single unigoal" do
       unigoal = ["location", "agent", "kitchen"]
-      assert MultiGoalHelpers.is_multigoal_array(unigoal) == false
+      assert MultiGoalHelpers.multigoal_array?(unigoal) == false
     end
 
     test "returns false for empty array" do
-      assert MultiGoalHelpers.is_multigoal_array([]) == false
+      assert MultiGoalHelpers.multigoal_array?([]) == false
     end
 
     test "returns false for non-array" do
-      assert MultiGoalHelpers.is_multigoal_array("not an array") == false
+      assert MultiGoalHelpers.multigoal_array?("not an array") == false
     end
 
     test "returns true for wrapped multigoal" do
       wrapped = %{"item" => [["location", "agent", "kitchen"]]}
-      assert MultiGoalHelpers.is_multigoal_array(wrapped) == true
+      assert MultiGoalHelpers.multigoal_array?(wrapped) == true
     end
 
     test "returns false for wrapped non-multigoal" do
       wrapped = %{"item" => ["location", "agent", "kitchen"]}
-      assert MultiGoalHelpers.is_multigoal_array(wrapped) == false
+      assert MultiGoalHelpers.multigoal_array?(wrapped) == false
     end
   end
 

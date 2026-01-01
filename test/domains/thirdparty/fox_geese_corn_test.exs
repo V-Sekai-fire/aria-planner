@@ -88,7 +88,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCornTest do
         boat_location: "east"
       }
 
-      assert FoxGeeseCorn.is_safe?(state) == false
+      assert FoxGeeseCorn.safe?(state) == false
     end
 
     test "detects unsafe state: geese alone with corn" do
@@ -102,7 +102,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCornTest do
         boat_location: "east"
       }
 
-      assert FoxGeeseCorn.is_safe?(state) == false
+      assert FoxGeeseCorn.safe?(state) == false
     end
 
     test "detects safe state: all together" do
@@ -116,7 +116,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCornTest do
         boat_location: "west"
       }
 
-      assert FoxGeeseCorn.is_safe?(state) == true
+      assert FoxGeeseCorn.safe?(state) == true
     end
 
     test "detects safe state: only one type" do
@@ -130,7 +130,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCornTest do
         boat_location: "east"
       }
 
-      assert FoxGeeseCorn.is_safe?(state) == true
+      assert FoxGeeseCorn.safe?(state) == true
     end
   end
 
@@ -194,7 +194,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCornTest do
       # Should fail or prevent unsafe state
       case result do
         {:error, _} -> :ok
-        {:ok, new_state} -> refute FoxGeeseCorn.is_safe?(new_state)
+        {:ok, new_state} -> refute FoxGeeseCorn.safe?(new_state)
       end
     end
   end
@@ -218,18 +218,18 @@ defmodule AriaPlanner.Domains.FoxGeeseCornTest do
       # Valid solution using boat capacity of 2: transport geese first, return empty, transport fox and corn together
       {:ok, state1} = CrossEast.c_cross_east(initial_state, 0, 1, 0)
       assert state1.boat_location == "east"
-      assert FoxGeeseCorn.is_safe?(state1)
+      assert FoxGeeseCorn.safe?(state1)
 
       {:ok, state2} = CrossWest.c_cross_west(state1, 0, 0, 0)
       assert state2.boat_location == "west"
-      assert FoxGeeseCorn.is_safe?(state2)
+      assert FoxGeeseCorn.safe?(state2)
 
       {:ok, state3} = CrossEast.c_cross_east(state2, 1, 0, 1)
       assert state3.boat_location == "east"
       assert state3.east_fox == 1
       assert state3.east_geese == 1
       assert state3.east_corn == 1
-      assert FoxGeeseCorn.is_safe?(state3)
+      assert FoxGeeseCorn.safe?(state3)
     end
 
     test "calculates objective value" do

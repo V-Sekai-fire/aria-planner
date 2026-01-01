@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.Neighbours do
   @moduledoc """
@@ -194,8 +198,8 @@ defmodule AriaPlanner.Domains.Neighbours do
   @doc """
   Checks if all cells are assigned.
   """
-  @spec is_complete?(state :: map()) :: boolean()
-  def is_complete?(state) do
+  @spec complete?(state :: map()) :: boolean()
+  def complete?(state) do
     state.grid
     |> Map.values()
     |> Enum.all?(fn value -> value > 0 end)

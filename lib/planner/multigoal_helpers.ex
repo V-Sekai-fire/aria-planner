@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Planner.MultiGoalHelpers do
   @moduledoc """
@@ -24,25 +28,25 @@ defmodule AriaPlanner.Planner.MultiGoalHelpers do
 
   ## Examples
 
-      iex> AriaPlanner.Planner.MultiGoalHelpers.is_multigoal_array([["location", "agent", "kitchen"]])
+      iex> AriaPlanner.Planner.MultiGoalHelpers.multigoal_array?([["location", "agent", "kitchen"]])
       true
 
-      iex> AriaPlanner.Planner.MultiGoalHelpers.is_multigoal_array(["location", "agent", "kitchen"])
+      iex> AriaPlanner.Planner.MultiGoalHelpers.multigoal_array?(["location", "agent", "kitchen"])
       false
 
-      iex> AriaPlanner.Planner.MultiGoalHelpers.is_multigoal_array(%{"item" => [["location", "agent", "kitchen"]], "goal_tag" => "tag1"})
+      iex> AriaPlanner.Planner.MultiGoalHelpers.multigoal_array?(%{"item" => [["location", "agent", "kitchen"]], "goal_tag" => "tag1"})
       true
   """
-  @spec is_multigoal_array(term()) :: boolean()
-  def is_multigoal_array(term) when is_map(term) do
+  @spec multigoal_array?(term()) :: boolean()
+  def multigoal_array?(term) when is_map(term) do
     # Check if it's a wrapped multigoal (Dictionary with "item" key)
     case Map.get(term, "item") || Map.get(term, :item) do
       nil -> false
-      item -> is_multigoal_array(item)
+      item -> multigoal_array?(item)
     end
   end
 
-  def is_multigoal_array(term) when is_list(term) do
+  def multigoal_array?(term) when is_list(term) do
     # Check if it's a non-empty list where first element is also a list (unigoal)
     case term do
       [] -> false
@@ -51,7 +55,7 @@ defmodule AriaPlanner.Planner.MultiGoalHelpers do
     end
   end
 
-  def is_multigoal_array(_), do: false
+  def multigoal_array?(_), do: false
 
   @doc """
   Get goal tag from multigoal.
@@ -132,7 +136,7 @@ defmodule AriaPlanner.Planner.MultiGoalHelpers do
         multigoal
       end
 
-    if is_multigoal_array(actual_multigoal) do
+    if multigoal_array?(actual_multigoal) do
       Enum.filter(actual_multigoal, fn unigoal ->
         not goal_achieved?(state, unigoal)
       end)

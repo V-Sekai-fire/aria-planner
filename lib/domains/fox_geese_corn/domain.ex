@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.FoxGeeseCorn do
   @moduledoc """
@@ -152,8 +156,8 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn do
   @doc """
   Checks if a state is safe (no fox with geese alone, no geese with corn alone).
   """
-  @spec is_safe?(state :: map()) :: boolean()
-  def is_safe?(state) do
+  @spec safe?(state :: map()) :: boolean()
+  def safe?(state) do
     west_safe = check_side_safe(state.west_fox, state.west_geese, state.west_corn)
     east_safe = check_side_safe(state.east_fox, state.east_geese, state.east_corn)
     west_safe and east_safe

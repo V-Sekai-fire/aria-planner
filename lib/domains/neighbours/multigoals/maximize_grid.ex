@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.Neighbours.Multigoals.MaximizeGrid do
   @moduledoc """
@@ -15,7 +19,7 @@ defmodule AriaPlanner.Domains.Neighbours.Multigoals.MaximizeGrid do
 
   @spec m_maximize_grid(state :: map()) :: [tuple()]
   def m_maximize_grid(state) do
-    if Neighbours.is_complete?(state) do
+    if Neighbours.complete?(state) do
       []
     else
       # Generate goals for all unassigned cells
