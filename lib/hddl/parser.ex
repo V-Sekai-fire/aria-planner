@@ -14,19 +14,21 @@ defmodule AriaPlanner.HDDL.Parser do
   - Actions, durative actions, methods, commands
   - aria_planner extensions: `:aria-*` blocks
 
-  ## Migration to SourcerorStyle
+  ## Migration to RecursiveDescent
 
-  This module now delegates all parsing to `AriaPlanner.HDDL.Parser.SourcerorStyle`
+  This module now delegates all parsing to `AriaPlanner.HDDL.Parser.RecursiveDescent`
   which uses recursive descent parsing with pattern matching instead of NimbleParsec.
   """
 
+  alias AriaPlanner.HDDL.Parser.RecursiveDescent
+
   # NOTE: All NimbleParsec parser definitions have been removed.
-  # The main parse/1 function delegates to AriaPlanner.HDDL.Parser.SourcerorStyle.parse/1
+  # The main parse/1 function delegates to AriaPlanner.HDDL.Parser.RecursiveDescent.parse/1
   # which handles all parsing using recursive descent with pattern matching.
 
-  # Public API - delegates to SourcerorStyle parser
+  # Public API - delegates to RecursiveDescent parser
   @doc """
-  Parses an HDDL string and returns an AST using Sourceror-style parsing.
+  Parses an HDDL string and returns an AST using recursive descent parsing.
 
   ## Examples
 
@@ -36,7 +38,7 @@ defmodule AriaPlanner.HDDL.Parser do
   """
   @spec parse(String.t()) :: {:ok, term(), String.t(), integer(), integer(), integer()} | {:error, String.t()}
   def parse(hddl_string) when is_binary(hddl_string) do
-    case AriaPlanner.HDDL.Parser.SourcerorStyle.parse(hddl_string) do
+    case RecursiveDescent.parse(hddl_string) do
       {:ok, ast} ->
         normalized_ast = normalize_ast(ast)
         {:ok, normalized_ast, "", 0, 0, 0}

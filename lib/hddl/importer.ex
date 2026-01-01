@@ -329,7 +329,7 @@ defmodule AriaPlanner.HDDL.Importer do
   end
 
   defp import_entity(entity_map) when is_map(entity_map) do
-    # New format from SourcerorStyle parser:
+    # New format from RecursiveDescent parser:
     # %{type: :entity, name: ..., entity_type: ..., capabilities: ..., metadata: ...}
     %{
       id: UUIDv7.generate(),

@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
-defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
+defmodule AriaPlanner.HDDL.Parser.RecursiveDescent do
   @moduledoc """
-  HDDL parser using Sourceror-style pattern matching and AST transformation.
+  HDDL parser using recursive descent parsing with pattern matching and AST transformation.
 
   This parser uses recursive descent parsing with pattern matching instead of
-  NimbleParsec combinators, inspired by Sourceror's approach to code transformation.
+  NimbleParsec combinators, following a pattern-matching-based approach to code transformation.
   """
 
   @type token ::
@@ -28,7 +28,7 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
 
   ## Examples
 
-      iex> AriaPlanner.HDDL.Parser.SourcerorStyle.parse("(define (domain test) ())")
+      iex> AriaPlanner.HDDL.Parser.RecursiveDescent.parse("(define (domain test) ())")
       {:ok, {:domain, "test", []}}
   """
   @spec parse(String.t()) :: {:ok, hddl_ast()} | {:error, String.t()}
@@ -52,13 +52,11 @@ defmodule AriaPlanner.HDDL.Parser.SourcerorStyle do
 
   @spec tokenize(String.t()) :: {:ok, [token()]} | {:error, String.t()}
   defp tokenize(source) do
-    try do
-      source
-      |> String.to_charlist()
-      |> tokenize([], [])
-    rescue
-      e -> {:error, "Tokenization error: #{inspect(e)}"}
-    end
+    source
+    |> String.to_charlist()
+    |> tokenize([], [])
+  rescue
+    e -> {:error, "Tokenization error: #{inspect(e)}"}
   end
 
   @spec tokenize([char()], [char()], [token()]) :: {:ok, [token()]} | {:error, String.t()}

@@ -4,7 +4,7 @@
 defmodule AriaPlanner.HDDL.Parser.Helpers do
   @moduledoc """
   Helper functions for HDDL parser.
-  
+
   Provides utility functions for transforming parsed results into structured tuples.
   This module delegates to specialized sub-modules for organization.
   """
@@ -18,7 +18,7 @@ defmodule AriaPlanner.HDDL.Parser.Helpers do
   end
 
   # NOTE: The following functions were removed as they're no longer needed
-  # with the Sourceror-style parser. They're kept as stubs for backward compatibility.
+  # with the recursive descent parser. They're kept as stubs for backward compatibility.
   defdelegate wrap_in_list(value), to: AriaPlanner.HDDL.Parser.Helpers.Utils
   defdelegate wrap_domain_name(name), to: AriaPlanner.HDDL.Parser.Helpers.Utils
   defdelegate concat_any_reduce(acc), to: AriaPlanner.HDDL.Parser.Helpers.Utils
@@ -38,5 +38,7 @@ defmodule AriaPlanner.HDDL.Parser.Helpers do
 
   # Legacy function name for backward compatibility
   @spec build_domain_tuple_from_accumulated(list()) :: {:domain, atom(), list()}
-  defdelegate build_domain_tuple_from_accumulated(accumulated), to: AriaPlanner.HDDL.Parser.Helpers.Domain, as: :build_domain_tuple_from_name_and_elements
+  defdelegate build_domain_tuple_from_accumulated(accumulated),
+    to: AriaPlanner.HDDL.Parser.Helpers.Domain,
+    as: :build_domain_tuple_from_name_and_elements
 end
