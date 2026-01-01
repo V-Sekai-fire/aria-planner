@@ -15,10 +15,10 @@
     "m": 2,
     "n": 4
   },
-  "generated_at": "2026-01-01T19:54:54.935476Z",
+  "generated_at": "2026-01-01T19:56:17.636037Z",
   "planning_metadata": {
     "planning_duration_ms": 800000,
-    "planning_timestamp": "2026-01-01T19:54:54.934171Z"
+    "planning_timestamp": "2026-01-01T19:56:17.636010Z"
   },
   "problem_name": "neighbours_problem_neightbours_new_2",
   "solution_nodes": [

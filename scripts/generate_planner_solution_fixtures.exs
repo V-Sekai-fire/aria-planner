@@ -203,6 +203,12 @@ defmodule PlannerSolutionGenerator do
     # Format: %{subject_id => %{predicate => value}}
     case domain_name do
       "fox_geese_corn" ->
+        # Handle both short format (f, g, c) and long format (west_fox, west_geese, west_corn)
+        west_fox = Map.get(initial_state, :west_fox) || Map.get(initial_state, :f, 0)
+        west_geese = Map.get(initial_state, :west_geese) || Map.get(initial_state, :g, 0)
+        west_corn = Map.get(initial_state, :west_corn) || Map.get(initial_state, :c, 0)
+        boat_capacity = Map.get(initial_state, :boat_capacity) || Map.get(initial_state, :k, 2)
+
         boat_location = case Map.get(initial_state, :boat_location, "west") do
           atom when is_atom(atom) -> Atom.to_string(atom)
           str when is_binary(str) -> str
@@ -211,14 +217,14 @@ defmodule PlannerSolutionGenerator do
 
         %{
           "state" => %{
-            west_fox: Map.get(initial_state, :west_fox, 0),
-            west_geese: Map.get(initial_state, :west_geese, 0),
-            west_corn: Map.get(initial_state, :west_corn, 0),
+            west_fox: west_fox,
+            west_geese: west_geese,
+            west_corn: west_corn,
             east_fox: Map.get(initial_state, :east_fox, 0),
             east_geese: Map.get(initial_state, :east_geese, 0),
             east_corn: Map.get(initial_state, :east_corn, 0),
             boat_location: boat_location,
-            boat_capacity: 2
+            boat_capacity: boat_capacity
           }
         }
 
@@ -830,15 +836,21 @@ defmodule PlannerSolutionGenerator do
 
       "fox_geese_corn" ->
         # Reconstruct state by applying all actions
+        # Handle both short format (f, g, c) and long format (west_fox, west_geese, west_corn)
+        west_fox = Map.get(initial_state, :west_fox) || Map.get(initial_state, :f, 1)
+        west_geese = Map.get(initial_state, :west_geese) || Map.get(initial_state, :g, 1)
+        west_corn = Map.get(initial_state, :west_corn) || Map.get(initial_state, :c, 1)
+        boat_capacity = Map.get(initial_state, :boat_capacity) || Map.get(initial_state, :k, 2)
+
         initial_domain_state = %{
-          west_fox: Map.get(initial_state, :west_fox, 1),
-          west_geese: Map.get(initial_state, :west_geese, 1),
-          west_corn: Map.get(initial_state, :west_corn, 1),
+          west_fox: west_fox,
+          west_geese: west_geese,
+          west_corn: west_corn,
           east_fox: Map.get(initial_state, :east_fox, 0),
           east_geese: Map.get(initial_state, :east_geese, 0),
           east_corn: Map.get(initial_state, :east_corn, 0),
           boat_location: Map.get(initial_state, :boat_location, "west"),
-          boat_capacity: 2
+          boat_capacity: boat_capacity
         }
 
         final_domain_state = Enum.reduce(solution_plan, initial_domain_state, fn step, state ->

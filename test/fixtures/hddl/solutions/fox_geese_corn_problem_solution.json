@@ -1,0 +1,80 @@
+{
+  "domain_name": "fox_geese_corn",
+  "execution_status": "completed",
+  "final_state": {
+    "boat_location": "west",
+    "east_corn": 0,
+    "east_fox": 0,
+    "east_geese": 0,
+    "west_corn": 1,
+    "west_fox": 1,
+    "west_geese": 1
+  },
+  "generated_at": "2026-01-01T19:56:17.483395Z",
+  "planning_metadata": {
+    "planning_duration_ms": 900000,
+    "planning_timestamp": "2026-01-01T19:56:17.482176Z"
+  },
+  "problem_name": "fox_geese_corn_problem",
+  "solution_nodes": [
+    {
+      "id": 2,
+      "info": [
+        "c_cross_east",
+        0,
+        1,
+        0
+      ],
+      "status": "C",
+      "type": "A"
+    },
+    {
+      "id": 4,
+      "info": [
+        "c_cross_west",
+        0,
+        0,
+        0
+      ],
+      "status": "C",
+      "type": "A"
+    },
+    {
+      "id": 6,
+      "info": [
+        "c_cross_east",
+        1,
+        0,
+        1
+      ],
+      "status": "C",
+      "type": "A"
+    }
+  ],
+  "solution_sequence": [
+    {
+      "action": "c_cross_east",
+      "args": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "action": "c_cross_west",
+      "args": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "action": "c_cross_east",
+      "args": [
+        1,
+        0,
+        1
+      ]
+    }
+  ]
+}
