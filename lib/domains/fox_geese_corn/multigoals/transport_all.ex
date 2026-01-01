@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.FoxGeeseCorn.Multigoals.TransportAll do
   @moduledoc """
@@ -10,10 +14,12 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Multigoals.TransportAll do
   Returns a list of goals to achieve.
   """
 
+  alias AriaPlanner.Domains.FoxGeeseCorn
+
   alias AriaPlanner.Domains.FoxGeeseCorn.Predicates.{
+    WestCorn,
     WestFox,
-    WestGeese,
-    WestCorn
+    WestGeese
   }
 
   @spec m_transport_all(state :: map()) :: [tuple()]

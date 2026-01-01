@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Planner.UnigoalMetadata do
   @moduledoc """
@@ -21,8 +25,8 @@ defmodule AriaPlanner.Planner.UnigoalMetadata do
   - `end_time` - ISO 8601 datetime for temporal constraints
   """
 
-  alias AriaPlanner.Planner.EntityRequirement
   alias AriaPlanner.Client
+  alias AriaPlanner.Planner.EntityRequirement
 
   @enforce_keys [:predicate, :duration, :requires_entities]
   defstruct [

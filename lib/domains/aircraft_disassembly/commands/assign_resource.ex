@@ -21,8 +21,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
   """
 
   alias AriaPlanner.Domains.AircraftDisassembly.Predicates.ResourceAssigned
-  alias AriaPlanner.Planner.PlannerMetadata
   alias AriaPlanner.Planner.MetadataHelpers
+  alias AriaPlanner.Planner.PlannerMetadata
 
   @spec c_assign_resource(state :: map(), activity :: integer(), resource :: integer()) ::
           {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}

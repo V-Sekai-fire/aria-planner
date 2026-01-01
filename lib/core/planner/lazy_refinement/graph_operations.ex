@@ -12,9 +12,8 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
 
   require Logger
 
-  # alias AriaCore.Planner.State  # Unused - removed to fix compilation warning
-  alias AriaCore.Planner.MultiGoal
   alias AriaCore.Planner.LazyRefinement.NodeUtils
+  alias AriaCore.Planner.MultiGoal
 
   # Helper function to add nodes and edges to the solution graph
   def add_nodes_and_edges(id, parent_node_id, children_node_info_list, solution_graph, methods, actions) do

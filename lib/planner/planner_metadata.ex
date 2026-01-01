@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Planner.PlannerMetadata do
   @moduledoc """
@@ -20,8 +24,8 @@ defmodule AriaPlanner.Planner.PlannerMetadata do
   - `end_time` - ISO 8601 datetime for temporal constraints
   """
 
-  alias AriaPlanner.Planner.EntityRequirement
   alias AriaPlanner.Client
+  alias AriaPlanner.Planner.EntityRequirement
 
   # Use Timex for proper datetime comparison and arithmetic
   use Timex

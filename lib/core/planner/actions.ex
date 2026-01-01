@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Planner.Actions do
   @moduledoc """
@@ -15,8 +19,8 @@ defmodule AriaCore.Planner.Actions do
 
   defstruct [:action_dict]
 
-  @spec new() :: t()
-  def new(), do: %__MODULE__{action_dict: %{}}
+  @spec new :: t()
+  def new, do: %__MODULE__{action_dict: %{}}
 
   @spec add_action(t(), atom(), fun()) :: t()
   def add_action(actions, action_name, fun),

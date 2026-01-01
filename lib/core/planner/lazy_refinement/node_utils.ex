@@ -1,13 +1,17 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Planner.LazyRefinement.NodeUtils do
   @moduledoc """
   Helper functions for node-related utilities in lazy plan refinement.
   """
 
-  alias AriaCore.Planner.State
   alias AriaCore.Planner.MultiGoal
+  alias AriaCore.Planner.State
 
   def get_node_type(node_info, methods, actions) do
     cond do

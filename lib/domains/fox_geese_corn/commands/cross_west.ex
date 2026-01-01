@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossWest do
   @moduledoc """
@@ -18,17 +22,17 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossWest do
   - Boat moves to west side
   """
 
+  alias AriaPlanner.Domains.FoxGeeseCorn
+
   alias AriaPlanner.Domains.FoxGeeseCorn.Predicates.{
-    WestFox,
-    WestGeese,
-    WestCorn,
+    BoatLocation,
+    EastCorn,
     EastFox,
     EastGeese,
-    EastCorn,
-    BoatLocation
+    WestCorn,
+    WestFox,
+    WestGeese
   }
-
-  alias AriaPlanner.Domains.FoxGeeseCorn
 
   defstruct fox: 0, geese: 0, corn: 0
 

@@ -724,8 +724,11 @@ defmodule AriaPlanner.HDDL.Importer do
 
   defp transform_entity_requirement_from_tokens(_), do: {:error, :invalid_format}
 
-  # Extract capabilities from token list: [{:identifier, :agent}, {:keyword, :capabilities}, [keyword: :navigation]]
-  # Also handles nested token structure: [[{:keyword, :entity}, {:identifier, :agent}, {:keyword, :capabilities}, [keyword: :navigation]]]
+  # Extract capabilities from token list:
+  # [{:identifier, :agent}, {:keyword, :capabilities}, [keyword: :navigation]]
+  # Also handles nested token structure:
+  # [[{:keyword, :entity}, {:identifier, :agent}, {:keyword, :capabilities},
+  #   [keyword: :navigation]]]
   defp extract_capabilities_from_tokens(tokens) do
     # Find :capabilities keyword and get the list after it
     case find_capabilities_list(tokens) do

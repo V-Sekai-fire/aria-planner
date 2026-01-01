@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.TinyCvrp.Commands.VisitCustomer do
   @moduledoc """
@@ -19,8 +23,8 @@ defmodule AriaPlanner.Domains.TinyCvrp.Commands.VisitCustomer do
   """
 
   alias AriaPlanner.Domains.TinyCvrp.Predicates.{
-    VehicleAt,
     CustomerVisited,
+    VehicleAt,
     VehicleCapacity
   }
 

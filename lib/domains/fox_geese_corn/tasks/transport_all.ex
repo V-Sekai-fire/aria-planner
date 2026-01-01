@@ -18,13 +18,13 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Tasks.TransportAll do
   alias AriaPlanner.Domains.FoxGeeseCorn
 
   alias AriaPlanner.Domains.FoxGeeseCorn.Predicates.{
-    WestFox,
-    WestGeese,
-    WestCorn,
+    BoatLocation,
+    EastCorn,
     EastFox,
     EastGeese,
-    EastCorn,
-    BoatLocation
+    WestCorn,
+    WestFox,
+    WestGeese
   }
 
   @spec t_transport_all(state :: map()) :: [tuple()]

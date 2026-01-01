@@ -59,7 +59,7 @@ defmodule AriaPlanner.Planner.Temporal.STN do
       slots = AriaPlanner.Planner.Temporal.STN.find_free_slots(stn, 30, 0, 100)
   """
 
-  alias AriaPlanner.Planner.Temporal.STN.{Operations, Consistency, Scheduling, Units}
+  alias AriaPlanner.Planner.Temporal.STN.{Consistency, Operations, Scheduling, Units}
 
   @type constraint :: {number(), number()}
   @type time_point :: String.t()

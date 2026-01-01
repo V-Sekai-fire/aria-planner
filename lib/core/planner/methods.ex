@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Planner.Methods do
   @moduledoc """
@@ -24,8 +28,8 @@ defmodule AriaCore.Planner.Methods do
 
   defstruct [:task_method_dict, :goal_method_dict, :multigoal_method_dict]
 
-  @spec new() :: t()
-  def new(), do: %__MODULE__{task_method_dict: %{}, goal_method_dict: %{}, multigoal_method_dict: %{}}
+  @spec new :: t()
+  def new, do: %__MODULE__{task_method_dict: %{}, goal_method_dict: %{}, multigoal_method_dict: %{}}
 
   @spec add_task_method(t(), atom(), fun()) :: t()
   def add_task_method(methods, task_name, fun),

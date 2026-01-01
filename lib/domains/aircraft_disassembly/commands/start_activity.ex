@@ -22,8 +22,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
   """
 
   alias AriaPlanner.Domains.AircraftDisassembly
-  alias AriaPlanner.Planner.PlannerMetadata
   alias AriaPlanner.Planner.MetadataHelpers
+  alias AriaPlanner.Planner.PlannerMetadata
   use Timex
 
   @spec c_start_activity(state :: map(), activity :: integer(), current_time :: String.t(), list()) ::

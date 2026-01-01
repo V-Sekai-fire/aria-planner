@@ -19,8 +19,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
   - activity_status[activity] = "completed"
   """
 
-  alias AriaPlanner.Planner.PlannerMetadata
   alias AriaPlanner.Planner.MetadataHelpers
+  alias AriaPlanner.Planner.PlannerMetadata
 
   @spec c_complete_activity(state :: map(), activity :: integer()) ::
           {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}

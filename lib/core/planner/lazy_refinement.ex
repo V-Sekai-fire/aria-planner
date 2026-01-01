@@ -14,15 +14,12 @@ defmodule AriaCore.Planner.LazyRefinement do
   require Logger
 
   alias AriaCore.Plan
-  alias AriaCore.Planner.State
-  alias AriaCore.Planner.Methods
   alias AriaCore.Planner.Actions
-  # alias AriaCore.Planner.MultiGoal # Removed unused alias
-  # alias __MODULE__, as: LazyRefinement # Removed unused alias
-
-  alias AriaCore.Planner.LazyRefinement.GraphOperations
   alias AriaCore.Planner.LazyRefinement.Backtracking
+  alias AriaCore.Planner.LazyRefinement.GraphOperations
   alias AriaCore.Planner.LazyRefinement.NodeUtils
+  alias AriaCore.Planner.Methods
+  alias AriaCore.Planner.State
 
   # This function will be the core of the lazy refinement process.
   # It will take a plan, an initial state, and other options, and
@@ -124,7 +121,8 @@ defmodule AriaCore.Planner.LazyRefinement do
     |> Map.put(:planning_duration_ms, planning_duration_ms)
 
     Logger.info(
-      "Completed lazy refinement for plan #{plan.id} in #{iterations} iterations. Total duration: #{planning_duration_ms}ms."
+      "Completed lazy refinement for plan #{plan.id} in #{iterations} iterations. " <>
+        "Total duration: #{planning_duration_ms}ms."
     )
 
     # Return the final plan
@@ -252,7 +250,13 @@ defmodule AriaCore.Planner.LazyRefinement do
             if MapSet.member?(blacklisted_commands, curr_node.info) do
               Logger.warning("Action #{inspect(curr_node.info)} is blacklisted. Backtracking.")
 
-              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+              {
+                _new_parent_node_id,
+                _new_curr_node_id,
+                new_solution_graph,
+                new_current_state,
+                new_blacklisted_commands
+              } =
                 Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,
@@ -551,7 +555,13 @@ defmodule AriaCore.Planner.LazyRefinement do
             else
               Logger.warning("Goal #{inspect(goal_node.info)} verification failed. Backtracking.")
 
-              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+              {
+                _new_parent_node_id,
+                _new_curr_node_id,
+                new_solution_graph,
+                new_current_state,
+                new_blacklisted_commands
+              } =
                 Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,
@@ -597,7 +607,13 @@ defmodule AriaCore.Planner.LazyRefinement do
             else
               Logger.warning("MultiGoal #{inspect(multigoal_node.info)} verification failed. Backtracking.")
 
-              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+              {
+                _new_parent_node_id,
+                _new_curr_node_id,
+                new_solution_graph,
+                new_current_state,
+                new_blacklisted_commands
+              } =
                 Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,

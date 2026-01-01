@@ -1,10 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Planner.Temporal.STN.Units do
   @moduledoc false
-  alias AriaPlanner.Planner.Temporal.STN
   alias AriaPlanner.Planner.Temporal.Interval
+  alias AriaPlanner.Planner.Temporal.STN
   # Add Timex for duration parsing
   use Timex
 

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Planner.MetadataAttachment do
   @moduledoc """
@@ -13,7 +17,7 @@ defmodule AriaPlanner.Planner.MetadataAttachment do
   of integer microseconds (Godot's format).
   """
 
-  alias AriaPlanner.Planner.{PlannerMetadata, EntityRequirement}
+  alias AriaPlanner.Planner.{EntityRequirement, PlannerMetadata}
 
   @doc """
   Attach metadata (temporal and/or entity constraints) to a planner element.
