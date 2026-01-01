@@ -1,5 +1,5 @@
 ---
-type: Always
+alwaysApply: true
 description: Complex and frequent problems warrant solutions
 ---
 

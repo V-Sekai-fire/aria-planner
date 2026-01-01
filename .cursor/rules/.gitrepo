@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/fire/.clinerules
 	branch = main
-	commit = 2e60ba371fce6468e2ff7ad67e4a48f2653321e1
-	parent = 3e8d14dd95339d2b6271daf0abd6a158be68eba6
+	commit = f338b547593c91a54a753b87481d439b1eed11f9
+	parent = bd0b958d1de4b162bfe9e56aee9adbb0078e6c44
 	method = merge
 	cmdver = 0.4.9

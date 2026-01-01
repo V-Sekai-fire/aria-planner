@@ -1,5 +1,5 @@
 ---
-type: Always
+alwaysApply: true
 description: Targeted solutions over generalized systems
 ---
 

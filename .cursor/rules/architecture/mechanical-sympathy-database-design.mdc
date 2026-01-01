@@ -1,0 +1,153 @@
+---
+alwaysApply: true
+description: Mechanical Sympathy in Database Design
+---
+
+# Mechanical Sympathy in Database Design
+
+## The Principle
+
+Design database schemas and access patterns to work with how hardware actually
+works, not against it. This is especially critical for high-write workloads
+where every operation must be optimized for the underlying storage and network
+characteristics.
+
+## Key Principles
+
+### 1. Sequential Access > Random Access
+
+**Hardware Reality**: Sequential disk I/O is 100-1000x faster than random I/O.
+Memory access patterns also benefit from sequential reads (prefetching, cache
+lines).
+
+**Application**:
+
+- Partition data by locality (e.g., all related records stored together)
+- Design keys/identifiers for sequential access patterns
+- Group related data in the same storage location
+- Prefer range scans over point lookups when possible
+
+**Example**: Design keys so that records accessed together are stored
+sequentially. This enables efficient batch operations and reduces seek time.
+
+### 2. Cache-Friendly Data Structures
+
+**Hardware Reality**: CPU cache hits are 10-100x faster than memory access.
+Cache lines are typically 64-128 bytes.
+
+**Application**:
+
+- Keep hot data small and frequently accessed
+- Separate large binary data from metadata
+- Denormalize frequently accessed related data (avoid joins/lookups)
+- Minimize data structure size to fit in cache lines
+- Place frequently accessed fields together
+
+**Example**: Store frequently accessed metadata separately from large binary
+data. Cache metadata, stream binary data on-demand.
+
+### 3. Write-Optimized Structures
+
+**Hardware Reality**: Sequential writes are much faster than random writes.
+Append-only operations are optimal.
+
+**Application**:
+
+- Use append-only structures for write-heavy workloads
+- Batch writes by locality (group updates by partition/region)
+- Minimize write amplification (avoid updating multiple locations)
+- Prefer immutable data structures where possible
+- Design for write batching at the application level
+
+**Example**: Group 100 related updates into a single batch operation provides
+10-100x speedup over individual writes.
+
+### 4. Batch Operations
+
+**Hardware Reality**: Network round-trips are expensive. Transaction overhead
+is significant.
+
+**Application**:
+
+- Group related updates into single transactions/operations
+- Batch writes by locality (partition/region/tile)
+- Minimize transaction overhead
+- Prefer bulk operations over individual operations
+- Design APIs that support batch operations
+
+**Example**: Batch 100 updates for a region in a single transaction provides
+10-100x speedup over individual writes.
+
+### 5. Spatial Locality
+
+**Hardware Reality**: Accessing nearby data is faster (prefetching, cache lines,
+sequential I/O).
+
+**Application**:
+
+- Co-locate related data (parent + children, region + contents)
+- Design keys/identifiers for spatial queries
+- Use partitioning strategies that maintain locality
+- Prefer hierarchical data organization
+- Design for range queries over scattered point queries
+
+**Example**: Tile-based spatial partitioning enables efficient interest
+management queries (query small tiles, not entire regions).
+
+## Design Patterns
+
+### Key/Identifier Design
+
+Design keys/identifiers to enable sequential access:
+
+- **Hierarchical Keys**: `{partition}:{sub-partition}:{id}` enables efficient
+  range scans
+- **Composite Keys**: Include locality information in keys
+- **Sortable Keys**: Enable efficient range queries
+
+### Data Organization
+
+Organize data for cache efficiency:
+
+- **Hot/Cold Separation**: Separate frequently accessed data from rarely
+  accessed data
+- **Denormalization**: Embed frequently accessed related data to avoid
+  joins/lookups
+- **Columnar Storage**: For analytics workloads, store data by column
+- **Row-Oriented Storage**: For transactional workloads, store data by row
+
+### Write Patterns
+
+Design for efficient writes:
+
+- **Append-Only**: Prefer append-only structures where possible
+- **Batching**: Group writes by locality
+- **Immutable Updates**: Create new versions rather than updating in place
+- **Write Buffering**: Buffer writes before committing
+
+### Query Patterns
+
+Design for efficient reads:
+
+- **Range Queries**: Prefer range queries over scattered point queries
+- **Spatial Partitioning**: Partition data spatially for efficient queries
+- **Materialized Views**: Pre-compute expensive queries
+- **Indexing Strategy**: Index for actual query patterns, not theoretical ones
+
+## Performance Targets
+
+For high-write workloads (e.g., virtual worlds with 400+ concurrent users):
+
+- **Write Latency**: < 1ms per write operation
+- **Batch Speedup**: 10-100x improvement over individual operations
+- **Read Latency**: < 10ms for spatial queries
+- **Throughput**: Maintain performance under high concurrency
+
+## Implementation Guidelines
+
+1. **Measure First**: Profile actual access patterns before optimizing
+2. **Design for Locality**: Group related data together
+3. **Batch by Default**: Prefer batch operations over individual operations
+4. **Cache Hot Data**: Separate hot and cold data
+5. **Partition Strategically**: Use partitioning that matches access patterns
+6. **Avoid Premature Optimization**: Optimize based on actual bottlenecks

@@ -1,5 +1,5 @@
 ---
-type: Always
+alwaysApply: true
 description: Simple solutions for simple problems
 ---
 

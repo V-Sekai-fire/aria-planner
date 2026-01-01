@@ -1,5 +1,5 @@
 ---
-type: Always
+alwaysApply: true
 description: Record 1
 ---
 

@@ -1,5 +1,5 @@
 ---
-type: Always
+alwaysApply: true
 description: Common use cases with extensible foundation
 ---
 

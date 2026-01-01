@@ -1,5 +1,5 @@
 ---
-type: Always
+alwaysApply: true
 description: No placeholder content in active documents
 ---
 

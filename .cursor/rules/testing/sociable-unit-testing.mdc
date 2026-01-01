@@ -1,5 +1,5 @@
 ---
-type: Always
+alwaysApply: true
 description: Testing Philosophy
 ---
 
@@ -39,10 +39,10 @@ Based on [Martin Fowler's Unit Test article](https://martinfowler.com/bliki/Unit
 ```elixir
 test "creates plan from tasks" do
   tasks = [%{type: :avatar_customization, operations: [:load_in_unity]}]
-  
+
   # Uses real Bridge, Repo, and Plan schema
   result = Planner.Bridge.schedule_avatar_tasks(tasks)
-  
+
   assert {:ok, plan_id} = result
   plan = Repo.get(Plan, plan_id)
   assert %Plan{} = plan
@@ -55,7 +55,7 @@ test "handles recommender unavailable" do
   # Mock external recommender service
   with_mocked_recommender(:error, fn ->
     result = Bridge.schedule_with_recommendations("user_id")
-    
+
     # Should handle gracefully
     assert {:error, _} = result
   end)
