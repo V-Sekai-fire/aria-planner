@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.PredicateSchemaTest do
   use ExUnit.Case, async: true
@@ -65,10 +69,11 @@ defmodule AriaCore.PredicateSchemaTest do
 
   describe "update/2" do
     test "updates existing predicate" do
-      {:ok, predicate} = PredicateSchema.create(%{
-        name: "test_pred",
-        category: "state"
-      })
+      {:ok, predicate} =
+        PredicateSchema.create(%{
+          name: "test_pred",
+          category: "state"
+        })
 
       {:ok, updated} = PredicateSchema.update(predicate, %{description: "Updated description"})
       assert updated.description == "Updated description"
@@ -78,10 +83,11 @@ defmodule AriaCore.PredicateSchemaTest do
 
   describe "get/1" do
     test "gets predicate by ID" do
-      {:ok, predicate} = PredicateSchema.create(%{
-        name: "test_pred",
-        category: "state"
-      })
+      {:ok, predicate} =
+        PredicateSchema.create(%{
+          name: "test_pred",
+          category: "state"
+        })
 
       {:ok, retrieved} = PredicateSchema.get(predicate.id)
       assert retrieved.id == predicate.id
@@ -107,11 +113,12 @@ defmodule AriaCore.PredicateSchemaTest do
 
   describe "multi_valued?/1" do
     test "checks if predicate is multi-valued" do
-      {:ok, predicate} = PredicateSchema.create(%{
-        name: "test_pred",
-        category: "state",
-        multi_valued: true
-      })
+      {:ok, predicate} =
+        PredicateSchema.create(%{
+          name: "test_pred",
+          category: "state",
+          multi_valued: true
+        })
 
       assert PredicateSchema.multi_valued?(predicate) == true
     end
@@ -119,10 +126,11 @@ defmodule AriaCore.PredicateSchemaTest do
 
   describe "category/1" do
     test "gets predicate category" do
-      {:ok, predicate} = PredicateSchema.create(%{
-        name: "test_pred",
-        category: "effect"
-      })
+      {:ok, predicate} =
+        PredicateSchema.create(%{
+          name: "test_pred",
+          category: "effect"
+        })
 
       assert PredicateSchema.category(predicate) == "effect"
     end
@@ -130,11 +138,12 @@ defmodule AriaCore.PredicateSchemaTest do
 
   describe "update_metadata/2" do
     test "updates predicate metadata" do
-      {:ok, predicate} = PredicateSchema.create(%{
-        name: "test_pred",
-        category: "state",
-        metadata: %{key1: "value1"}
-      })
+      {:ok, predicate} =
+        PredicateSchema.create(%{
+          name: "test_pred",
+          category: "state",
+          metadata: %{key1: "value1"}
+        })
 
       {:ok, updated} = PredicateSchema.update_metadata(predicate, %{key2: "value2"})
       assert updated.metadata.key1 == "value1"
@@ -144,11 +153,12 @@ defmodule AriaCore.PredicateSchemaTest do
 
   describe "set_multi_valued/2" do
     test "sets predicate as multi-valued" do
-      {:ok, predicate} = PredicateSchema.create(%{
-        name: "test_pred",
-        category: "state",
-        multi_valued: false
-      })
+      {:ok, predicate} =
+        PredicateSchema.create(%{
+          name: "test_pred",
+          category: "state",
+          multi_valued: false
+        })
 
       {:ok, updated} = PredicateSchema.set_multi_valued(predicate, true)
       assert updated.multi_valued == true
@@ -157,10 +167,11 @@ defmodule AriaCore.PredicateSchemaTest do
 
   describe "change_category/2" do
     test "changes predicate category" do
-      {:ok, predicate} = PredicateSchema.create(%{
-        name: "test_pred",
-        category: "state"
-      })
+      {:ok, predicate} =
+        PredicateSchema.create(%{
+          name: "test_pred",
+          category: "state"
+        })
 
       {:ok, updated} = PredicateSchema.change_category(predicate, "action")
       assert updated.category == "action"

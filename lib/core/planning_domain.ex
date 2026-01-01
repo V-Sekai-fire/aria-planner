@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.PlanningDomain do
   @moduledoc """
@@ -109,6 +113,7 @@ defmodule AriaCore.PlanningDomain do
       end
 
     valid_states = [:active, :archived, :deprecated]
+
     errors =
       if Map.has_key?(attrs, :state) and attrs.state not in valid_states do
         ["state must be one of: #{Enum.join(Enum.map(valid_states, &Atom.to_string/1), ", ")}" | errors]
@@ -134,6 +139,7 @@ defmodule AriaCore.PlanningDomain do
 
     # Validate domain elements
     element_fields = [:tasks, :actions, :commands, :multigoals]
+
     errors =
       Enum.reduce(element_fields, errors, fn field, acc ->
         if Map.has_key?(attrs, field) and
@@ -147,6 +153,7 @@ defmodule AriaCore.PlanningDomain do
 
     if Enum.empty?(errors) do
       now = DateTime.utc_now()
+
       domain = %__MODULE__{
         id: Map.get(attrs, :id),
         domain_type: Map.get(attrs, :domain_type),

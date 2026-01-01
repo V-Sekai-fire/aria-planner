@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.PredicateSchema do
   @moduledoc """
@@ -66,6 +70,7 @@ defmodule AriaCore.PredicateSchema do
       end
 
     valid_categories = ["state", "action", "effect", "goal"]
+
     errors =
       if Map.has_key?(attrs, :category) and attrs.category not in valid_categories do
         ["category must be one of: #{Enum.join(valid_categories, ", ")}" | errors]
@@ -75,6 +80,7 @@ defmodule AriaCore.PredicateSchema do
 
     if Enum.empty?(errors) do
       now = DateTime.utc_now()
+
       predicate = %__MODULE__{
         id: Map.get(attrs, :id),
         name: Map.get(attrs, :name),

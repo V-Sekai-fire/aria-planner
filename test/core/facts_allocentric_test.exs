@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.FactsAllocentricTest do
   use ExUnit.Case, async: true
@@ -68,15 +72,16 @@ defmodule AriaCore.FactsAllocentricTest do
 
   describe "update/2" do
     test "updates existing fact" do
-      {:ok, fact} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "terrain",
-        subject_id: UUIDv7.generate(),
-        subject_type: "location",
-        predicate: "located_at",
-        object_value: "forest",
-        object_type: "string"
-      })
+      {:ok, fact} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "terrain",
+          subject_id: UUIDv7.generate(),
+          subject_type: "location",
+          predicate: "located_at",
+          object_value: "forest",
+          object_type: "string"
+        })
 
       {:ok, updated} = FactsAllocentric.update(fact, %{object_value: "desert"})
       assert updated.object_value == "desert"
@@ -86,15 +91,16 @@ defmodule AriaCore.FactsAllocentricTest do
 
   describe "get/1" do
     test "gets fact by ID" do
-      {:ok, fact} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "terrain",
-        subject_id: UUIDv7.generate(),
-        subject_type: "location",
-        predicate: "located_at",
-        object_value: "forest",
-        object_type: "string"
-      })
+      {:ok, fact} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "terrain",
+          subject_id: UUIDv7.generate(),
+          subject_type: "location",
+          predicate: "located_at",
+          object_value: "forest",
+          object_type: "string"
+        })
 
       {:ok, retrieved} = FactsAllocentric.get(fact.id)
       assert retrieved.id == fact.id
@@ -111,25 +117,27 @@ defmodule AriaCore.FactsAllocentricTest do
       # Clear existing facts
       FactsAllocentric.all() |> Enum.each(&FactsAllocentric.delete(&1.id))
 
-      {:ok, fact1} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "terrain",
-        subject_id: UUIDv7.generate(),
-        subject_type: "location",
-        predicate: "located_at",
-        object_value: "forest",
-        object_type: "string"
-      })
+      {:ok, fact1} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "terrain",
+          subject_id: UUIDv7.generate(),
+          subject_type: "location",
+          predicate: "located_at",
+          object_value: "forest",
+          object_type: "string"
+        })
 
-      {:ok, fact2} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "object",
-        subject_id: UUIDv7.generate(),
-        subject_type: "item",
-        predicate: "has_property",
-        object_value: "durable",
-        object_type: "string"
-      })
+      {:ok, fact2} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "object",
+          subject_id: UUIDv7.generate(),
+          subject_type: "item",
+          predicate: "has_property",
+          object_value: "durable",
+          object_type: "string"
+        })
 
       all_facts = FactsAllocentric.all()
       assert length(all_facts) >= 2
@@ -142,25 +150,28 @@ defmodule AriaCore.FactsAllocentricTest do
     test "gets facts about specific entity" do
       entity_id = UUIDv7.generate()
 
-      {:ok, _fact1} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "terrain",
-        subject_id: entity_id,
-        subject_type: "location",
-        predicate: "located_at",
-        object_value: "forest",
-        object_type: "string"
-      })
+      {:ok, _fact1} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "terrain",
+          subject_id: entity_id,
+          subject_type: "location",
+          predicate: "located_at",
+          object_value: "forest",
+          object_type: "string"
+        })
 
-      {:ok, _fact2} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "object",
-        subject_id: UUIDv7.generate(),  # Different entity
-        subject_type: "item",
-        predicate: "has_property",
-        object_value: "durable",
-        object_type: "string"
-      })
+      {:ok, _fact2} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "object",
+          # Different entity
+          subject_id: UUIDv7.generate(),
+          subject_type: "item",
+          predicate: "has_property",
+          object_value: "durable",
+          object_type: "string"
+        })
 
       {:ok, facts} = FactsAllocentric.get_facts_about(entity_id)
       assert length(facts) >= 1
@@ -172,25 +183,27 @@ defmodule AriaCore.FactsAllocentricTest do
     test "gets complete entity state from facts" do
       entity_id = UUIDv7.generate()
 
-      {:ok, _fact1} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "terrain",
-        subject_id: entity_id,
-        subject_type: "location",
-        predicate: "located_at",
-        object_value: "forest",
-        object_type: "string"
-      })
+      {:ok, _fact1} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "terrain",
+          subject_id: entity_id,
+          subject_type: "location",
+          predicate: "located_at",
+          object_value: "forest",
+          object_type: "string"
+        })
 
-      {:ok, _fact2} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "object",
-        subject_id: entity_id,
-        subject_type: "location",
-        predicate: "has_capability",
-        object_value: "movable",
-        object_type: "string"
-      })
+      {:ok, _fact2} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "object",
+          subject_id: entity_id,
+          subject_type: "location",
+          predicate: "has_capability",
+          object_value: "movable",
+          object_type: "string"
+        })
 
       {:ok, state} = FactsAllocentric.get_entity_state(entity_id)
       assert state.entity_id == entity_id
@@ -205,25 +218,27 @@ defmodule AriaCore.FactsAllocentricTest do
       entity_id = UUIDv7.generate()
       observer_id = UUIDv7.generate()
 
-      {:ok, _fact1} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "agent_observable",
-        subject_id: entity_id,
-        subject_type: "persona",
-        predicate: "is_moving",
-        object_value: "true",
-        object_type: "boolean"
-      })
+      {:ok, _fact1} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "agent_observable",
+          subject_id: entity_id,
+          subject_type: "persona",
+          predicate: "is_moving",
+          object_value: "true",
+          object_type: "boolean"
+        })
 
-      {:ok, _fact2} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "event",
-        subject_id: entity_id,
-        subject_type: "persona",
-        predicate: "performed_action",
-        object_value: "attack",
-        object_type: "string"
-      })
+      {:ok, _fact2} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "event",
+          subject_id: entity_id,
+          subject_type: "persona",
+          predicate: "performed_action",
+          object_value: "attack",
+          object_type: "string"
+        })
 
       {:ok, observable} = FactsAllocentric.query_observable(observer_id, entity_id)
       assert length(observable) >= 2
@@ -234,6 +249,7 @@ defmodule AriaCore.FactsAllocentricTest do
   describe "record_communication/1" do
     test "records communication as allocentric fact" do
       sender_id = UUIDv7.generate()
+
       message = %{
         sender: sender_id,
         content: "Let's coordinate the attack",
@@ -274,15 +290,16 @@ defmodule AriaCore.FactsAllocentricTest do
 
       entity_id = UUIDv7.generate()
 
-      {:ok, _fact1} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "terrain",
-        subject_id: entity_id,
-        subject_type: "location",
-        predicate: "located_at",
-        object_value: "forest",
-        object_type: "string"
-      })
+      {:ok, _fact1} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "terrain",
+          subject_id: entity_id,
+          subject_type: "location",
+          predicate: "located_at",
+          object_value: "forest",
+          object_type: "string"
+        })
 
       assert FactsAllocentric.validate_world_state() == :consistent
     end
@@ -292,25 +309,27 @@ defmodule AriaCore.FactsAllocentricTest do
     test "finds conflicting facts about subject" do
       subject_id = UUIDv7.generate()
 
-      {:ok, _fact1} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "terrain",
-        subject_id: subject_id,
-        subject_type: "location",
-        predicate: "located_at",
-        object_value: "forest",
-        object_type: "string"
-      })
+      {:ok, _fact1} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "terrain",
+          subject_id: subject_id,
+          subject_type: "location",
+          predicate: "located_at",
+          object_value: "forest",
+          object_type: "string"
+        })
 
-      {:ok, _fact2} = FactsAllocentric.create(%{
-        fact_id: UUIDv7.generate(),
-        fact_type: "terrain",
-        subject_id: subject_id,
-        subject_type: "location",
-        predicate: "located_at",
-        object_value: "desert",
-        object_type: "string"
-      })
+      {:ok, _fact2} =
+        FactsAllocentric.create(%{
+          fact_id: UUIDv7.generate(),
+          fact_type: "terrain",
+          subject_id: subject_id,
+          subject_type: "location",
+          predicate: "located_at",
+          object_value: "desert",
+          object_type: "string"
+        })
 
       conflicts = FactsAllocentric.conflicting_facts(subject_id)
       assert length(conflicts) >= 2

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.FactsAllocentric do
   @moduledoc """
@@ -195,6 +199,7 @@ defmodule AriaCore.FactsAllocentric do
       end)
 
     valid_fact_types = ["terrain", "object", "environmental", "event", "agent_observable"]
+
     errors =
       if Map.has_key?(attrs, :fact_type) and attrs.fact_type not in valid_fact_types do
         ["fact_type must be one of: #{Enum.join(valid_fact_types, ", ")}" | errors]
@@ -203,6 +208,7 @@ defmodule AriaCore.FactsAllocentric do
       end
 
     valid_subject_types = ["persona", "item", "location", "environmental"]
+
     errors =
       if Map.has_key?(attrs, :subject_type) and attrs.subject_type not in valid_subject_types do
         ["subject_type must be one of: #{Enum.join(valid_subject_types, ", ")}" | errors]
@@ -211,6 +217,7 @@ defmodule AriaCore.FactsAllocentric do
       end
 
     valid_object_types = ["string", "number", "boolean", "location", "entity_ref"]
+
     errors =
       if Map.has_key?(attrs, :object_type) and attrs.object_type not in valid_object_types do
         ["object_type must be one of: #{Enum.join(valid_object_types, ", ")}" | errors]
@@ -228,6 +235,7 @@ defmodule AriaCore.FactsAllocentric do
 
     if Enum.empty?(errors) do
       now = DateTime.utc_now()
+
       fact = %__MODULE__{
         id: Map.get(attrs, :id),
         fact_id: Map.get(attrs, :fact_id),

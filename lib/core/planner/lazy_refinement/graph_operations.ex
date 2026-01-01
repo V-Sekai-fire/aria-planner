@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
   @moduledoc """
@@ -48,6 +52,7 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
               # Wrap method in list if it's a single function (not already a list)
               method = methods.task_method_dict[elem(child_node_info, 0)]
               available_methods = if is_function(method), do: [method], else: method || []
+
               %{
                 node_attrs
                 | state: nil,
@@ -62,6 +67,7 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
               # Wrap method in list if it's a single function (not already a list)
               method = methods.goal_method_dict[elem(child_node_info, 0)]
               available_methods = if is_function(method), do: [method], else: method || []
+
               %{
                 node_attrs
                 | state: nil,
@@ -73,6 +79,7 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
               # Wrap method in list if it's a single function (not already a list)
               method = methods.multigoal_method_dict[child_node_info.goal_tag]
               available_methods = if is_function(method), do: [method], else: method || []
+
               %{
                 node_attrs
                 | state: nil,
@@ -131,13 +138,24 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
 
   defp get_node_type(node_info, methods, actions) do
     cond do
-      is_struct(node_info, MultiGoal) -> :M
-      is_tuple(node_info) and elem(node_info, 0) in Map.keys(methods.task_method_dict) -> :T
-      is_tuple(node_info) and elem(node_info, 0) in Map.keys(actions.action_dict) -> :A
-      is_tuple(node_info) and elem(node_info, 0) in Map.keys(methods.goal_method_dict) -> :G
+      is_struct(node_info, MultiGoal) ->
+        :M
+
+      is_tuple(node_info) and elem(node_info, 0) in Map.keys(methods.task_method_dict) ->
+        :T
+
+      is_tuple(node_info) and elem(node_info, 0) in Map.keys(actions.action_dict) ->
+        :A
+
+      is_tuple(node_info) and elem(node_info, 0) in Map.keys(methods.goal_method_dict) ->
+        :G
+
       # Should not happen if all types are covered
       true ->
-        Logger.warning("get_node_type: unknown node type for #{inspect(node_info)}. Task methods: #{inspect(Map.keys(methods.task_method_dict))}, Action methods: #{inspect(Map.keys(actions.action_dict))}")
+        Logger.warning(
+          "get_node_type: unknown node type for #{inspect(node_info)}. Task methods: #{inspect(Map.keys(methods.task_method_dict))}, Action methods: #{inspect(Map.keys(actions.action_dict))}"
+        )
+
         :unknown
     end
   end
@@ -185,13 +203,15 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
             {:ok, node_id}
           else
             # Add children to queue for BFS
-            new_queue = Enum.reduce(node.successors || [], remaining_queue, fn child_id, q ->
-              if MapSet.member?(visited, child_id) do
-                q
-              else
-                :queue.in(child_id, q)
-              end
-            end)
+            new_queue =
+              Enum.reduce(node.successors || [], remaining_queue, fn child_id, q ->
+                if MapSet.member?(visited, child_id) do
+                  q
+                else
+                  :queue.in(child_id, q)
+                end
+              end)
+
             new_visited = Enum.reduce(node.successors || [], visited, &MapSet.put(&2, &1))
             do_bfs_search(solution_graph, new_queue, new_visited)
           end

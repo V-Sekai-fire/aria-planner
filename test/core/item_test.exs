@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.ItemTest do
   use ExUnit.Case, async: true
@@ -66,10 +70,11 @@ defmodule AriaCore.ItemTest do
 
   describe "update/2" do
     test "updates existing item" do
-      {:ok, item} = Item.create(%{
-        name: "Original Name",
-        item_type: "weapon"
-      })
+      {:ok, item} =
+        Item.create(%{
+          name: "Original Name",
+          item_type: "weapon"
+        })
 
       {:ok, updated} = Item.update(item, %{name: "Updated Name", durability: 50.0})
       assert updated.name == "Updated Name"
@@ -80,10 +85,11 @@ defmodule AriaCore.ItemTest do
 
   describe "get/1" do
     test "gets item by ID" do
-      {:ok, item} = Item.create(%{
-        name: "Test Item",
-        item_type: "tool"
-      })
+      {:ok, item} =
+        Item.create(%{
+          name: "Test Item",
+          item_type: "tool"
+        })
 
       {:ok, retrieved} = Item.get(item.id)
       assert retrieved.id == item.id
@@ -109,10 +115,11 @@ defmodule AriaCore.ItemTest do
 
   describe "delete/1" do
     test "deletes item by ID" do
-      {:ok, item} = Item.create(%{
-        name: "To Delete",
-        item_type: "consumable"
-      })
+      {:ok, item} =
+        Item.create(%{
+          name: "To Delete",
+          item_type: "consumable"
+        })
 
       :ok = Item.delete(item.id)
       assert {:error, :not_found} = Item.get(item.id)
@@ -121,12 +128,13 @@ defmodule AriaCore.ItemTest do
 
   describe "to_spo/1" do
     test "converts item to SPO format" do
-      {:ok, item} = Item.create(%{
-        name: "Test Item",
-        item_type: "weapon",
-        durability: 75.0,
-        stack_size: 10
-      })
+      {:ok, item} =
+        Item.create(%{
+          name: "Test Item",
+          item_type: "weapon",
+          durability: 75.0,
+          stack_size: 10
+        })
 
       # to_spo may fail if AriaCore.Predicate/Subject/Object modules don't exist
       # or have different APIs - skip this test if those modules aren't available
@@ -138,6 +146,7 @@ defmodule AriaCore.ItemTest do
         BadMapError ->
           # Expected if AriaCore.Predicate/Subject/Object modules don't exist
           :ok
+
         UndefinedFunctionError ->
           # Expected if helper functions don't exist
           :ok

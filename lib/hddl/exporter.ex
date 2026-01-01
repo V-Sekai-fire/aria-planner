@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.HDDL.Exporter do
   @moduledoc """
@@ -91,7 +95,7 @@ defmodule AriaPlanner.HDDL.Exporter do
     "(:requirements :strips :typing :temporal :hierarchical)"
   end
 
-  defp export_predicates(%PlanningDomain{} = domain) do
+  defp export_predicates(%PlanningDomain{} = _domain) do
     # Extract predicates from domain - for now return empty
     # Predicates would need to be extracted from domain structure
     nil
@@ -141,14 +145,14 @@ defmodule AriaPlanner.HDDL.Exporter do
     # Handle both formats: [{:key, value}, ...] and [:key, value, ...]
     case metadata do
       # Proper keyword list: [{:key, value}, ...]
-      [{key, value} | _] when is_atom(key) ->
+      [{key, _value} | _] when is_atom(key) ->
         Enum.reduce(metadata, %{}, fn
           {k, v} when is_atom(k) -> Map.put(%{}, k, v)
           _ -> %{}
         end)
 
       # Flat list: [:key, value, ...]
-      [key | rest] when is_atom(key) ->
+      [key | _rest] when is_atom(key) ->
         normalize_flat_list_to_map(metadata, %{})
 
       _ ->

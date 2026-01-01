@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.HDDL.ImporterTest do
   use ExUnit.Case
@@ -154,17 +158,22 @@ defmodule AriaPlanner.HDDL.ImporterTest do
 
       {:ok, ast, _, _, _, _} = Parser.parse(hddl)
       {:domain, _, elements} = ast
-      {:action, _, action_elements} = Enum.find(elements, fn
-        {:action, _, _} -> true
-        _ -> false
-      end)
-      {:aria_temporal_metadata, metadata_elements} = Enum.find(action_elements, fn
-        {:aria_temporal_metadata, _} -> true
-        _ -> false
-      end)
+
+      {:action, _, action_elements} =
+        Enum.find(elements, fn
+          {:action, _, _} -> true
+          _ -> false
+        end)
+
+      {:aria_temporal_metadata, metadata_elements} =
+        Enum.find(action_elements, fn
+          {:aria_temporal_metadata, _} -> true
+          _ -> false
+        end)
 
       assert {:ok, %PlannerMetadata{} = metadata} =
                Importer.import_temporal_metadata({:aria_temporal_metadata, metadata_elements})
+
       assert metadata.duration == "PT5M"
       assert length(metadata.requires_entities) == 1
     end

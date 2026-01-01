@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.HDDL.Importer do
   @moduledoc """
@@ -17,10 +21,8 @@ defmodule AriaPlanner.HDDL.Importer do
   alias AriaCore.Plan
   alias AriaCore.Planner.MultiGoal
   alias AriaCore.PlanningDomain
-  alias AriaCore.PredicateSchema
   alias AriaPlanner.Planner.EntityRequirement
   alias AriaPlanner.Planner.PlannerMetadata
-  alias AriaPlanner.Planner.State
 
   @doc """
   Imports an HDDL domain AST into a PlanningDomain struct.
@@ -84,6 +86,8 @@ defmodule AriaPlanner.HDDL.Importer do
     Plan.create(attrs)
   end
 
+  def import_problem(_), do: {:error, "Invalid problem AST"}
+
   defp get_plan_attr(plan_attrs, key, default) do
     Map.get(plan_attrs, to_string(key)) || Map.get(plan_attrs, key, default)
   end
@@ -100,8 +104,6 @@ defmodule AriaPlanner.HDDL.Importer do
   defp normalize_domain_type(type) when is_atom(type), do: Atom.to_string(type)
   defp normalize_domain_type(type) when is_binary(type), do: type
   defp normalize_domain_type(_), do: "custom"
-
-  def import_problem(_), do: {:error, "Invalid problem AST"}
 
   @doc """
   Converts HDDL action AST to action map.
@@ -401,7 +403,7 @@ defmodule AriaPlanner.HDDL.Importer do
 
   defp normalize_metadata(_), do: %{}
 
-  defp extract_tasks(elements) do
+  defp extract_tasks(_elements) do
     # Tasks are typically defined implicitly through methods
     # For now, return empty list - tasks will be extracted from methods
     []
@@ -521,12 +523,13 @@ defmodule AriaPlanner.HDDL.Importer do
     end
   end
 
-  defp extract_condition(elements) do
-    case find_element(elements, :condition) do
-      {:condition, cond} -> cond
-      _ -> nil
-    end
-  end
+  # Unused function - kept for potential future use
+  # defp extract_condition(elements) do
+  #   case find_element(elements, :condition) do
+  #     {:condition, cond} -> cond
+  #     _ -> nil
+  #   end
+  # end
 
   defp extract_effect(elements) do
     case find_element(elements, :effect) do
@@ -722,34 +725,7 @@ defmodule AriaPlanner.HDDL.Importer do
   defp transform_entity_requirement_from_tokens(_), do: {:error, :invalid_format}
 
   # Extract capabilities from token list: [{:identifier, :agent}, {:keyword, :capabilities}, [keyword: :navigation]]
-  defp extract_capabilities_from_tokens(tokens) do
-    # Find :capabilities keyword and get the list after it
-    case find_capabilities_list(tokens) do
-      caps_list when is_list(caps_list) ->
-        Enum.flat_map(caps_list, fn
-          {:keyword, cap} -> [cap]
-          {:identifier, cap} -> [cap]
-          cap when is_atom(cap) -> [cap]
-          _ -> []
-        end)
-
-      _ ->
-        []
-    end
-  end
-
-  defp find_capabilities_list([{:keyword, :capabilities}, caps_list | _]) when is_list(caps_list), do: caps_list
-  defp find_capabilities_list([{:identifier, :capabilities}, caps_list | _]) when is_list(caps_list), do: caps_list
-  defp find_capabilities_list([_ | rest]), do: find_capabilities_list(rest)
-  defp find_capabilities_list([]), do: nil
-
-  # Helper to find value after key in flat list format: [key, value, ...]
-  defp find_in_flat_list([key, value | _rest], search_key) when key == search_key, do: value
-  defp find_in_flat_list([_ | rest], search_key), do: find_in_flat_list(rest, search_key)
-  defp find_in_flat_list([], _), do: nil
-
-  # Extract capabilities from nested token structure
-  # Format: [[{:keyword, :entity}, {:identifier, :agent}, {:keyword, :capabilities}, [keyword: :navigation]]]
+  # Also handles nested token structure: [[{:keyword, :entity}, {:identifier, :agent}, {:keyword, :capabilities}, [keyword: :navigation]]]
   defp extract_capabilities_from_tokens(tokens) do
     # Find :capabilities keyword and get the list after it
     case find_capabilities_list(tokens) do
@@ -781,6 +757,16 @@ defmodule AriaPlanner.HDDL.Importer do
     end
   end
 
+  defp find_capabilities_list([{:keyword, :capabilities}, caps_list | _]) when is_list(caps_list), do: caps_list
+  defp find_capabilities_list([{:identifier, :capabilities}, caps_list | _]) when is_list(caps_list), do: caps_list
+  defp find_capabilities_list([_ | rest]), do: find_capabilities_list(rest)
+  defp find_capabilities_list([]), do: nil
+
+  # Helper to find value after key in flat list format: [key, value, ...]
+  defp find_in_flat_list([key, value | _rest], search_key) when key == search_key, do: value
+  defp find_in_flat_list([_ | rest], search_key), do: find_in_flat_list(rest, search_key)
+  defp find_in_flat_list([], _), do: nil
+
   defp extract_command_metadata(elements) do
     case find_element(elements, :aria_command_metadata) do
       {:aria_command_metadata, metadata} when is_map(metadata) -> metadata
@@ -808,12 +794,13 @@ defmodule AriaPlanner.HDDL.Importer do
     end
   end
 
-  defp extract_domain_reference(elements) do
-    case find_element(elements, :domain) do
-      {:domain, domain} when is_atom(domain) -> Atom.to_string(domain)
-      _ -> nil
-    end
-  end
+  # Unused function - kept for potential future use
+  # defp extract_domain_reference(elements) do
+  #   case find_element(elements, :domain) do
+  #     {:domain, domain} when is_atom(domain) -> Atom.to_string(domain)
+  #     _ -> nil
+  #   end
+  # end
 
   defp extract_aria_plan(elements) do
     case find_element(elements, :aria_plan) do

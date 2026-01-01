@@ -1,23 +1,27 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.HDDL.Parser.Normalize do
   @moduledoc """
   AST normalization functions for HDDL parser.
-  
+
   Converts raw parser output into cleaner, more structured AST format.
   """
 
   @doc """
   Normalizes the top-level AST structure.
-  
+
   ## Examples
-  
+
       iex> AriaPlanner.HDDL.Parser.Normalize.normalize_ast({:domain, :test, []})
       {:domain, :test, []}
   """
-  @spec normalize_ast({:domain, atom(), list()} | {:problem, atom(), list()} | term()) :: 
-    {:domain, atom(), list()} | {:problem, atom(), list()} | term()
+  @spec normalize_ast({:domain, atom(), list()} | {:problem, atom(), list()} | term()) ::
+          {:domain, atom(), list()} | {:problem, atom(), list()} | term()
   def normalize_ast(ast) do
     case ast do
       {:domain, name, elements} ->
@@ -94,4 +98,3 @@ defmodule AriaPlanner.HDDL.Parser.Normalize do
     other
   end
 end
-

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.HDDL.ParserTest do
   use ExUnit.Case
@@ -9,7 +13,6 @@ defmodule AriaPlanner.HDDL.ParserTest do
   # define_domain parser tests removed - parser needs refactoring
 
   describe "parse/1" do
-
     test "parses domain with predicates" do
       hddl = """
       (define (domain test)
@@ -22,14 +25,18 @@ defmodule AriaPlanner.HDDL.ParserTest do
       """
 
       assert {:ok, {:domain, :test, elements}, _, _, _, _} = Parser.parse(hddl)
-      assert {:requirements, _} = Enum.find(elements, fn
-        {:requirements, _} -> true
-        _ -> false
-      end)
-      assert {:predicates, _} = Enum.find(elements, fn
-        {:predicates, _} -> true
-        _ -> false
-      end)
+
+      assert {:requirements, _} =
+               Enum.find(elements, fn
+                 {:requirements, _} -> true
+                 _ -> false
+               end)
+
+      assert {:predicates, _} =
+               Enum.find(elements, fn
+                 {:predicates, _} -> true
+                 _ -> false
+               end)
     end
 
     test "parses action with parameters" do
@@ -44,14 +51,18 @@ defmodule AriaPlanner.HDDL.ParserTest do
       """
 
       assert {:ok, {:domain, :test, elements}, _, _, _, _} = Parser.parse(hddl)
-      assert {:action, :move, action_elements} = Enum.find(elements, fn
-        {:action, _, _} -> true
-        _ -> false
-      end)
-      assert {:parameters, _} = Enum.find(action_elements, fn
-        {:parameters, _} -> true
-        _ -> false
-      end)
+
+      assert {:action, :move, action_elements} =
+               Enum.find(elements, fn
+                 {:action, _, _} -> true
+                 _ -> false
+               end)
+
+      assert {:parameters, _} =
+               Enum.find(action_elements, fn
+                 {:parameters, _} -> true
+                 _ -> false
+               end)
     end
 
     test "parses durative action" do
@@ -67,10 +78,12 @@ defmodule AriaPlanner.HDDL.ParserTest do
       """
 
       assert {:ok, {:domain, :test, elements}, _, _, _, _} = Parser.parse(hddl)
-      assert {:durative_action, :move, _} = Enum.find(elements, fn
-        {:durative_action, _, _} -> true
-        _ -> false
-      end)
+
+      assert {:durative_action, :move, _} =
+               Enum.find(elements, fn
+                 {:durative_action, _, _} -> true
+                 _ -> false
+               end)
     end
 
     test "parses aria-temporal-metadata" do
@@ -90,14 +103,18 @@ defmodule AriaPlanner.HDDL.ParserTest do
       """
 
       assert {:ok, {:domain, :test, elements}, _, _, _, _} = Parser.parse(hddl)
-      assert {:action, :move, action_elements} = Enum.find(elements, fn
-        {:action, _, _} -> true
-        _ -> false
-      end)
-      assert {:aria_temporal_metadata, _} = Enum.find(action_elements, fn
-        {:aria_temporal_metadata, _} -> true
-        _ -> false
-      end)
+
+      assert {:action, :move, action_elements} =
+               Enum.find(elements, fn
+                 {:action, _, _} -> true
+                 _ -> false
+               end)
+
+      assert {:aria_temporal_metadata, _} =
+               Enum.find(action_elements, fn
+                 {:aria_temporal_metadata, _} -> true
+                 _ -> false
+               end)
     end
 
     test "parses command" do
@@ -116,10 +133,12 @@ defmodule AriaPlanner.HDDL.ParserTest do
       """
 
       assert {:ok, {:domain, :test, elements}, _, _, _, _} = Parser.parse(hddl)
-      assert {:command, :execute, _} = Enum.find(elements, fn
-        {:command, _, _} -> true
-        _ -> false
-      end)
+
+      assert {:command, :execute, _} =
+               Enum.find(elements, fn
+                 {:command, _, _} -> true
+                 _ -> false
+               end)
     end
 
     test "parses multigoal" do
@@ -136,10 +155,12 @@ defmodule AriaPlanner.HDDL.ParserTest do
       """
 
       assert {:ok, {:domain, :test, elements}, _, _, _, _} = Parser.parse(hddl)
-      assert {:multigoal, :transport_all, _} = Enum.find(elements, fn
-        {:multigoal, _, _} -> true
-        _ -> false
-      end)
+
+      assert {:multigoal, :transport_all, _} =
+               Enum.find(elements, fn
+                 {:multigoal, _, _} -> true
+                 _ -> false
+               end)
     end
 
     test "parses problem definition" do
@@ -154,14 +175,18 @@ defmodule AriaPlanner.HDDL.ParserTest do
       """
 
       assert {:ok, {:problem, :test_problem, elements}, _, _, _, _} = Parser.parse(hddl)
-      assert {:domain, _} = Enum.find(elements, fn
-        {:domain, _} -> true
-        _ -> false
-      end)
-      assert {:aria_plan, _} = Enum.find(elements, fn
-        {:aria_plan, _} -> true
-        _ -> false
-      end)
+
+      assert {:domain, _} =
+               Enum.find(elements, fn
+                 {:domain, _} -> true
+                 _ -> false
+               end)
+
+      assert {:aria_plan, _} =
+               Enum.find(elements, fn
+                 {:aria_plan, _} -> true
+                 _ -> false
+               end)
     end
 
     test "handles comments" do

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Plan do
   @moduledoc """
@@ -133,6 +137,7 @@ defmodule AriaCore.Plan do
       end
 
     valid_statuses = ["planned", "executing", "completed", "failed"]
+
     errors =
       if Map.has_key?(attrs, :execution_status) and attrs.execution_status not in valid_statuses do
         ["execution_status must be one of: #{Enum.join(valid_statuses, ", ")}" | errors]
@@ -157,6 +162,7 @@ defmodule AriaCore.Plan do
 
     if Enum.empty?(errors) do
       now = NaiveDateTime.utc_now()
+
       plan = %__MODULE__{
         id: Map.get(attrs, :id),
         name: Map.get(attrs, :name),

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
   @moduledoc """
@@ -75,7 +79,8 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.StartActivity do
   end
 
   def c_start_activity(_state, _activity, _current_time, _assigned_resources) do
-    {:error, "Invalid arguments: state must be a map, activity must be a positive integer, current_time must be a binary string, assigned_resources must be a list"}
+    {:error,
+     "Invalid arguments: state must be a map, activity must be a positive integer, current_time must be a binary string, assigned_resources must be a list"}
   end
 
   # Private helper functions

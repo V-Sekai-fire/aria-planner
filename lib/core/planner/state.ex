@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Planner.State do
   @moduledoc """
@@ -10,18 +14,22 @@ defmodule AriaCore.Planner.State do
   defimpl Jason.Encoder, for: __MODULE__ do
     def encode(value, opts) do
       # Convert DateTime to ISO8601 string for JSON encoding
-      current_time_str = if value.current_time do
-        DateTime.to_iso8601(value.current_time)
-      else
-        nil
-      end
+      current_time_str =
+        if value.current_time do
+          DateTime.to_iso8601(value.current_time)
+        else
+          nil
+        end
 
-      Jason.Encode.map(%{
-        current_time: current_time_str,
-        timeline: value.timeline,
-        entity_capabilities: value.entity_capabilities,
-        facts: value.facts
-      }, opts)
+      Jason.Encode.map(
+        %{
+          current_time: current_time_str,
+          timeline: value.timeline,
+          entity_capabilities: value.entity_capabilities,
+          facts: value.facts
+        },
+        opts
+      )
     end
   end
 

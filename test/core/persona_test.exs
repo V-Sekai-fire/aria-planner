@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.PersonaTest do
   use ExUnit.Case, async: true
@@ -38,15 +42,17 @@ defmodule AriaCore.PersonaTest do
 
   describe "update/2" do
     test "updates existing persona" do
-      {:ok, persona} = Persona.create(%{
-        name: "Original Name",
-        capabilities: ["movable"]
-      })
+      {:ok, persona} =
+        Persona.create(%{
+          name: "Original Name",
+          capabilities: ["movable"]
+        })
 
-      {:ok, updated} = Persona.update(persona, %{
-        name: "Updated Name",
-        capabilities: ["movable", "craft"]
-      })
+      {:ok, updated} =
+        Persona.update(persona, %{
+          name: "Updated Name",
+          capabilities: ["movable", "craft"]
+        })
 
       assert updated.name == "Updated Name"
       assert updated.capabilities == ["movable", "craft"]
@@ -56,9 +62,10 @@ defmodule AriaCore.PersonaTest do
 
   describe "get/1" do
     test "gets persona by ID" do
-      {:ok, persona} = Persona.create(%{
-        name: "Test Persona"
-      })
+      {:ok, persona} =
+        Persona.create(%{
+          name: "Test Persona"
+        })
 
       {:ok, retrieved} = Persona.get(persona.id)
       assert retrieved.id == persona.id
@@ -84,9 +91,10 @@ defmodule AriaCore.PersonaTest do
 
   describe "delete/1" do
     test "deletes persona by ID" do
-      {:ok, persona} = Persona.create(%{
-        name: "To Delete"
-      })
+      {:ok, persona} =
+        Persona.create(%{
+          name: "To Delete"
+        })
 
       :ok = Persona.delete(persona.id)
       assert {:error, :not_found} = Persona.get(persona.id)
@@ -95,15 +103,16 @@ defmodule AriaCore.PersonaTest do
 
   describe "get_beliefs_about/2" do
     test "gets beliefs about another entity" do
-      {:ok, persona} = Persona.create(%{
-        name: "Persona A",
-        beliefs_about_others: %{
-          "persona_b" => %{
-            "observed_action" => "movement",
-            "confidence" => 0.8
+      {:ok, persona} =
+        Persona.create(%{
+          name: "Persona A",
+          beliefs_about_others: %{
+            "persona_b" => %{
+              "observed_action" => "movement",
+              "confidence" => 0.8
+            }
           }
-        }
-      })
+        })
 
       beliefs = Persona.get_beliefs_about(persona, "persona_b")
       assert beliefs["observed_action"] == "movement"

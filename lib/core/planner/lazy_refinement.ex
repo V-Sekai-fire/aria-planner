@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Planner.LazyRefinement do
   @moduledoc """
@@ -105,17 +109,19 @@ defmodule AriaCore.Planner.LazyRefinement do
       |> Map.put(:solution_graph_data, final_solution_graph)
       # Store final state snapshot
       |> Map.put(:planner_state_snapshot, Jason.encode!(final_state))
-      # Store the extracted plan (convert tuples to lists for JSON encoding)
-      solution_plan_json = solution_plan
-        |> Enum.map(fn
-          tuple when is_tuple(tuple) -> Tuple.to_list(tuple)
-          other -> other
-        end)
 
-      final_plan
-      |> Map.put(:solution_plan, Jason.encode!(solution_plan_json))
-      # Store the total duration
-      |> Map.put(:planning_duration_ms, planning_duration_ms)
+    # Store the extracted plan (convert tuples to lists for JSON encoding)
+    solution_plan_json =
+      solution_plan
+      |> Enum.map(fn
+        tuple when is_tuple(tuple) -> Tuple.to_list(tuple)
+        other -> other
+      end)
+
+    final_plan
+    |> Map.put(:solution_plan, Jason.encode!(solution_plan_json))
+    # Store the total duration
+    |> Map.put(:planning_duration_ms, planning_duration_ms)
 
     Logger.info(
       "Completed lazy refinement for plan #{plan.id} in #{iterations} iterations. Total duration: #{planning_duration_ms}ms."
@@ -203,7 +209,8 @@ defmodule AriaCore.Planner.LazyRefinement do
                 # Fix _id, _iter
                 planning_loop_recursive(
                   new_id,
-                  0,  # Restart BFS from root
+                  # Restart BFS from root
+                  0,
                   current_state,
                   new_solution_graph,
                   blacklisted_commands,
@@ -215,9 +222,9 @@ defmodule AriaCore.Planner.LazyRefinement do
               _ ->
                 Logger.warning("Task #{inspect(curr_node.info)} refinement failed. Backtracking.")
 
-              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
-               new_blacklisted_commands} =
-                Backtracking.backtrack(
+                {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
+                 new_blacklisted_commands} =
+                  Backtracking.backtrack(
                     solution_graph,
                     parent_node_id,
                     curr_node_id,
@@ -229,7 +236,8 @@ defmodule AriaCore.Planner.LazyRefinement do
                 # Fix _id, _iter
                 planning_loop_recursive(
                   id,
-                  0,  # Restart BFS from root
+                  # Restart BFS from root
+                  0,
                   new_current_state,
                   new_solution_graph,
                   new_blacklisted_commands,
@@ -244,8 +252,7 @@ defmodule AriaCore.Planner.LazyRefinement do
             if MapSet.member?(blacklisted_commands, curr_node.info) do
               Logger.warning("Action #{inspect(curr_node.info)} is blacklisted. Backtracking.")
 
-              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
-               new_blacklisted_commands} =
+              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
                 Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,
@@ -258,7 +265,8 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                0,  # Restart BFS from root
+                # Restart BFS from root
+                0,
                 new_current_state,
                 new_solution_graph,
                 new_blacklisted_commands,
@@ -289,7 +297,8 @@ defmodule AriaCore.Planner.LazyRefinement do
                   # Fix _id, _iter
                   planning_loop_recursive(
                     id,
-                    0,  # Restart BFS from root
+                    # Restart BFS from root
+                    0,
                     updated_state,
                     solution_graph,
                     blacklisted_commands,
@@ -315,7 +324,8 @@ defmodule AriaCore.Planner.LazyRefinement do
                   # Fix _id, _iter
                   planning_loop_recursive(
                     id,
-                    0,  # Restart BFS from root
+                    # Restart BFS from root
+                    0,
                     new_current_state,
                     new_solution_graph,
                     new_blacklisted_commands,
@@ -357,7 +367,8 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 new_id,
-                0,  # Restart BFS from root
+                # Restart BFS from root
+                0,
                 current_state,
                 new_solution_graph,
                 blacklisted_commands,
@@ -411,7 +422,8 @@ defmodule AriaCore.Planner.LazyRefinement do
                   # Fix _id, _iter
                   planning_loop_recursive(
                     id,
-                    0,  # Restart BFS from root
+                    # Restart BFS from root
+                    0,
                     new_current_state,
                     new_solution_graph,
                     new_blacklisted_commands,
@@ -434,7 +446,8 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 new_id,
-                0,  # Restart BFS from root
+                # Restart BFS from root
+                0,
                 current_state,
                 new_solution_graph,
                 blacklisted_commands,
@@ -488,7 +501,8 @@ defmodule AriaCore.Planner.LazyRefinement do
                   # Fix _id, _iter
                   planning_loop_recursive(
                     id,
-                    0,  # Restart BFS from root
+                    # Restart BFS from root
+                    0,
                     new_current_state,
                     new_solution_graph,
                     new_blacklisted_commands,
@@ -525,7 +539,8 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                0,  # Restart BFS from root
+                # Restart BFS from root
+                0,
                 current_state,
                 solution_graph,
                 blacklisted_commands,
@@ -536,8 +551,7 @@ defmodule AriaCore.Planner.LazyRefinement do
             else
               Logger.warning("Goal #{inspect(goal_node.info)} verification failed. Backtracking.")
 
-              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
-               new_blacklisted_commands} =
+              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
                 Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,
@@ -550,7 +564,8 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                0,  # Restart BFS from root
+                # Restart BFS from root
+                0,
                 new_current_state,
                 new_solution_graph,
                 new_blacklisted_commands,
@@ -570,7 +585,8 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                0,  # Restart BFS from root
+                # Restart BFS from root
+                0,
                 current_state,
                 solution_graph,
                 blacklisted_commands,
@@ -579,13 +595,10 @@ defmodule AriaCore.Planner.LazyRefinement do
                 iter + 1
               )
             else
-              Logger.warning(
-              "MultiGoal #{inspect(multigoal_node.info)} verification failed. Backtracking."
-            )
+              Logger.warning("MultiGoal #{inspect(multigoal_node.info)} verification failed. Backtracking.")
 
-            {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
-             new_blacklisted_commands} =
-              Backtracking.backtrack(
+              {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
+                Backtracking.backtrack(
                   solution_graph,
                   parent_node_id,
                   curr_node_id,
@@ -597,7 +610,8 @@ defmodule AriaCore.Planner.LazyRefinement do
               # Fix _id, _iter
               planning_loop_recursive(
                 id,
-                0,  # Restart BFS from root
+                # Restart BFS from root
+                0,
                 new_current_state,
                 new_solution_graph,
                 new_blacklisted_commands,
@@ -610,8 +624,7 @@ defmodule AriaCore.Planner.LazyRefinement do
           # Other node types (D)
           _ ->
             # For now, just fail and backtrack
-            {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state,
-             new_blacklisted_commands} =
+            {_new_parent_node_id, _new_curr_node_id, new_solution_graph, new_current_state, new_blacklisted_commands} =
               Backtracking.backtrack(
                 solution_graph,
                 parent_node_id,
@@ -624,7 +637,8 @@ defmodule AriaCore.Planner.LazyRefinement do
             # Fix _id, _iter
             planning_loop_recursive(
               id,
-              0,  # Restart BFS from root
+              # Restart BFS from root
+              0,
               new_current_state,
               new_solution_graph,
               new_blacklisted_commands,

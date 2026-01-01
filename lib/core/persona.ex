@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Persona do
   @moduledoc """
@@ -69,6 +73,7 @@ defmodule AriaCore.Persona do
 
     if Enum.empty?(errors) do
       now = DateTime.utc_now()
+
       persona = %__MODULE__{
         id: Map.get(attrs, :id),
         name: Map.get(attrs, :name),
@@ -237,5 +242,4 @@ defmodule AriaCore.Persona do
   def update_beliefs_from_outcomes(_persona, _outcomes) do
     {:error, "persona must be a Persona struct and outcomes must be a list"}
   end
-
 end

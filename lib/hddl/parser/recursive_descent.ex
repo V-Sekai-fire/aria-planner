@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.HDDL.Parser.RecursiveDescent do
   @moduledoc """
@@ -103,6 +107,21 @@ defmodule AriaPlanner.HDDL.Parser.RecursiveDescent do
   # Accumulate identifier/keyword/number/variable (works for both empty and non-empty current)
   # This must come before the "unknown character" patterns
   # Support common operators: <, >, <=, >=, =, +, -, *, /
+  # Support decimal numbers: allow . when current token is a number
+  defp tokenize([?. | rest], current, acc) when current != [] do
+    # Check if current token is a number (all digits)
+    current_str = List.to_string(Enum.reverse(current))
+
+    if String.match?(current_str, ~r/^-?\d+$/) do
+      # This is a decimal number, continue accumulating
+      tokenize(rest, [?. | current], acc)
+    else
+      # Not a number, finish current token and treat . as unknown
+      new_acc = [token_from_chars(current) | acc]
+      tokenize([?. | rest], [], new_acc)
+    end
+  end
+
   defp tokenize([char | rest], current, acc)
        when char in ?a..?z or char in ?A..?Z or char in ?0..?9 or char in [?_, ?:, ?-, ??, ?=, ?<, ?>, ?+, ?*, ?/] do
     tokenize(rest, [char | current], acc)
@@ -146,6 +165,9 @@ defmodule AriaPlanner.HDDL.Parser.RecursiveDescent do
 
       String.match?(str, ~r/^-?\d+$/) ->
         {:number, String.to_integer(str)}
+
+      String.match?(str, ~r/^-?\d+\.\d+$/) ->
+        {:number, String.to_float(str)}
 
       str == "=" ->
         {:identifier, :=}

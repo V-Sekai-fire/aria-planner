@@ -30,6 +30,9 @@
   )
 
   ; Initial planner state
+  ; Classic fox-geese-corn puzzle: f=1, g=1, c=1, k=2
+  ; Expected solution: transport geese (0,1,0), return empty (0,0,0), transport fox+corn (1,0,1)
+  ; Total trips: 3
   (:aria-initial-state
     :current-time "2025-01-01T10:00:00Z"
     :timeline (
@@ -39,10 +42,21 @@
       (:entity agent_1 :capabilities (:navigation :transport))
     )
     :facts (
+      ; MiniZinc parameters: f=1, g=1, c=1, k=2, t=10, pf=4, pg=4, pc=3
       (:fact west_fox :value 1)
       (:fact west_geese :value 1)
       (:fact west_corn :value 1)
+      (:fact east_fox :value 0)
+      (:fact east_geese :value 0)
+      (:fact east_corn :value 0)
       (:fact boat_location :value west)
+      (:fact boat_capacity :value 2)
+      ; Point values for objective calculation (pf, pg, pc)
+      (:fact pf :value 4)
+      (:fact pg :value 4)
+      (:fact pc :value 3)
+      ; Maximum trips allowed (t)
+      (:fact max_trips :value 10)
     )
   )
 
@@ -52,4 +66,3 @@
     :blacklisted-methods ()
   )
 )
-

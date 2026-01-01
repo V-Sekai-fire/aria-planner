@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.Location do
   @moduledoc """
@@ -73,6 +77,7 @@ defmodule AriaCore.Location do
 
     if Enum.empty?(errors) do
       now = DateTime.utc_now()
+
       location = %__MODULE__{
         id: Map.get(attrs, :id),
         name: Map.get(attrs, :name),

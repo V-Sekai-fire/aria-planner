@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.LocationTest do
   use ExUnit.Case, async: true
@@ -44,10 +48,11 @@ defmodule AriaCore.LocationTest do
 
   describe "update/2" do
     test "updates existing location" do
-      {:ok, location} = Location.create(%{
-        name: "Original Name",
-        biome: "forest"
-      })
+      {:ok, location} =
+        Location.create(%{
+          name: "Original Name",
+          biome: "forest"
+        })
 
       {:ok, updated} = Location.update(location, %{name: "Updated Name", difficulty: 5})
       assert updated.name == "Updated Name"
@@ -58,10 +63,11 @@ defmodule AriaCore.LocationTest do
 
   describe "get/1" do
     test "gets location by ID" do
-      {:ok, location} = Location.create(%{
-        name: "Test Location",
-        biome: "desert"
-      })
+      {:ok, location} =
+        Location.create(%{
+          name: "Test Location",
+          biome: "desert"
+        })
 
       {:ok, retrieved} = Location.get(location.id)
       assert retrieved.id == location.id
@@ -87,10 +93,11 @@ defmodule AriaCore.LocationTest do
 
   describe "delete/1" do
     test "deletes location by ID" do
-      {:ok, location} = Location.create(%{
-        name: "To Delete",
-        biome: "forest"
-      })
+      {:ok, location} =
+        Location.create(%{
+          name: "To Delete",
+          biome: "forest"
+        })
 
       :ok = Location.delete(location.id)
       assert {:error, :not_found} = Location.get(location.id)
@@ -99,12 +106,13 @@ defmodule AriaCore.LocationTest do
 
   describe "to_spo/1" do
     test "converts location to SPO format" do
-      {:ok, location} = Location.create(%{
-        name: "Test Location",
-        biome: "forest",
-        difficulty: 3,
-        resources: ["wood", "stone"]
-      })
+      {:ok, location} =
+        Location.create(%{
+          name: "Test Location",
+          biome: "forest",
+          difficulty: 3,
+          resources: ["wood", "stone"]
+        })
 
       spo = Location.to_spo(location)
       assert is_list(spo)

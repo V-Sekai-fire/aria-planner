@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner do
   @moduledoc """
@@ -19,5 +23,4 @@ defmodule AriaPlanner do
   defdelegate civil_datetime_to_absolute_microseconds(datetime), to: AriaPlanner.Client
   defdelegate iso8601_to_absolute_microseconds(iso8601_string), to: AriaPlanner.Client
   defdelegate iso8601_duration_to_microseconds(iso8601_duration_string), to: AriaPlanner.Client
-
 end

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Storage.EtsStorage do
   @moduledoc """
@@ -26,10 +30,12 @@ defmodule AriaPlanner.Storage.EtsStorage do
       case :ets.whereis(table) do
         :undefined ->
           :ets.new(table, [:named_table, :set, :public])
+
         _ ->
           :ok
       end
     end
+
     :ok
   end
 

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaStnSolver do
   @moduledoc """
@@ -167,14 +171,16 @@ defmodule AriaStnSolver do
   # Initialize distance matrix from STN constraints
   defp initialize_distance_matrix(time_points, constraints) do
     # Start with all distances as infinity
-    initial = for i <- time_points, j <- time_points, into: %{} do
-      {{i, j}, :infinity}
-    end
+    initial =
+      for i <- time_points, j <- time_points, into: %{} do
+        {{i, j}, :infinity}
+      end
 
     # Set self-loops to 0
-    self_loops = for point <- time_points, into: %{} do
-      {{point, point}, 0}
-    end
+    self_loops =
+      for point <- time_points, into: %{} do
+        {{point, point}, 0}
+      end
 
     # Set distances from constraints (use min distance as edge weight)
     constraint_distances =
@@ -214,6 +220,7 @@ defmodule AriaStnSolver do
 
       # Get tightened max distance (negative of reverse path)
       reverse_dist_to_from = get_distance(reverse_dist, to, from)
+
       tightened_max =
         if reverse_dist_to_from != :infinity do
           -reverse_dist_to_from

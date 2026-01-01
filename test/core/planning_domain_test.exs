@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaCore.PlanningDomainTest do
   use ExUnit.Case, async: true
@@ -74,10 +78,11 @@ defmodule AriaCore.PlanningDomainTest do
 
   describe "update/2" do
     test "updates existing domain" do
-      {:ok, domain} = PlanningDomain.create(%{
-        domain_type: "blocks_world",
-        name: "Original Name"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          domain_type: "blocks_world",
+          name: "Original Name"
+        })
 
       {:ok, updated} = PlanningDomain.update(domain, %{name: "Updated Name"})
       assert updated.name == "Updated Name"
@@ -87,52 +92,57 @@ defmodule AriaCore.PlanningDomainTest do
 
   describe "add_element/3" do
     test "adds task element to domain" do
-      {:ok, domain} = PlanningDomain.create(%{
-        domain_type: "blocks_world",
-        tasks: []
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          domain_type: "blocks_world",
+          tasks: []
+        })
 
       {:ok, updated} = PlanningDomain.add_element(domain, :task, %{name: "move_block"})
       assert length(updated.tasks) == 1
       task = updated.tasks |> List.first()
       # Element is a map with atom or string keys
-      assert (is_map(task) and (Map.has_key?(task, :name) or Map.has_key?(task, "name")))
+      assert is_map(task) and (Map.has_key?(task, :name) or Map.has_key?(task, "name"))
     end
 
     test "adds action element to domain" do
-      {:ok, domain} = PlanningDomain.create(%{
-        domain_type: "blocks_world",
-        actions: []
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          domain_type: "blocks_world",
+          actions: []
+        })
 
       {:ok, updated} = PlanningDomain.add_element(domain, :action, %{name: "pickup"})
       assert length(updated.actions) == 1
     end
 
     test "adds command element to domain" do
-      {:ok, domain} = PlanningDomain.create(%{
-        domain_type: "blocks_world",
-        commands: []
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          domain_type: "blocks_world",
+          commands: []
+        })
 
       {:ok, updated} = PlanningDomain.add_element(domain, :command, %{name: "c_pickup"})
       assert length(updated.commands) == 1
     end
 
     test "adds multigoal element to domain" do
-      {:ok, domain} = PlanningDomain.create(%{
-        domain_type: "blocks_world",
-        multigoals: []
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          domain_type: "blocks_world",
+          multigoals: []
+        })
 
       {:ok, updated} = PlanningDomain.add_element(domain, :multigoal, %{name: "m_move_blocks"})
       assert length(updated.multigoals) == 1
     end
 
     test "returns error for invalid element type" do
-      {:ok, domain} = PlanningDomain.create(%{
-        domain_type: "blocks_world"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          domain_type: "blocks_world"
+        })
 
       assert {:error, _} = PlanningDomain.add_element(domain, :invalid_type, %{})
     end
@@ -140,10 +150,11 @@ defmodule AriaCore.PlanningDomainTest do
 
   describe "get/1" do
     test "gets domain by ID" do
-      {:ok, domain} = PlanningDomain.create(%{
-        domain_type: "blocks_world",
-        name: "Test Domain"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          domain_type: "blocks_world",
+          name: "Test Domain"
+        })
 
       {:ok, retrieved} = PlanningDomain.get(domain.id)
       assert retrieved.id == domain.id
@@ -169,10 +180,11 @@ defmodule AriaCore.PlanningDomainTest do
 
   describe "delete/1" do
     test "deletes domain by ID" do
-      {:ok, domain} = PlanningDomain.create(%{
-        domain_type: "blocks_world",
-        name: "To Delete"
-      })
+      {:ok, domain} =
+        PlanningDomain.create(%{
+          domain_type: "blocks_world",
+          name: "To Delete"
+        })
 
       :ok = PlanningDomain.delete(domain.id)
       assert {:error, :not_found} = PlanningDomain.get(domain.id)
