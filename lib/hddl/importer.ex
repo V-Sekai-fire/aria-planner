@@ -77,7 +77,7 @@ defmodule AriaPlanner.HDDL.Importer do
       entity_capabilities: get_plan_attr(plan_attrs, :entity_capabilities, %{}),
       solution_graph_data: %{},
       solution_plan: "",
-      execution_status: get_plan_attr(plan_attrs, :execution_status, "planned"),
+      execution_status: normalize_execution_status(get_plan_attr(plan_attrs, :execution_status, "planned")),
       success_probability: get_plan_attr(plan_attrs, :success_probability, 1.0),
       risk_assessment: get_plan_attr(plan_attrs, :risk_assessment, %{}),
       performance_metrics: get_plan_attr(plan_attrs, :performance_metrics, %{})
@@ -89,7 +89,15 @@ defmodule AriaPlanner.HDDL.Importer do
   def import_problem(_), do: {:error, "Invalid problem AST"}
 
   defp get_plan_attr(plan_attrs, key, default) do
-    Map.get(plan_attrs, to_string(key)) || Map.get(plan_attrs, key, default)
+    # Try multiple key formats: string, atom, and hyphenated versions
+    key_string = to_string(key)
+    key_atom = key
+    key_hyphenated = String.replace(key_string, "_", "-")
+
+    Map.get(plan_attrs, key_string) ||
+      Map.get(plan_attrs, key_atom) ||
+      Map.get(plan_attrs, key_hyphenated) ||
+      default
   end
 
   defp get_plan_domain_type(plan_attrs) do
@@ -109,14 +117,33 @@ defmodule AriaPlanner.HDDL.Importer do
   Converts HDDL action AST to action map.
   """
   @spec import_action(term()) :: map()
-  def import_action({:action, name, elements}) do
+  def import_action({:durative_action, name, elements}) do
+    # Durative actions use :condition instead of :precondition
+    # Elements are a keyword list, find_element should work directly
+    precondition = extract_precondition(elements) || extract_condition(elements)
+
     %{
       id: UUIDv7.generate(),
       name: Atom.to_string(name),
       parameters: extract_parameters(elements),
-      precondition: extract_precondition(elements),
+      precondition: precondition,
       effect: extract_effect(elements),
+      duration: extract_duration(elements),
       temporal_metadata: extract_temporal_metadata(elements)
+    }
+  end
+
+  def import_action({:action, name, elements}) do
+    # Elements can be a keyword list, so handle both formats
+    elements_list = if Keyword.keyword?(elements), do: Keyword.to_list(elements), else: elements
+
+    %{
+      id: UUIDv7.generate(),
+      name: Atom.to_string(name),
+      parameters: extract_parameters(elements_list),
+      precondition: extract_precondition(elements_list),
+      effect: extract_effect(elements_list),
+      temporal_metadata: extract_temporal_metadata(elements_list)
     }
   end
 
@@ -523,13 +550,12 @@ defmodule AriaPlanner.HDDL.Importer do
     end
   end
 
-  # Unused function - kept for potential future use
-  # defp extract_condition(elements) do
-  #   case find_element(elements, :condition) do
-  #     {:condition, cond} -> cond
-  #     _ -> nil
-  #   end
-  # end
+  defp extract_condition(elements) do
+    case find_element(elements, :condition) do
+      {:condition, cond} -> cond
+      _ -> nil
+    end
+  end
 
   defp extract_effect(elements) do
     case find_element(elements, :effect) do
@@ -809,10 +835,21 @@ defmodule AriaPlanner.HDDL.Importer do
     case find_element(elements, :aria_plan) do
       {:aria_plan, plan} when is_list(plan) ->
         # Keyword list format from parser
+        # Convert both atom keys and hyphenated keys to underscore format
         plan
         |> Enum.map(fn
-          {k, v} when is_atom(k) -> {Atom.to_string(k), v}
-          {k, v} -> {k, v}
+          {k, v} when is_atom(k) ->
+            key_string = Atom.to_string(k)
+            # Convert hyphenated keys to underscores (e.g., :execution-status -> "execution_status")
+            normalized_key = String.replace(key_string, "-", "_")
+            {normalized_key, v}
+
+          {k, v} when is_binary(k) ->
+            normalized_key = String.replace(k, "-", "_")
+            {normalized_key, v}
+
+          {k, v} ->
+            {k, v}
         end)
         |> Map.new()
 
@@ -820,8 +857,17 @@ defmodule AriaPlanner.HDDL.Importer do
         # Legacy map format
         plan
         |> Enum.map(fn
-          {k, v} when is_atom(k) -> {Atom.to_string(k), v}
-          {k, v} -> {k, v}
+          {k, v} when is_atom(k) ->
+            key_string = Atom.to_string(k)
+            normalized_key = String.replace(key_string, "-", "_")
+            {normalized_key, v}
+
+          {k, v} when is_binary(k) ->
+            normalized_key = String.replace(k, "-", "_")
+            {normalized_key, v}
+
+          {k, v} ->
+            {k, v}
         end)
         |> Map.new()
 
@@ -839,4 +885,14 @@ defmodule AriaPlanner.HDDL.Importer do
   end
 
   defp find_element(_, _), do: nil
+
+  defp normalize_execution_status(status) when is_atom(status) do
+    Atom.to_string(status)
+  end
+
+  defp normalize_execution_status(status) when is_binary(status) do
+    status
+  end
+
+  defp normalize_execution_status(_), do: "planned"
 end
