@@ -1,0 +1,37 @@
+(define (problem cable_tree_wiring_problem_a041)
+  (:domain cable_tree_wiring)
+
+  (:aria-plan
+    :id "019b7b01-a1f0-74cf-bbd9-bcc5136e258b"
+    :name "A041 Plan"
+    :persona-id "persona_123"
+    :domain-type navigation
+    :objectives (
+      (solve_problem)
+    )
+    :execution-status planned
+  )
+
+  (:aria-initial-state
+    :current-time "2025-01-01T10:00:00Z"
+    :timeline (
+      (:event start :time "2025-01-01T10:00:00Z")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :computation))
+    )
+    :facts (
+      (:fact k state :value "50")
+      (:fact b state :value "25")
+      (:fact AtomicConstraints_array state :value "AtomicConstraints =  [|...")
+      (:fact DisjunctiveConstraints_array state :value "DisjunctiveConstraints =  [|1, 31, 1, 6|...")
+      (:fact SoftAtomicConstraints_array state :value "SoftAtomicConstraints =  [|...")
+      (:fact DirectSuccessors state :value "[]")
+    )
+  )
+
+  (:aria-blacklist
+    :blacklisted-commands ()
+    :blacklisted-methods ()
+  )
+)

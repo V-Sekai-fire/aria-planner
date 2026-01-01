@@ -1,0 +1,48 @@
+(define (domain portal)
+  (:requirements :strips :typing :temporal :hierarchical)
+
+  (:aria-domain-metadata
+    :id "01234567-89ab-cdef-0123-456789abcdef"
+    :name "Portal Domain"
+    :description "HDDL domain for portal puzzle - navigating a board with portals, boxes, and goals"
+    :domain-type navigation
+    :version 1
+    :state active
+  )
+
+  (:predicates
+    (at ?entity ?x ?y)
+    (portal ?x ?y)
+    (box ?x ?y)
+    (goal ?x ?y)
+    (wall ?x ?y)
+    (can_move ?entity ?x ?y)
+    (pushed ?box ?x ?y)
+  )
+
+  (:action move
+    :parameters (?entity ?from_x ?from_y ?to_x ?to_y)
+    :precondition (and (at ?entity ?from_x ?from_y) (can_move ?entity ?to_x ?to_y))
+    :effect (and (not (at ?entity ?from_x ?from_y)) (at ?entity ?to_x ?to_y))
+  )
+
+  (:action push_box
+    :parameters (?entity ?box ?from_x ?from_y ?to_x ?to_y)
+    :precondition (and (at ?entity ?from_x ?from_y) (box ?from_x ?from_y) (can_move ?entity ?to_x ?to_y))
+    :effect (and (not (box ?from_x ?from_y)) (box ?to_x ?to_y) (pushed ?box ?to_x ?to_y))
+  )
+
+  (:task solve_portal
+    :parameters ()
+  )
+
+  (:method solve
+    :task (solve_portal)
+    :precondition ()
+    :subtasks (move_to_goals push_boxes_to_goals)
+  )
+
+  (:command c_move_entity
+    :parameters (?entity ?x ?y)
+  )
+)

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Planner.Temporal.STN do
   @moduledoc """
@@ -62,7 +66,7 @@ defmodule AriaPlanner.Planner.Temporal.STN do
   @type constraint_matrix :: %{optional({time_point(), time_point()}) => constraint()}
   @type time_unit :: :microsecond | :millisecond | :second | :minute | :hour | :day
   @type lod_level :: :ultra_high | :high | :medium | :low | :very_low
-  @type lod_resolution :: 1 | 10 | 100 | 1000 | 10000
+  @type lod_resolution :: 1 | 10 | 100 | 1000 | 10_000
 
   @type t :: %__MODULE__{
           time_points: MapSet.t(time_point()),

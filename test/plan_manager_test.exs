@@ -7,7 +7,7 @@
 
 defmodule AriaPlanner.PlanManagerTest do
   use ExUnit.Case, async: true
-  alias AriaCore.Plan
+
   alias AriaPlanner.PlanManager
 
   describe "create_plan/4" do

@@ -1,0 +1,35 @@
+(define (problem tiny_cvrp_problem_medium_instance_11)
+  (:domain tiny_cvrp)
+
+  (:aria-plan
+    :id "019b7b01-a1ff-7d50-99c1-38d5daf7c316"
+    :name "Medium instance 11 Plan"
+    :persona-id "persona_123"
+    :domain-type navigation
+    :objectives (
+      (solve_problem)
+    )
+    :execution-status planned
+  )
+
+  (:aria-initial-state
+    :current-time "2025-01-01T10:00:00Z"
+    :timeline (
+      (:event start :time "2025-01-01T10:00:00Z")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :computation))
+    )
+    :facts (
+      (:fact num_vehicles state :value "4")
+      (:fact num_customers state :value "15")
+      (:fact vehicle_capacities state :value "[500, 500, 500, 250]")
+      (:fact predicted_demands state :value "[0, 6, 20, 13, 11, 6, 4, 1, 17, 13, 11, 6, 2, 8, 17, 5]")
+    )
+  )
+
+  (:aria-blacklist
+    :blacklisted-commands ()
+    :blacklisted-methods ()
+  )
+)

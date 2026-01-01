@@ -1,0 +1,33 @@
+(define (problem neighbours_problem_neightbours_new_5)
+  (:domain neighbours)
+
+  (:aria-plan
+    :id "019b7b01-a1fc-7917-80ef-4f0563bfe68d"
+    :name "Neightbours new 5 Plan"
+    :persona-id "persona_123"
+    :domain-type navigation
+    :objectives (
+      (solve_problem)
+    )
+    :execution-status planned
+  )
+
+  (:aria-initial-state
+    :current-time "2025-01-01T10:00:00Z"
+    :timeline (
+      (:event start :time "2025-01-01T10:00:00Z")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :computation))
+    )
+    :facts (
+      (:fact n state :value "30")
+      (:fact m state :value "31")
+    )
+  )
+
+  (:aria-blacklist
+    :blacklisted-commands ()
+    :blacklisted-methods ()
+  )
+)

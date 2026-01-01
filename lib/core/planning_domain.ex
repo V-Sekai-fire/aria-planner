@@ -116,7 +116,7 @@ defmodule AriaCore.PlanningDomain do
 
     errors =
       if Map.has_key?(attrs, :state) and attrs.state not in valid_states do
-        ["state must be one of: #{Enum.join(Enum.map(valid_states, &Atom.to_string/1), ", ")}" | errors]
+        ["state must be one of: #{Enum.map_join(valid_states, ", ", &Atom.to_string/1)}" | errors]
       else
         errors
       end

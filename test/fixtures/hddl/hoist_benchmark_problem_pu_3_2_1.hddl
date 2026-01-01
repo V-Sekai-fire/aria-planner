@@ -1,0 +1,36 @@
+(define (problem hoist_benchmark_problem_pu_3_2_1)
+  (:domain hoist_benchmark)
+
+  (:aria-plan
+    :id "019b7b01-a1fb-7a13-8915-fbc8576d56e9"
+    :name "Pu 3 2 1 Plan"
+    :persona-id "persona_123"
+    :domain-type navigation
+    :objectives (
+      (solve_problem)
+    )
+    :execution-status planned
+  )
+
+  (:aria-initial-state
+    :current-time "2025-01-01T10:00:00Z"
+    :timeline (
+      (:event start :time "2025-01-01T10:00:00Z")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :computation))
+    )
+    :facts (
+      (:fact Ninner state :value "12")
+      (:fact J state :value "9")
+      (:fact tmin state :value "[150, 90,120, 90, 30, 60, 60, 45,130,120, 90, 30]")
+      (:fact tmax state :value "[200,120,180,125, 40,120,120, 75,INF,INF,120, 60]")
+      (:fact Multiplier state :value "3")
+    )
+  )
+
+  (:aria-blacklist
+    :blacklisted-commands ()
+    :blacklisted-methods ()
+  )
+)

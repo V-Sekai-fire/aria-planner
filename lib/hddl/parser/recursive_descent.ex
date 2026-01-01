@@ -898,9 +898,32 @@ defmodule AriaPlanner.HDDL.Parser.RecursiveDescent do
 
   defp transform_predicate_schema(other), do: transform_element(other)
 
-  # Transform fact: (:fact subject predicate :value value)
-  # Note: HDDL syntax is (:fact subject :value value) - predicate is implicit
+  # Transform fact: (:fact predicate subject :value value)
+  # Format: predicate comes first, then subject, then :value value
   @spec transform_fact(list()) :: map()
+  defp transform_fact([{:keyword, :fact}, predicate, subject | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :fact,
+      predicate: transform_element(predicate),
+      subject: transform_element(subject),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  defp transform_fact([{:identifier, :fact}, predicate, subject | rest]) do
+    elements = transform_keyword_list(rest)
+
+    %{
+      type: :fact,
+      predicate: transform_element(predicate),
+      subject: transform_element(subject),
+      value: Keyword.get(elements, :value)
+    }
+  end
+
+  # Backward compatibility: (:fact subject :value value) - predicate is implicit
   defp transform_fact([{:keyword, :fact}, subject | rest]) do
     elements = transform_keyword_list(rest)
 

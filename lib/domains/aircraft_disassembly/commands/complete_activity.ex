@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
   @moduledoc """
@@ -21,17 +25,19 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.CompleteActivity do
   @spec c_complete_activity(state :: map(), activity :: integer()) ::
           {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}
   def c_complete_activity(state, activity) do
-    with :ok <- check_activity_in_progress(state, activity) do
-      # Update state: set activity status to "completed" using facts
-      activity_id = "activity_#{activity}"
-      new_state = update_activity_status(state, activity_id, "completed")
+    case check_activity_in_progress(state, activity) do
+      :ok ->
+        # Update state: set activity status to "completed" using facts
+        activity_id = "activity_#{activity}"
+        new_state = update_activity_status(state, activity_id, "completed")
 
-      # Return planner metadata - completion is instant
-      metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
+        # Return planner metadata - completion is instant
+        metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
 
-      {:ok, new_state, metadata}
-    else
-      error -> error
+        {:ok, new_state, metadata}
+
+      error ->
+        error
     end
   end
 

@@ -1,0 +1,39 @@
+(define (problem fox_geese_corn_problem_foxgeesecorn_19)
+  (:domain fox_geese_corn)
+
+  (:aria-plan
+    :id "019b7b01-a1f9-78c8-9e28-c688cb2975bb"
+    :name "Foxgeesecorn 19 Plan"
+    :persona-id "persona_123"
+    :domain-type navigation
+    :objectives (
+      (solve_problem)
+    )
+    :execution-status planned
+  )
+
+  (:aria-initial-state
+    :current-time "2025-01-01T10:00:00Z"
+    :timeline (
+      (:event start :time "2025-01-01T10:00:00Z")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :computation))
+    )
+    :facts (
+      (:fact f state :value "36")
+      (:fact g state :value "37")
+      (:fact c state :value "40")
+      (:fact k state :value "6")
+      (:fact t state :value "35")
+      (:fact pf state :value "9")
+      (:fact pg state :value "10")
+      (:fact pc state :value "8")
+    )
+  )
+
+  (:aria-blacklist
+    :blacklisted-commands ()
+    :blacklisted-methods ()
+  )
+)

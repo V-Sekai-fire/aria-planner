@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
   @moduledoc """
@@ -23,15 +27,17 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
   @spec c_assign_resource(state :: map(), activity :: integer(), resource :: integer()) ::
           {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}
   def c_assign_resource(state, activity, resource) do
-    with :ok <- check_resource_not_assigned(state, activity, resource) do
-      new_state = ResourceAssigned.set(state, activity, resource, true)
+    case check_resource_not_assigned(state, activity, resource) do
+      :ok ->
+        new_state = ResourceAssigned.set(state, activity, resource, true)
 
-      # Return planner metadata - resource assignment is instant
-      metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
+        # Return planner metadata - resource assignment is instant
+        metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
 
-      {:ok, new_state, metadata}
-    else
-      error -> error
+        {:ok, new_state, metadata}
+
+      error ->
+        error
     end
   end
 

@@ -1,0 +1,33 @@
+(define (problem portal_problem_small_3)
+  (:domain portal)
+
+  (:aria-plan
+    :id "019b7b01-a1fd-7ee2-9a3f-c0c0bdf46765"
+    :name "Small 3 Plan"
+    :persona-id "persona_123"
+    :domain-type navigation
+    :objectives (
+      (solve_problem)
+    )
+    :execution-status planned
+  )
+
+  (:aria-initial-state
+    :current-time "2025-01-01T10:00:00Z"
+    :timeline (
+      (:event start :time "2025-01-01T10:00:00Z")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :computation))
+    )
+    :facts (
+      (:fact inputBoard_array state :value "inputBoard = [...")
+      (:fact maxTime state :value "22")
+    )
+  )
+
+  (:aria-blacklist
+    :blacklisted-commands ()
+    :blacklisted-methods ()
+  )
+)

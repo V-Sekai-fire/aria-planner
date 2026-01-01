@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 # This file contains the configuration for Credo and you are probably reading
 # this after creating it with `mix credo.gen.config`.
@@ -25,7 +29,7 @@
         # In the latter case `**/*.{ex,exs}` will be used.
         #
         included: [
-          "lib/aria_hybrid_planner/",
+          "lib/",
           "src/",
           "test/",
           "web/",

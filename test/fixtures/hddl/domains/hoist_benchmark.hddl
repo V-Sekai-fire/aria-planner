@@ -1,0 +1,53 @@
+(define (domain hoist_benchmark)
+  (:requirements :strips :typing :temporal :hierarchical)
+
+  (:aria-domain-metadata
+    :id "01234567-89ab-cdef-0123-456789abcdef"
+    :name "Hoist Benchmark Domain"
+    :description "HDDL domain for cyclic hoist scheduling problem - scheduling hoists to move jobs through tanks with time windows"
+    :domain-type navigation
+    :version 1
+    :state active
+  )
+
+  (:predicates
+    (tank ?tank_id)
+    (hoist ?hoist_id)
+    (job ?job_id)
+    (job_at_tank ?job ?tank)
+    (hoist_at_tank ?hoist ?tank)
+    (tmin ?tank ?time)
+    (tmax ?tank ?time)
+    (empty_travel_time ?from ?to ?time)
+    (job_travel_time ?from ?to ?time)
+    (removal_time ?job ?tank ?time)
+    (cycle_period ?period)
+    (hoist_capacity ?capacity)
+  )
+
+  (:action move_hoist
+    :parameters (?hoist ?from ?to)
+    :precondition (and (hoist_at_tank ?hoist ?from) (empty_travel_time ?from ?to ?time))
+    :effect (and (not (hoist_at_tank ?hoist ?from)) (hoist_at_tank ?hoist ?to))
+  )
+
+  (:action remove_job
+    :parameters (?hoist ?job ?tank)
+    :precondition (and (hoist_at_tank ?hoist ?tank) (job_at_tank ?job ?tank))
+    :effect (and (not (job_at_tank ?job ?tank)) (removal_time ?job ?tank ?time))
+  )
+
+  (:task schedule_hoists
+    :parameters ()
+  )
+
+  (:method schedule_cycle
+    :task (schedule_hoists)
+    :precondition ()
+    :subtasks (schedule_all_jobs)
+  )
+
+  (:command c_remove_job_from_tank
+    :parameters (?hoist ?job ?tank ?time)
+  )
+)

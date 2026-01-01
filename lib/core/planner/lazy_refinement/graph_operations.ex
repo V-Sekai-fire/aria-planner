@@ -168,15 +168,18 @@ defmodule AriaCore.Planner.LazyRefinement.GraphOperations do
 
   defp do_extract_solution_plan(solution_graph, node_id, acc) do
     node = Map.get(solution_graph, node_id)
-    if node == nil, do: acc
 
-    # Add action to accumulator if it's an action node
-    new_acc = if node.type == :A, do: acc ++ [node.info], else: acc
+    if node == nil do
+      acc
+    else
+      # Add action to accumulator if it's an action node
+      new_acc = if node.type == :A, do: acc ++ [node.info], else: acc
 
-    # Recursively visit successors
-    Enum.reduce(node.successors || [], new_acc, fn successor_id, current_acc ->
-      do_extract_solution_plan(solution_graph, successor_id, current_acc)
-    end)
+      # Recursively visit successors
+      Enum.reduce(node.successors || [], new_acc, fn successor_id, current_acc ->
+        do_extract_solution_plan(solution_graph, successor_id, current_acc)
+      end)
+    end
   end
 
   # IPyHOP BFS search: Find first open node in entire solution graph starting from root

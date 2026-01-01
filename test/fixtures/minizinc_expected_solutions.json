@@ -1,0 +1,112 @@
+{
+  "fox_geese_corn": {
+    "fox_geese_corn_problem": {
+      "f": 1, "g": 1, "c": 1, "k": 2, "pf": 4, "pg": 4, "pc": 3,
+      "expected_objective": 11,
+      "expected_trips": 3,
+      "expected_final_state": {"east_fox": 1, "east_geese": 1, "east_corn": 1}
+    },
+    "fox_geese_corn_problem_fgc_06_26_08_00": {
+      "f": 6, "g": 26, "c": 8, "k": 2, "pf": 4, "pg": 4, "pc": 3,
+      "expected_objective": 152,
+      "expected_trips": null,
+      "expected_final_state": {"east_fox": 6, "east_geese": 26, "east_corn": 8}
+    },
+    "fox_geese_corn_problem_fgc_20_20_22_00": {
+      "f": 20, "g": 20, "c": 22, "k": 6, "pf": 6, "pg": 5, "pc": 4,
+      "expected_objective": 308,
+      "expected_trips": null,
+      "expected_final_state": {"east_fox": 20, "east_geese": 20, "east_corn": 22}
+    },
+    "fox_geese_corn_problem_foxgeesecorn_17": {
+      "f": 36, "g": 37, "c": 40, "k": 3, "pf": 9, "pg": 9, "pc": 9,
+      "expected_objective": 1017,
+      "expected_trips": null,
+      "expected_final_state": {"east_fox": 36, "east_geese": 37, "east_corn": 40}
+    },
+    "fox_geese_corn_problem_foxgeesecorn_19": {
+      "f": 36, "g": 37, "c": 40, "k": 6, "pf": 9, "pg": 10, "pc": 8,
+      "expected_objective": 1014,
+      "expected_trips": null,
+      "expected_final_state": {"east_fox": 36, "east_geese": 37, "east_corn": 40}
+    },
+    "fox_geese_corn_problem_foxgeesecorn_61": {
+      "f": 35, "g": 27, "c": 52, "k": 6, "pf": 1, "pg": 0, "pc": 0,
+      "expected_objective": 35,
+      "expected_trips": null,
+      "expected_final_state": {"east_fox": 35, "east_geese": 27, "east_corn": 52}
+    }
+  },
+  "neighbours": {
+    "neighbours_problem_neightbours_new_2": {
+      "n": 4, "m": 2,
+      "expected_objective": null,
+      "max_possible": 40,
+      "note": "Objective = sum of all grid values (maximize). Requires solving to get optimal value."
+    },
+    "neighbours_problem_neightbours_new_5": {
+      "n": 30, "m": 31,
+      "expected_objective": null,
+      "max_possible": 4650,
+      "note": "Objective = sum of all grid values (maximize). Requires solving to get optimal value."
+    },
+    "neighbours_problem_neightbours_new_6": {
+      "n": 6, "m": 5,
+      "expected_objective": null,
+      "max_possible": 150,
+      "note": "Objective = sum of all grid values (maximize). Requires solving to get optimal value."
+    },
+    "neighbours_problem_neightbours_new_7": {
+      "n": 20, "m": 25,
+      "expected_objective": null,
+      "max_possible": 2500,
+      "note": "Objective = sum of all grid values (maximize). Requires solving to get optimal value."
+    },
+    "neighbours_problem_neightbours_new_15": {
+      "n": 7, "m": 12,
+      "expected_objective": null,
+      "max_possible": 420,
+      "note": "Objective = sum of all grid values (maximize). Requires solving to get optimal value."
+    }
+  },
+  "tiny_cvrp": {
+    "tiny_cvrp_problem_easy_instance_04": {
+      "num_vehicles": 4,
+      "num_customers": 8,
+      "expected_objective": null,
+      "note": "Objective = total ETA/distance (minimize). Requires solving to get exact value."
+    }
+  },
+  "aircraft_disassembly": {
+    "aircraft_disassembly_problem_b737ng_600_01_anon_json": {
+      "expected_objective": null,
+      "note": "Objective = total disassembly time (minimize). Requires solving to get exact value."
+    }
+  },
+  "cable_tree_wiring": {
+    "cable_tree_wiring_problem_r193": {
+      "expected_objective": null,
+      "note": "Objective = total wiring cost (minimize). Requires solving to get exact value."
+    }
+  },
+  "train_scheduling": {
+    "expected_objective": null,
+    "note": "Objective = total delay (minimize). Requires solving to get exact value."
+  },
+  "hoist_benchmark": {
+    "expected_objective": null,
+    "note": "Objective = makespan (minimize). Requires solving to get exact value."
+  },
+  "graph_clear": {
+    "expected_objective": null,
+    "note": "Objective = total actions (minimize). Requires solving to get exact value."
+  },
+  "portal": {
+    "expected_objective": null,
+    "note": "Objective = total time (minimize). Requires solving to get exact value."
+  },
+  "yumi_dynamic": {
+    "expected_objective": null,
+    "note": "Objective = total time (minimize). Requires solving to get exact value."
+  }
+}

@@ -1,0 +1,55 @@
+(define (problem yumi_dynamic_problem_p_7_ssss_sss_yumi_grid_setup_3_3_zones)
+  (:domain yumi_dynamic)
+
+  (:aria-plan
+    :id "019b7b01-a205-71c7-a5bb-1917049c2ae8"
+    :name "P 7 ssss sss yumi grid setup 3 3 zones Plan"
+    :persona-id "persona_123"
+    :domain-type navigation
+    :objectives (
+      (solve_problem)
+    )
+    :execution-status planned
+  )
+
+  (:aria-initial-state
+    :current-time "2025-01-01T10:00:00Z"
+    :timeline (
+      (:event start :time "2025-01-01T10:00:00Z")
+    )
+    :entity-capabilities (
+      (:entity agent_1 :capabilities (:navigation :computation))
+    )
+    :facts (
+      (:fact task_durations_array state :value "task_durations = [|23, 32, 28, 23, 22, 26, 28, 21, 22, 49, 43, 52, 52, 42, 57, 44, 50, 62, 29, 31, 3...")
+      (:fact TRAY_TASKS state :value "1..7")
+      (:fact CAMERA_TASKS state :value "19..25")
+      (:fact OUTPUT_TASKS state :value "{ 18 }")
+      (:fact empty_gripper_tasks state :value "26..33")
+      (:fact gripper_pick_tasks_orders_array state :value "gripper_pick_tasks_orders = [|8, 17, -1...")
+      (:fact suction_pick_tasks_orders_array state :value "suction_pick_tasks_orders = [|1, 19, 10, -1...")
+      (:fact fixture_task_orders_array state :value "fixture_task_orders = [|10, 26, 11, 27, 12, 28, 13, 29, 8, -1...")
+      (:fact no_suction_cups state :value "2")
+      (:fact left_arm_travel_times_array state :value "left_arm_travel_times = [|...")
+      (:fact right_arm_travel_times_array state :value "right_arm_travel_times = [|...")
+      (:fact location_order state :value "[        6,        5,        4,        3,        3,        0,        1,        2,        6,        5,        4,        3,        3,        0,        1,        2,       -1,       -2,       -3,        1,        5]")
+      (:fact FixtureWorkObstruction state :value "[2, 4]")
+      (:fact TRAY_LOCATIONS state :value "1..8")
+      (:fact CAMERA_LOCATIONS state :value "9..16")
+      (:fact FIXTURE_LOCATIONS state :value "17..19")
+      (:fact AIRGUN_LOCATIONS state :value "20..20")
+      (:fact OUTPUT_LOCATIONS state :value "21..21")
+      (:fact wait_zones_left_data state :value "[     {  },     {  },     {  }, { 3, 5 }, { 4, 6 },    { 5 }, { 5, 6 }, { 6, 7 },     {  },     {  },     {  },    { 3 },    { 4 },    { 5 },    { 6 }, { 6, 7 },    { 5 },    { 5 },    { 5 },    { 6 },      {  }]")
+      (:fact wait_zones_right_data state :value "[    { 0 }, { 0, 1 }, { 1, 2 }, { 0, 3 }, { 1, 4 },     {  },     {  },     {  },    { 0 },    { 1 }, { 1, 2 },    { 3 },    { 4 },     {  },     {  },     {  },    { 0 },    { 0 },    { 0 },     {  },     { 1 }]")
+      (:fact work_zones_left_data state :value "[     {  },     {  },     {  }, { 3, 5 }, { 4, 6 },    { 5 }, { 5, 6 }, { 6, 7 },     {  },     {  },     {  },    { 3 },    { 4 },    { 5 },    { 6 }, { 6, 7 }, { 8, 5 }, { 9, 5 },   { 10 },    { 6 },      {  }]")
+      (:fact work_zones_right_data state :value "[    { 0 }, { 0, 1 }, { 1, 2 }, { 0, 3 }, { 1, 4 },     {  },     {  },     {  },    { 0 },    { 1 }, { 1, 2 },    { 3 },    { 4 },     {  },     {  },     {  }, { 8, 0 }, { 0, 9 },   { 10 },     {  },     { 1 }]")
+      (:fact travel_zones_left_data_array state :value "travel_zones_left_data = [|...")
+      (:fact travel_zones_right_data_array state :value "travel_zones_right_data = [|...")
+    )
+  )
+
+  (:aria-blacklist
+    :blacklisted-commands ()
+    :blacklisted-methods ()
+  )
+)

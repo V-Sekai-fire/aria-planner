@@ -1,0 +1,24 @@
+(define (domain tiny_cvrp)
+  (:requirements :strips :typing :temporal :hierarchical)
+
+    (:action a_visit_customer
+    :parameters (?param1 ?param2)
+  )
+
+  (:action a_return_to_depot
+    :parameters (?param1)
+  )
+
+    (:multigoal route_vehicles
+
+  )
+
+  (:aria-domain-metadata
+    :id "019b7b02-8038-7d9f-ba9c-de183c2bd00d"
+    :name "tiny_cvrp"
+    :description "HDDL domain for tiny_cvrp problem"
+    :domain-type custom
+    :version 1
+    :state :active
+  )
+)

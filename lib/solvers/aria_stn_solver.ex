@@ -25,15 +25,15 @@ defmodule AriaStnSolver do
   @spec check_consistency([constraint()]) :: {:consistent, map()} | {:inconsistent, String.t()}
   def check_consistency(constraints) when is_list(constraints) do
     # Check for basic validity
-    if not Enum.all?(constraints, fn {_from, _to, min, max} -> min <= max end) do
-      {:inconsistent, "Invalid constraint bounds"}
-    else
+    if Enum.all?(constraints, fn {_from, _to, min, max} -> min <= max end) do
       # Check for negative cycles using Floyd-Warshall algorithm
       # Build a graph and check for negative cycles
       case check_negative_cycles(constraints) do
         true -> {:inconsistent, "Negative cycle detected"}
         false -> {:consistent, %{}}
       end
+    else
+      {:inconsistent, "Invalid constraint bounds"}
     end
   end
 

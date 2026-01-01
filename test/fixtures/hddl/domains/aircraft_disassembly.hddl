@@ -1,0 +1,28 @@
+(define (domain aircraft_disassembly)
+  (:requirements :strips :typing :temporal :hierarchical)
+
+    (:action a_start_activity
+    :parameters (?param1 ?param2)
+  )
+
+  (:action a_assign_resource
+    :parameters (?param1 ?param2)
+  )
+
+  (:action a_complete_activity
+    :parameters (?param1)
+  )
+
+    (:multigoal schedule_activities
+
+  )
+
+  (:aria-domain-metadata
+    :id "019b7b02-8030-7c49-bd00-44cb2e9fd9b9"
+    :name "aircraft_disassembly"
+    :description "HDDL domain for aircraft_disassembly problem"
+    :domain-type custom
+    :version 1
+    :state :active
+  )
+)

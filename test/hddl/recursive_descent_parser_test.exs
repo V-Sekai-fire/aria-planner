@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+#
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 # Standalone test for recursive descent parser
 # This test can run even if the main parser.ex has compilation errors
@@ -243,7 +247,7 @@ defmodule AriaPlanner.HDDL.Parser.RecursiveDescentTest do
             (:entity agent_1 :capabilities (:navigation :transport))
           )
           :facts (
-            (:fact west_fox :value 1)
+            (:fact west_fox state :value 1)
           )
         )
       )
@@ -266,7 +270,7 @@ defmodule AriaPlanner.HDDL.Parser.RecursiveDescentTest do
 
       assert Keyword.get(state_elements, :current_time) == "2025-01-01T10:00:00Z"
       facts = Keyword.get(state_elements, :facts)
-      assert [%{type: :fact, subject: :west_fox, value: 1}] = facts
+      assert [%{type: :fact, predicate: :west_fox, subject: :state, value: 1}] = facts
     end
 
     test "parses plans" do
