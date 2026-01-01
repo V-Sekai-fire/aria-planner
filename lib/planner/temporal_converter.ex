@@ -43,6 +43,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
   ```
   """
   alias AriaPlanner.Client
+  alias AriaPlanner.Planner.MetadataHelpers
 
   @doc """
   Converts a durative action into a simple action and method decomposition.
@@ -321,7 +322,7 @@ defmodule AriaPlanner.Planner.TemporalConverter do
 
   defp create_method_metadata(durative_action) do
     # Create metadata for the method
-    AriaPlanner.Planner.MetadataHelpers.action_metadata(
+    MetadataHelpers.action_metadata(
       durative_action[:duration] || "PT1S",
       "system",
       [:temporal_conversion]

@@ -46,6 +46,7 @@ defmodule AriaCore.Entity.Types.Persona do
 
   @behaviour AriaCore.Entity
 
+  alias AriaCore.Entity.Capabilities.Movable
   alias AriaCore.Entity.Character
 
   # Unified Persona struct
@@ -159,7 +160,7 @@ defmodule AriaCore.Entity.Types.Persona do
 
     # Add AI-specific metadata if not present
     updated_metadata = persona.metadata
-    updated_metadata = Map.update(updated_metadata, :movable, AriaCore.Entity.Capabilities.Movable.new(), & &1)
+    updated_metadata = Map.update(updated_metadata, :movable, Movable.new(), & &1)
 
     updated_metadata =
       Map.update(updated_metadata, :intelligence, %{level: 1, experience_points: 0, learning_rate: 0.1}, & &1)
@@ -363,8 +364,8 @@ defmodule AriaCore.Entity.Types.Persona do
 
       Map.has_key?(metadata, :movable) ->
         # Position from movable capability (AI agents)
-        movable_data = Map.get(metadata, :movable, AriaCore.Entity.Capabilities.Movable.new())
-        AriaCore.Entity.Capabilities.Movable.get_position(movable_data)
+        movable_data = Map.get(metadata, :movable, Movable.new())
+        Movable.get_position(movable_data)
 
       true ->
         # Default fallback
@@ -385,8 +386,8 @@ defmodule AriaCore.Entity.Types.Persona do
 
         Map.has_key?(persona.metadata, :movable) ->
           # Update movable capability (AI agents)
-          current_movable = Map.get(persona.metadata, :movable, AriaCore.Entity.Capabilities.Movable.new())
-          updated_movable = AriaCore.Entity.Capabilities.Movable.move(current_movable, new_position)
+          current_movable = Map.get(persona.metadata, :movable, Movable.new())
+          updated_movable = Movable.move(current_movable, new_position)
           Map.put(persona.metadata, :movable, updated_movable)
 
         true ->
