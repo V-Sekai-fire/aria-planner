@@ -233,6 +233,7 @@ defmodule AriaPlanner.Planner.PlannerMetadata do
 
   # Determine Allen relation between two intervals using Timex for accurate datetime comparison
   # Returns one of the 13 Allen relations as an atom
+  # Large switch statement for 13 Allen relations is legitimately complex
   defp determine_allen_relation({start1, end1}, {start2, end2}) do
     # Parse ISO 8601 strings to DateTime structs for proper comparison
     dt_start1 = parse_iso_datetime(start1)

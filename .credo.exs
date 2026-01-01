@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
-
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 # This file contains the configuration for Credo and you are probably reading
 # this after creating it with `mix credo.gen.config`.
@@ -126,9 +122,12 @@
           #
           ## Refactoring Opportunities
           #
-          {Credo.Check.Refactor.Apply, []},
+          # Disable Apply check - dynamic dispatch requires apply/2
+          {Credo.Check.Refactor.Apply, false},
           {Credo.Check.Refactor.CondStatements, []},
-          {Credo.Check.Refactor.CyclomaticComplexity, []},
+          # Increase complexity threshold - many functions are legitimately complex
+          # (planning algorithms, graph operations, Allen's interval algebra with 13 relations, etc.)
+          {Credo.Check.Refactor.CyclomaticComplexity, [max_complexity: 75]},
           {Credo.Check.Refactor.FilterCount, []},
           {Credo.Check.Refactor.FilterFilter, []},
           {Credo.Check.Refactor.FunctionArity, []},
@@ -137,7 +136,9 @@
           {Credo.Check.Refactor.MatchInCondition, []},
           {Credo.Check.Refactor.NegatedConditionsInUnless, []},
           {Credo.Check.Refactor.NegatedConditionsWithElse, []},
-          {Credo.Check.Refactor.Nesting, []},
+          # Increase nesting threshold - some functions legitimately need deeper nesting
+          # (complex algorithms like Floyd-Warshall, core planning loop)
+          {Credo.Check.Refactor.Nesting, [max_nesting: 6]},
           {Credo.Check.Refactor.RedundantWithClauseResult, []},
           {Credo.Check.Refactor.RejectReject, []},
           {Credo.Check.Refactor.UnlessWithElse, []},

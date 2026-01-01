@@ -146,6 +146,7 @@ defmodule AriaCore.Planner.LazyRefinement do
   end
 
   # Fix _id, _iter
+  # Core planning loop is legitimately complex - handles multiple node types and refinement strategies
   defp planning_loop_recursive(
          id,
          parent_node_id,
