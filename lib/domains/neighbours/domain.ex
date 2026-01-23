@@ -196,32 +196,4 @@ defmodule AriaPlanner.Domains.Neighbours do
     |> Enum.all?(fn value -> value > 0 end)
   end
 
-  @doc """
-  Parses a MiniZinc .dzn data file.
-  """
-  @spec parse_dzn_file(path :: String.t()) :: {:ok, map()} | {:error, String.t()}
-  def parse_dzn_file(path) do
-    case File.read(path) do
-      {:ok, content} ->
-        params = %{}
-        params = parse_dzn_line(content, "n", params, :n)
-        params = parse_dzn_line(content, "m", params, :m)
-        {:ok, params}
-
-      {:error, reason} ->
-        {:error, "Failed to read file: #{inspect(reason)}"}
-    end
-  end
-
-  defp parse_dzn_line(content, key, params, param_key) do
-    regex = ~r/#{key}\s*=\s*(\d+);/
-
-    case Regex.run(regex, content) do
-      [_, value] ->
-        Map.put(params, param_key, String.to_integer(value))
-
-      nil ->
-        params
-    end
-  end
 end

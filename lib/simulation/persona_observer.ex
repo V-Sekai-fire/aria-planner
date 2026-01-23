@@ -1,9 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
+# DEPRECATED: This module is no longer used. Belief system functionality
+# has been removed to simplify the codebase. Belief-related features were
+# not used in the core planning execution loop.
 defmodule AriaPlanner.PersonaObserver do
   @moduledoc """
-  Persona observation system for Belief-Based Ego Architecture.
+  DEPRECATED: Persona observation system for Belief-Based Ego Architecture.
+
+  This module is deprecated and no longer used. Belief system functionality
+  has been removed to simplify the codebase as it was not used in core
+  planning execution.
 
   Provides mechanisms for personas to observe allocentric reality and form
   ego-centric beliefs. Acts as the bridge between shared world state and

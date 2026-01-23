@@ -3,10 +3,10 @@
 
 defmodule AriaCore.Persona do
   @moduledoc """
-  Core persona entity struct for multiagent belief systems.
+  Core persona entity struct for planning systems.
 
-  This represents the fundamental persona structure for belief-immersed entities,
-  providing the foundation for ego-centric planning and allocentric allocation.
+  This represents the fundamental persona structure for planning entities,
+  providing the foundation for planning and execution.
 
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
@@ -19,9 +19,6 @@ defmodule AriaCore.Persona do
           active: boolean(),
           entity_type: String.t(),
           capabilities: [String.t()],
-          beliefs_about_others: map(),
-          belief_confidence: map(),
-          last_observations: map(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }
@@ -32,9 +29,6 @@ defmodule AriaCore.Persona do
     active: true,
     entity_type: "persona",
     capabilities: ["movable"],
-    beliefs_about_others: %{},
-    belief_confidence: %{},
-    last_observations: %{},
     inserted_at: nil,
     updated_at: nil
   ]
@@ -76,9 +70,6 @@ defmodule AriaCore.Persona do
         active: Map.get(attrs, :active, true),
         entity_type: Map.get(attrs, :entity_type, "persona"),
         capabilities: Map.get(attrs, :capabilities, ["movable"]),
-        beliefs_about_others: Map.get(attrs, :beliefs_about_others, %{}),
-        belief_confidence: Map.get(attrs, :belief_confidence, %{}),
-        last_observations: Map.get(attrs, :last_observations, %{}),
         inserted_at: Map.get(attrs, :inserted_at, now),
         updated_at: now
       }
@@ -169,73 +160,4 @@ defmodule AriaCore.Persona do
     EtsStorage.delete(:personas, id)
   end
 
-  @doc """
-  Get ego-centric beliefs about another entity.
-
-  Returns what this persona believes about the target entity.
-  Beliefs are ego-centric - each persona has their own model of others.
-  Beliefs are hidden from other personas (information asymmetry).
-  """
-  @spec get_beliefs_about(t(), String.t()) :: map()
-  def get_beliefs_about(%__MODULE__{} = persona, target_entity_id) when is_binary(target_entity_id) do
-    Map.get(persona.beliefs_about_others, target_entity_id, %{})
-  end
-
-  def get_beliefs_about(_persona, _target_entity_id) do
-    %{}
-  end
-
-  @doc """
-  Get planner state for information asymmetry demonstration.
-
-  Returns hidden error - personas cannot access others' internal planning states.
-  This demonstrates information asymmetry in the belief-based ego architecture.
-  """
-  @spec get_planner_state(String.t(), String.t()) :: {:error, :hidden}
-  def get_planner_state(_target_persona_id, _requesting_persona_id) do
-    # Information asymmetry: persona internal states are hidden
-    {:error, :hidden}
-  end
-
-  @doc """
-  Process observation to update persona beliefs.
-
-  Observations are the mechanism through which personas learn about others
-  while maintaining information asymmetry (no direct state access).
-  """
-  @spec process_observation(t(), map()) :: {:ok, t()} | {:error, String.t()}
-  def process_observation(%__MODULE__{} = persona, observation) when is_map(observation) do
-    AriaPlanner.PersonaObserver.process_observation(persona, observation)
-  end
-
-  def process_observation(_persona, _observation) do
-    {:error, "persona must be a Persona struct and observation must be a map"}
-  end
-
-  @doc """
-  Process communication to update beliefs.
-
-  Communications between personas update sender beliefs about receivers
-  without revealing internal states.
-  """
-  @spec process_communication(t(), map()) :: {:ok, t()} | {:error, String.t()}
-  def process_communication(%__MODULE__{} = persona, communication) when is_map(communication) do
-    AriaPlanner.PersonaObserver.process_communication(persona, communication)
-  end
-
-  def process_communication(_persona, _communication) do
-    {:error, "persona must be a Persona struct and communication must be a map"}
-  end
-
-  @doc """
-  Update beliefs from execution outcomes.
-  """
-  @spec update_beliefs_from_outcomes(t(), [map()]) :: {:ok, t()}
-  def update_beliefs_from_outcomes(%__MODULE__{} = persona, outcomes) when is_list(outcomes) do
-    AriaPlanner.PersonaObserver.update_beliefs_from_outcomes(persona, outcomes)
-  end
-
-  def update_beliefs_from_outcomes(_persona, _outcomes) do
-    {:error, "persona must be a Persona struct and outcomes must be a list"}
-  end
 end

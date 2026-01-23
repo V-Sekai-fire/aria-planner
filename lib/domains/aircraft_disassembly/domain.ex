@@ -130,14 +130,6 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
     StateInitialization.initialize_state(params)
   end
 
-  @doc """
-  Parses a MiniZinc .dzn data file for aircraft disassembly.
-  """
-  @spec parse_dzn_file(path :: String.t()) :: {:ok, map()} | {:error, String.t()}
-  def parse_dzn_file(path) do
-    alias AriaPlanner.Domains.AircraftDisassembly.DznParser
-    DznParser.parse_file(path)
-  end
 
   @doc """
   Checks if all activities are completed.

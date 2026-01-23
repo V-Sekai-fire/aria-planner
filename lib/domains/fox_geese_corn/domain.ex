@@ -191,38 +191,4 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn do
     state.east_fox * state.pf + state.east_geese * state.pg + state.east_corn * state.pc
   end
 
-  @doc """
-  Parses a MiniZinc .dzn data file.
-  """
-  @spec parse_dzn_file(path :: String.t()) :: {:ok, map()} | {:error, String.t()}
-  def parse_dzn_file(path) do
-    case File.read(path) do
-      {:ok, content} ->
-        params = %{}
-        params = parse_dzn_line(content, "f", params, :f)
-        params = parse_dzn_line(content, "g", params, :g)
-        params = parse_dzn_line(content, "c", params, :c)
-        params = parse_dzn_line(content, "k", params, :k)
-        params = parse_dzn_line(content, "t", params, :t)
-        params = parse_dzn_line(content, "pf", params, :pf)
-        params = parse_dzn_line(content, "pg", params, :pg)
-        params = parse_dzn_line(content, "pc", params, :pc)
-        {:ok, params}
-
-      {:error, reason} ->
-        {:error, "Failed to read file: #{inspect(reason)}"}
-    end
-  end
-
-  defp parse_dzn_line(content, key, params, param_key) do
-    regex = ~r/#{key}\s*=\s*(\d+);/
-
-    case Regex.run(regex, content) do
-      [_, value] ->
-        Map.put(params, param_key, String.to_integer(value))
-
-      nil ->
-        params
-    end
-  end
 end
