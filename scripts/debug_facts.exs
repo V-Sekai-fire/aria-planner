@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
 
 # Debug fact extraction for classic problem
 alias AriaPlanner.HDDL

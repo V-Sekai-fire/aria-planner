@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
 
 # Extract objective information for all domains from MiniZinc models and HDDL files
 

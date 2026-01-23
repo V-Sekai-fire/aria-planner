@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
 
 # Calculate expected objectives for fox-geese-corn problems
 # Formula: objective = east_fox * pf + east_geese * pg + east_corn * pc

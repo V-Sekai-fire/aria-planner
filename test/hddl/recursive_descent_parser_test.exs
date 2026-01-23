@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
-
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 # Standalone test for recursive descent parser
 # This test can run even if the main parser.ex has compilation errors

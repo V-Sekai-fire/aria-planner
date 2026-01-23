@@ -2,7 +2,6 @@
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
 
 # Create HDDL fixtures for MiniZinc problems
 # This script creates basic HDDL domain and problem files

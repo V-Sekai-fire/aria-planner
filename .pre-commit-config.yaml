@@ -10,7 +10,7 @@ repos:
         name: Insert license headers (#-style comments)
         args:
           - "--license-filepath"
-          - "LICENSE.short.md"
+          - "LICENSE.short.inc"
           - "--comment-style"
           - "#"
         files: \.(ex|exs)$

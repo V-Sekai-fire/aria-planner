@@ -2,7 +2,6 @@
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
 
 # Script to run MiniZinc on problems and extract expected solutions
 # This generates solution files that can be used to verify our planner

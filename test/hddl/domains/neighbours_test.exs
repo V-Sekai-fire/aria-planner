@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
-
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
 
 defmodule AriaPlanner.HDDL.Domains.NeighboursTest do
   use ExUnit.Case, async: true

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
 
 # Debug JSON loading
 expected_solutions = Jason.decode!(File.read!("test/fixtures/minizinc_expected_solutions.json"))

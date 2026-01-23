@@ -2,7 +2,6 @@
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-#
 
 # Script to generate planner solution fixtures for all HDDL problems
 # Usage: mix run scripts/generate_planner_solution_fixtures.exs
