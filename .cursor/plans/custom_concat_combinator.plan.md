@@ -5,6 +5,7 @@
 The built-in NimbleParsec `concat` combinator requires an existing list in the accumulator to concatenate with. When `define_domain` uses `concat(parsec(:identifier))` after multiple `ignore()` calls, the accumulator is empty `[]`, and `concat` cannot concatenate an atom `:test` with an empty list, causing the name to be lost.
 
 **Current broken behavior:**
+
 - After `ignore()` calls: accumulator = `[]`
 - `concat(parsec(:identifier))` produces `:test` (atom)
 - `concat` tries to concatenate `[]` with `:test` → fails, atom lost
@@ -13,14 +14,16 @@ The built-in NimbleParsec `concat` combinator requires an existing list in the a
 ## Solution
 
 Create a custom `concat_any` combinator that:
+
 1. Handles empty accumulators by wrapping the parser result in a list
-2. Handles existing lists by concatenating the parser result  
+2. Handles existing lists by concatenating the parser result
 3. Works with both atoms and lists as parser results
 4. Uses `reduce` to transform the accumulator after parsing
 
 ## Implementation Steps
 
 ### Step 1: Add helper function for concatenation logic
+
 **File:** `lib/hddl/parser/helpers.ex`
 
 Add function to handle concatenation:
@@ -40,7 +43,7 @@ def concat_any_reduce(acc) when is_list(acc) do
   # acc is [previous_results..., new_result]
   case acc do
     [] -> []
-    [new_result] -> 
+    [new_result] ->
       # Only new result, ensure it's a list
       if is_list(new_result), do: new_result, else: [new_result]
     previous_results ->
@@ -71,6 +74,7 @@ end
 ```
 
 ### Step 2: Create concat_any combinator
+
 **File:** `lib/hddl/parser.ex` (after line 57, before domain elements section)
 
 Add the combinator function:
@@ -85,6 +89,7 @@ Add the combinator function:
 ```
 
 ### Step 3: Update define_domain parser
+
 **File:** `lib/hddl/parser.ex` (lines 709, 712)
 
 Replace `concat` with `concat_any`:
@@ -114,16 +119,19 @@ Replace `concat` with `concat_any`:
 ```
 
 ### Step 4: Update define_problem parser (if needed)
+
 **File:** `lib/hddl/parser.ex` (lines 722-746)
 
 If `define_problem` has similar issues, apply the same fix.
 
 ### Step 5: Remove debug IO.inspect
+
 **File:** `lib/hddl/parser/helpers.ex` (line 64)
 
 Remove the debug `IO.inspect` call from `build_domain_tuple_from_name_and_elements` since we'll have proper accumulation.
 
 ### Step 6: Test
+
 Run the test to verify:
 
 ```bash
@@ -133,6 +141,7 @@ mix test test/hddl/parser_test.exs:10
 **Expected result:** Test passes with `{:domain, :test, [{:requirements, [:strips]}]}`
 
 **Expected accumulator flow:**
+
 1. After `ignore()` calls: `[]`
 2. After `concat_any(parsec(:identifier))`: `[:test]` (atom wrapped in list)
 3. After `concat_any(repeat(...))`: `[:test, {:requirements, [:strips]}]`
@@ -171,4 +180,3 @@ end
 ```
 
 But `reduce` should work since it receives the full accumulator list.
-

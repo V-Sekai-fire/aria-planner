@@ -313,7 +313,7 @@ Planning domains consist of:
 # Example: Position predicate (plain struct, no database)
 defmodule AriaPlanner.Domains.BlocksWorld.Predicates.Pos do
   defstruct [:entity_id, :value]
-  
+
   # Stored in ETS (Elixir Term Storage) for in-memory persistence
   # All data is stored in-memory and lost on application restart
 end
@@ -477,6 +477,7 @@ plan = %AriaCore.Plan{
 ```
 
 **Important**: All planning-related time values use ISO 8601 format:
+
 - **Datetime strings**: `"2025-01-01T10:00:00Z"` (absolute times)
 - **Duration strings**: `"PT5M"`, `"PT2H30M"`, `"PT30S"` (relative durations)
 
@@ -509,6 +510,7 @@ Domains are registered with the planning system:
 All data is stored in-memory using **ETS (Elixir Term Storage)**. The system uses `AriaPlanner.Storage.EtsStorage` to manage all data:
 
 **Supported Tables:**
+
 - `plans` - Persona-specific plans
 - `personas` - Persona entities
 - `facts_allocentric` - Shared ground truth facts
@@ -518,6 +520,7 @@ All data is stored in-memory using **ETS (Elixir Term Storage)**. The system use
 - `items` - Item entities
 
 **Storage API:**
+
 ```elixir
 # Create/Update
 {:ok, plan} = AriaCore.Plan.create(attrs)
@@ -541,7 +544,7 @@ Each predicate is a plain struct stored in ETS:
 # Example: Position predicate (plain struct, no database)
 defmodule AriaPlanner.Domains.BlocksWorld.Predicates.Pos do
   defstruct [:entity_id, :value]
-  
+
   # Stored in ETS (Elixir Term Storage) for in-memory persistence
   # All data is stored in-memory and lost on application restart
 end
@@ -758,12 +761,14 @@ All planning-related time values use **ISO 8601 strings**:
 - **Duration strings**: `"PT5M"`, `"PT2H30M"`, `"PT30S"` for relative durations
 
 **Key Modules**:
+
 - `AriaPlanner.Client`: Converts between ISO 8601 strings and microseconds (internal calculations)
 - `AriaPlanner.Planner.TimeRange`: Manages time ranges with ISO 8601 strings
 - `AriaPlanner.Planner.PlannerMetadata`: Stores temporal constraints as ISO 8601 strings
 - `AriaPlanner.Planner.Temporal.STN`: Simple Temporal Network for constraint solving
 
 **Conversion Functions**:
+
 ```elixir
 # Convert ISO 8601 datetime to microseconds (internal use)
 {:ok, microseconds} = AriaPlanner.Client.iso8601_to_absolute_microseconds("2025-01-01T10:00:00Z")
@@ -797,12 +802,14 @@ The planner uses multiple solver types:
 The aria-planner uses **ETS (Elixir Term Storage)** for all data persistence. This is an in-memory storage system that provides fast access to structured data without database dependencies.
 
 **Key Features:**
+
 - **In-Memory Storage**: All data stored in ETS tables (no disk persistence)
 - **Fast Access**: O(1) lookup performance for keyed data
 - **No Database Dependencies**: No SQLite, PostgreSQL, or other database required
 - **Simple API**: Direct struct manipulation with `create/1`, `update/2`, `get/1`, `all/0`, `delete/1`
 
 **Storage Module:**
+
 ```elixir
 # Initialize ETS storage (called automatically on application start)
 AriaPlanner.Storage.EtsStorage.start_link()
@@ -816,6 +823,7 @@ all_plans = AriaPlanner.Storage.EtsStorage.all(:plans)
 
 **Data Models:**
 All core data models are plain structs (not Ecto schemas):
+
 - `AriaCore.Plan` - Persona-specific plans
 - `AriaCore.Persona` - Persona entities
 - `AriaCore.FactsAllocentric` - Shared ground truth facts

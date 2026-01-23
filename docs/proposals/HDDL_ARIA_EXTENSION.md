@@ -1,10 +1,10 @@
 # HDDL Aria Extension Specification
 
-**Version:** 1.0  
-**Status:** Implemented  
-**Date:** January 2025  
-**Base Standard:** HDDL 2.1  
-**Implementation:** `AriaPlanner.HDDL` (Elixir)  
+**Version:** 1.0
+**Status:** Implemented
+**Date:** January 2025
+**Base Standard:** HDDL 2.1
+**Implementation:** `AriaPlanner.HDDL` (Elixir)
 **License:** MIT
 
 ## Abstract
@@ -156,8 +156,8 @@ Add optional `:aria-temporal-metadata` block to durative actions and durative me
 
 ### 2. ISO 8601 Temporal Format for Durative Actions
 
-**Extension Identifier:** `:aria-temporal-metadata` (within `:durative-action`)  
-**Base Construct:** `(:durative-action ...)` - Standard HDDL 2.1  
+**Extension Identifier:** `:aria-temporal-metadata` (within `:durative-action`)
+**Base Construct:** `(:durative-action ...)` - Standard HDDL 2.1
 **Status:** ✅ Implemented
 
 **Note:** `(:durative-action ...)` is standard HDDL 2.1. Only the `:aria-temporal-metadata` block is an extension.
@@ -191,8 +191,8 @@ Standard HDDL 2.1 durative actions use numeric durations. This extension adds IS
 
 ### 3. ISO 8601 Temporal Format for Durative Methods
 
-**Extension Identifier:** `:aria-temporal-metadata` (within `:durative-method`)  
-**Base Construct:** `(:durative-method ...)` - Standard HDDL 2.1  
+**Extension Identifier:** `:aria-temporal-metadata` (within `:durative-method`)
+**Base Construct:** `(:durative-method ...)` - Standard HDDL 2.1
 **Status:** ✅ Implemented
 
 **Note:** `(:durative-method ...)` is standard HDDL 2.1. Only the `:aria-temporal-metadata` block is an extension.
@@ -220,7 +220,7 @@ Standard HDDL 2.1 durative actions use numeric durations. This extension adds IS
 
 ### 4. Entity Requirements Syntax
 
-**Extension Identifier:** `:requires-entities` (within `:aria-temporal-metadata`)  
+**Extension Identifier:** `:requires-entities` (within `:aria-temporal-metadata`)
 **Status:** ✅ Implemented
 
 Entity requirements specify what entities (agents, objects, resources) are needed for an action, command, or method:
@@ -244,7 +244,7 @@ Entity requirements specify what entities (agents, objects, resources) are neede
 
 ### 5. Commands (Special Actions with Side Effects)
 
-**Extension Identifier:** `(:command ...)` and `:aria-command-metadata`  
+**Extension Identifier:** `(:command ...)` and `:aria-command-metadata`
 **Status:** ✅ Implemented
 
 Commands are distinct from regular actions - they have side effects and failure handling. This is an aria_planner-specific extension not present in standard HDDL 2.1:
@@ -277,7 +277,7 @@ Commands are distinct from regular actions - they have side effects and failure 
 
 ### 6. Multigoals
 
-**Extension Identifier:** `(:multigoal ...)`  
+**Extension Identifier:** `(:multigoal ...)`
 **Status:** ✅ Implemented
 
 Multigoals represent complex goals requiring multiple subgoals. This is an aria_planner-specific extension not present in standard HDDL 2.1:
@@ -301,7 +301,7 @@ Multigoals represent complex goals requiring multiple subgoals. This is an aria_
 
 ### 7. Goal Methods
 
-**Extension Identifier:** `(:goal-method ...)`  
+**Extension Identifier:** `(:goal-method ...)`
 **Status:** ✅ Implemented
 
 Methods that decompose goals into subtasks. This is an aria_planner-specific extension not present in standard HDDL 2.1:
@@ -321,7 +321,7 @@ Methods that decompose goals into subtasks. This is an aria_planner-specific ext
 
 ### 8. Domain Metadata
 
-**Extension Identifier:** `:aria-domain-metadata`  
+**Extension Identifier:** `:aria-domain-metadata`
 **Status:** ✅ Implemented
 
 Domain-level metadata including ID, version, state, and type. This is an aria_planner-specific extension not present in standard HDDL 2.1:
@@ -349,7 +349,7 @@ Domain-level metadata including ID, version, state, and type. This is an aria_pl
 
 ### 9. Entities
 
-**Extension Identifier:** `(:entities ...)`  
+**Extension Identifier:** `(:entities ...)`
 **Status:** ✅ Implemented
 
 Domain entities with capabilities. This is an aria_planner-specific extension not present in standard HDDL 2.1:
@@ -372,8 +372,8 @@ Domain entities with capabilities. This is an aria_planner-specific extension no
 
 ### 10. Predicate Schemas
 
-**Extension Identifier:** `:aria-predicate-schemas`  
-**Base Construct:** `(:predicates ...)` - Standard HDDL  
+**Extension Identifier:** `:aria-predicate-schemas`
+**Base Construct:** `(:predicates ...)` - Standard HDDL
 **Status:** ✅ Implemented
 
 **Note:** `(:predicates ...)` is standard HDDL. Only `:aria-predicate-schemas` is an extension.
@@ -429,7 +429,7 @@ Initial planner state with current time, timeline, entity capabilities, and fact
 
 ### 12. Plans
 
-**Extension Identifier:** `:aria-plan`  
+**Extension Identifier:** `:aria-plan`
 **Status:** ✅ Implemented
 
 Plan structure with objectives, constraints, and execution metadata. This is an aria_planner-specific extension not present in standard HDDL 2.1:
@@ -465,7 +465,7 @@ Plan structure with objectives, constraints, and execution metadata. This is an 
 
 ### 13. STN (Simple Temporal Network) with ISO 8601 Format
 
-**Extension Identifier:** `:aria-temporal-constraints`  
+**Extension Identifier:** `:aria-temporal-constraints`
 **Status:** ✅ Implemented (Parser support; STN solver implementation in progress)
 
 **Note:** HDDL 2.1 supports temporal constraints with numeric values. This extension adds ISO 8601 format support for STN constraints.
@@ -487,7 +487,7 @@ Plan structure with objectives, constraints, and execution metadata. This is an 
 
 ### 14. Blacklisting
 
-**Extension Identifier:** `:aria-blacklist`  
+**Extension Identifier:** `:aria-blacklist`
 **Status:** ✅ Implemented
 
 Blacklisted commands and methods for failure handling. This is an aria_planner-specific extension not present in standard HDDL 2.1:

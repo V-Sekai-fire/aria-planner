@@ -85,4 +85,3 @@ jobs:
       - name: Run Dialyzer
         run: mix dialyzer
         continue-on-error: true
-

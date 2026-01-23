@@ -143,4 +143,3 @@ See the main documentation for detailed usage examples and API reference.
 ## License
 
 MIT
-
