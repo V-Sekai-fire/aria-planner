@@ -106,7 +106,7 @@ defmodule AriaCore.Location do
 
     case validate(attrs) do
       {:ok, location} ->
-        case EtsStorage.insert(:locations, location.id, location) do
+        case EtsStorage.insert(:aria_planner_locations, location.id, location) do
           {:ok, _} -> {:ok, location}
           error -> error
         end
@@ -131,7 +131,7 @@ defmodule AriaCore.Location do
 
     case validate(merged_attrs) do
       {:ok, updated_location} ->
-        case EtsStorage.insert(:locations, updated_location.id, updated_location) do
+        case EtsStorage.insert(:aria_planner_locations, updated_location.id, updated_location) do
           {:ok, _} -> {:ok, updated_location}
           error -> error
         end
@@ -143,7 +143,7 @@ defmodule AriaCore.Location do
 
   @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) do
-    EtsStorage.get(:locations, id)
+    EtsStorage.get(:aria_planner_locations, id)
   end
 
   @doc """
@@ -151,7 +151,7 @@ defmodule AriaCore.Location do
   """
   @spec all() :: [%__MODULE__{}]
   def all do
-    EtsStorage.all(:locations)
+    EtsStorage.all(:aria_planner_locations)
   end
 
   @doc """
@@ -159,7 +159,7 @@ defmodule AriaCore.Location do
   """
   @spec delete(String.t()) :: :ok | {:error, :not_found}
   def delete(id) do
-    EtsStorage.delete(:locations, id)
+    EtsStorage.delete(:aria_planner_locations, id)
   end
 
   @doc """

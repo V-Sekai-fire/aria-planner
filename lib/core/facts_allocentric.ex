@@ -234,7 +234,7 @@ defmodule AriaCore.FactsAllocentric do
 
     case validate(attrs) do
       {:ok, fact} ->
-        case EtsStorage.insert(:facts_allocentric, fact.id, fact) do
+        case EtsStorage.insert(:aria_planner_facts_allocentric, fact.id, fact) do
           {:ok, _} -> {:ok, fact}
           error -> error
         end
@@ -256,7 +256,7 @@ defmodule AriaCore.FactsAllocentric do
 
     case validate(merged_attrs) do
       {:ok, updated_fact} ->
-        case EtsStorage.insert(:facts_allocentric, updated_fact.id, updated_fact) do
+        case EtsStorage.insert(:aria_planner_facts_allocentric, updated_fact.id, updated_fact) do
           {:ok, _} -> {:ok, updated_fact}
           error -> error
         end
@@ -268,7 +268,7 @@ defmodule AriaCore.FactsAllocentric do
 
   @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) do
-    EtsStorage.get(:facts_allocentric, id)
+    EtsStorage.get(:aria_planner_facts_allocentric, id)
   end
 
   @doc """
@@ -276,7 +276,7 @@ defmodule AriaCore.FactsAllocentric do
   """
   @spec all() :: [%__MODULE__{}]
   def all do
-    EtsStorage.all(:facts_allocentric)
+    EtsStorage.all(:aria_planner_facts_allocentric)
   end
 
   @doc """
@@ -284,7 +284,7 @@ defmodule AriaCore.FactsAllocentric do
   """
   @spec delete(String.t()) :: :ok | {:error, :not_found}
   def delete(id) do
-    EtsStorage.delete(:facts_allocentric, id)
+    EtsStorage.delete(:aria_planner_facts_allocentric, id)
   end
 
   @doc """

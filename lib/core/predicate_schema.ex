@@ -105,7 +105,7 @@ defmodule AriaCore.PredicateSchema do
 
     case validate(attrs) do
       {:ok, predicate} ->
-        case EtsStorage.insert(:predicates, predicate.id, predicate) do
+        case EtsStorage.insert(:aria_planner_predicates, predicate.id, predicate) do
           {:ok, _} -> {:ok, predicate}
           error -> error
         end
@@ -130,7 +130,7 @@ defmodule AriaCore.PredicateSchema do
 
     case validate(merged_attrs) do
       {:ok, updated_predicate} ->
-        case EtsStorage.insert(:predicates, updated_predicate.id, updated_predicate) do
+        case EtsStorage.insert(:aria_planner_predicates, updated_predicate.id, updated_predicate) do
           {:ok, _} -> {:ok, updated_predicate}
           error -> error
         end
@@ -145,7 +145,7 @@ defmodule AriaCore.PredicateSchema do
   """
   @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) do
-    EtsStorage.get(:predicates, id)
+    EtsStorage.get(:aria_planner_predicates, id)
   end
 
   @doc """
@@ -153,7 +153,7 @@ defmodule AriaCore.PredicateSchema do
   """
   @spec all() :: [%__MODULE__{}]
   def all do
-    EtsStorage.all(:predicates)
+    EtsStorage.all(:aria_planner_predicates)
   end
 
   @doc """
@@ -161,7 +161,7 @@ defmodule AriaCore.PredicateSchema do
   """
   @spec delete(String.t()) :: :ok | {:error, :not_found}
   def delete(id) do
-    EtsStorage.delete(:predicates, id)
+    EtsStorage.delete(:aria_planner_predicates, id)
   end
 
   @doc """

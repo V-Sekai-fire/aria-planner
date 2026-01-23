@@ -188,7 +188,7 @@ defmodule AriaCore.PlanningDomain do
 
     case validate(normalized_attrs) do
       {:ok, domain} ->
-        case EtsStorage.insert(:planning_domains, domain.id, domain) do
+        case EtsStorage.insert(:aria_planner_planning_domains, domain.id, domain) do
           {:ok, _} -> {:ok, domain}
           error -> error
         end
@@ -213,7 +213,7 @@ defmodule AriaCore.PlanningDomain do
 
     case validate(merged_attrs) do
       {:ok, updated_domain} ->
-        case EtsStorage.insert(:planning_domains, updated_domain.id, updated_domain) do
+        case EtsStorage.insert(:aria_planner_planning_domains, updated_domain.id, updated_domain) do
           {:ok, _} -> {:ok, updated_domain}
           error -> error
         end
@@ -263,7 +263,7 @@ defmodule AriaCore.PlanningDomain do
   """
   @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) do
-    EtsStorage.get(:planning_domains, id)
+    EtsStorage.get(:aria_planner_planning_domains, id)
   end
 
   @doc """
@@ -271,7 +271,7 @@ defmodule AriaCore.PlanningDomain do
   """
   @spec all() :: [%__MODULE__{}]
   def all do
-    EtsStorage.all(:planning_domains)
+    EtsStorage.all(:aria_planner_planning_domains)
   end
 
   @doc """
@@ -279,6 +279,6 @@ defmodule AriaCore.PlanningDomain do
   """
   @spec delete(String.t()) :: :ok | {:error, :not_found}
   def delete(id) do
-    EtsStorage.delete(:planning_domains, id)
+    EtsStorage.delete(:aria_planner_planning_domains, id)
   end
 end
