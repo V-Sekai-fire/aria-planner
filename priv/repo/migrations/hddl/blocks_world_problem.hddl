@@ -1,0 +1,32 @@
+(define (problem blocks_world_problem)
+  (:domain blocks_world)
+
+  (:aria-plan
+    :id "0194c6a8-0000-7000-8000-000000000005"
+    :name "Blocks World Rearrangement"
+    :description "Classic Sussman Anomaly - textbook backtracking problem"
+    :status planned
+    :objectives ((on C A) (on B C) (on A table))
+    :constraints ()
+    :execution-status planned
+    :created-at "2026-01-23T00:00:00Z"
+    :updated-at "2026-01-23T00:00:00Z"
+  )
+
+  (:objects A B C - block)
+
+  (:init
+    (on A table)
+    (on B table)
+    (on C A)
+    (clear B)
+    (clear C)
+    (handempty)
+  )
+
+  (:goal
+    (and (on C A)
+         (on B C)
+         (on A table))
+  )
+)
