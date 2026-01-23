@@ -130,7 +130,7 @@ defmodule AriaCore.Item do
 
     case validate(attrs) do
       {:ok, item} ->
-        case EtsStorage.insert(:items, item.id, item) do
+        case EtsStorage.insert(:aria_planner_items, item.id, item) do
           {:ok, _} -> {:ok, item}
           error -> error
         end
@@ -155,7 +155,7 @@ defmodule AriaCore.Item do
 
     case validate(merged_attrs) do
       {:ok, updated_item} ->
-        case EtsStorage.insert(:items, updated_item.id, updated_item) do
+        case EtsStorage.insert(:aria_planner_items, updated_item.id, updated_item) do
           {:ok, _} -> {:ok, updated_item}
           error -> error
         end
@@ -170,7 +170,7 @@ defmodule AriaCore.Item do
   """
   @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) do
-    EtsStorage.get(:items, id)
+    EtsStorage.get(:aria_planner_items, id)
   end
 
   @doc """
@@ -178,7 +178,7 @@ defmodule AriaCore.Item do
   """
   @spec all() :: [%__MODULE__{}]
   def all do
-    EtsStorage.all(:items)
+    EtsStorage.all(:aria_planner_items)
   end
 
   @doc """
@@ -186,7 +186,7 @@ defmodule AriaCore.Item do
   """
   @spec delete(String.t()) :: :ok | {:error, :not_found}
   def delete(id) do
-    EtsStorage.delete(:items, id)
+    EtsStorage.delete(:aria_planner_items, id)
   end
 
   @doc """

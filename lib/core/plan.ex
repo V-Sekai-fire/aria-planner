@@ -206,7 +206,7 @@ defmodule AriaCore.Plan do
 
     case validate(attrs) do
       {:ok, plan} ->
-        case EtsStorage.insert(:plans, plan.id, plan) do
+        case EtsStorage.insert(:aria_planner_plans, plan.id, plan) do
           {:ok, _} -> {:ok, plan}
           error -> error
         end
@@ -231,7 +231,7 @@ defmodule AriaCore.Plan do
 
     case validate(merged_attrs) do
       {:ok, updated_plan} ->
-        case EtsStorage.insert(:plans, updated_plan.id, updated_plan) do
+        case EtsStorage.insert(:aria_planner_plans, updated_plan.id, updated_plan) do
           {:ok, _} -> {:ok, updated_plan}
           error -> error
         end
@@ -243,7 +243,7 @@ defmodule AriaCore.Plan do
 
   @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) do
-    EtsStorage.get(:plans, id)
+    EtsStorage.get(:aria_planner_plans, id)
   end
 
   @doc """
@@ -251,7 +251,7 @@ defmodule AriaCore.Plan do
   """
   @spec all() :: [%__MODULE__{}]
   def all do
-    EtsStorage.all(:plans)
+    EtsStorage.all(:aria_planner_plans)
   end
 
   @doc """
@@ -259,6 +259,6 @@ defmodule AriaCore.Plan do
   """
   @spec delete(String.t()) :: :ok | {:error, :not_found}
   def delete(id) do
-    EtsStorage.delete(:plans, id)
+    EtsStorage.delete(:aria_planner_plans, id)
   end
 end

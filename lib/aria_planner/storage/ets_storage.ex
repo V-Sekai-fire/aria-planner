@@ -1,162 +1,93 @@
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
-
 defmodule AriaPlanner.Storage.EtsStorage do
   @moduledoc """
-  ETS-based storage for all environments.
-  Provides a simple in-memory storage layer using ETS tables.
-
-  This replaces SQLite database storage with fast in-memory ETS tables.
-  All data is stored in memory and will be lost on application restart.
+  Minimal ETS storage wrapper that forwards directly to :ets.
+  This replaces that previous implementation with simple :ets calls.
   """
 
-  @tables %{
-    plans: :aria_planner_plans,
-    personas: :aria_planner_personas,
-    facts_allocentric: :aria_planner_facts_allocentric,
-    predicates: :aria_planner_predicates,
-    planning_domains: :aria_planner_planning_domains,
-    locations: :aria_planner_locations,
-    items: :aria_planner_items
-  }
+  @tables [
+    :aria_planner_planning_domains,
+    :aria_planner_items,
+    :aria_planner_personas,
+    :aria_planner_locations,
+    :aria_planner_plans,
+    :aria_planner_predicates,
+    :aria_planner_facts_allocentric
+  ]
 
-  # Initialize tables on module load
-  def init do
-    for {_name, table} <- @tables do
-      case :ets.whereis(table) do
-        :undefined ->
-          :ets.new(table, [:named_table, :set, :public])
-
-        _ ->
-          :ok
+  @spec start_link() :: :ok
+  def start_link do
+    Enum.each(@tables, fn table ->
+      # Create a named public ETS table if it doesn't already exist
+      unless :ets.whereis(table) != :undefined do
+        :ets.new(table, [:named_table, :public, read_concurrency: true])
       end
-    end
+    end)
 
     :ok
   end
 
-  def start_link do
-    # Initialize tables
-    init()
-    {:ok, self()}
+  @spec init() :: :ok
+  def init do
+    start_link()
   end
 
-  def insert(table_name, id, data) when is_atom(table_name) and is_binary(id) and is_map(data) do
-    table = Map.get(@tables, table_name)
+  @spec insert(atom(), any(), any()) :: {:ok, any()} | {:error, term()}
+  def insert(table, key, value) do
+    if table in @tables do
+      :ets.insert(table, {key, value})
+      {:ok, value}
+    else
+      {:error, :unknown_table}
+    end
+  end
 
-    if table do
-      try do
-        :ets.insert(table, {id, data})
-        {:ok, data}
-      rescue
-        e -> {:error, "ETS insert failed: #{inspect(e)}"}
-      catch
-        :exit, reason -> {:error, "ETS insert exit: #{inspect(reason)}"}
-        :throw, reason -> {:error, "ETS insert throw: #{inspect(reason)}"}
+  @spec get(atom(), any()) :: {:ok, any()} | {:error, term()}
+  def get(table, key) do
+    if table in @tables do
+      case :ets.lookup(table, key) do
+        [{^key, value}] -> {:ok, value}
+        [] -> {:error, :not_found}
       end
     else
       {:error, :unknown_table}
     end
   end
 
-  def insert(_table_name, _id, _data) do
-    {:error, :invalid_input}
-  end
-
-  def get(table_name, id) when is_atom(table_name) and is_binary(id) do
-    table = Map.get(@tables, table_name)
-
-    if table do
-      try do
-        case :ets.lookup(table, id) do
-          [{^id, data}] -> {:ok, data}
-          [] -> {:error, :not_found}
-        end
-      rescue
-        e -> {:error, "ETS lookup failed: #{inspect(e)}"}
-      catch
-        :exit, reason -> {:error, "ETS lookup exit: #{inspect(reason)}"}
-        :throw, reason -> {:error, "ETS lookup throw: #{inspect(reason)}"}
-      end
-    else
-      {:error, :unknown_table}
-    end
-  end
-
-  def get(_table_name, _id) do
-    {:error, :invalid_input}
-  end
-
-  def all(table_name) when is_atom(table_name) do
-    table = Map.get(@tables, table_name)
-
-    if table do
-      try do
-        :ets.tab2list(table)
-        |> Enum.map(fn {_id, data} -> data end)
-      rescue
-        e -> {:error, "ETS tab2list failed: #{inspect(e)}"}
-      catch
-        :exit, reason -> {:error, "ETS tab2list exit: #{inspect(reason)}"}
-        :throw, reason -> {:error, "ETS tab2list throw: #{inspect(reason)}"}
-      end
+  @spec all(atom()) :: list(any())
+  def all(table) do
+    if table in @tables do
+      :ets.tab2list(table)
+      |> Enum.map(fn {_key, value} -> value end)
     else
       []
     end
   end
 
-  def all(_table_name) do
-    []
-  end
-
-  def delete(table_name, id) when is_atom(table_name) and is_binary(id) do
-    table = Map.get(@tables, table_name)
-
-    if table do
-      try do
-        :ets.delete(table, id)
-        :ok
-      rescue
-        e -> {:error, "ETS delete failed: #{inspect(e)}"}
-      catch
-        :exit, reason -> {:error, "ETS delete exit: #{inspect(reason)}"}
-        :throw, reason -> {:error, "ETS delete throw: #{inspect(reason)}"}
-      end
+  @spec delete(atom(), any()) :: :ok | {:error, term()}
+  def delete(table, key) do
+    if table in @tables do
+      :ets.delete(table, key)
+      :ok
     else
       {:error, :unknown_table}
     end
   end
 
-  def delete(_table_name, _id) do
-    {:error, :invalid_input}
-  end
-
-  def clear(table_name) when is_atom(table_name) do
-    table = Map.get(@tables, table_name)
-
-    if table do
-      try do
-        :ets.delete_all_objects(table)
-        :ok
-      rescue
-        e -> {:error, "ETS clear failed: #{inspect(e)}"}
-      catch
-        :exit, reason -> {:error, "ETS clear exit: #{inspect(reason)}"}
-        :throw, reason -> {:error, "ETS clear throw: #{inspect(reason)}"}
-      end
-    else
-      {:error, :unknown_table}
-    end
-  end
-
-  def clear(_table_name) do
-    {:error, :invalid_input}
-  end
-
-  def clear_all do
-    for {_name, table} <- @tables do
+  @spec clear(atom()) :: :ok | {:error, term()}
+  def clear(table) do
+    if table in @tables do
       :ets.delete_all_objects(table)
+      :ok
+    else
+      {:error, :unknown_table}
     end
+  end
+
+  @spec clear_all() :: :ok
+  def clear_all do
+    Enum.each(@tables, fn table ->
+      :ets.delete_all_objects(table)
+    end)
 
     :ok
   end
