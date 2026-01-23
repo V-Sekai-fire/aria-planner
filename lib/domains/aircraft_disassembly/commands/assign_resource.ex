@@ -15,6 +15,7 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
   alias AriaPlanner.Domains.AircraftDisassembly.Predicates.ResourceAssigned
   alias AriaPlanner.Planner.MetadataHelpers
   alias AriaPlanner.Planner.PlannerMetadata
+
   @spec c_assign_resource(state :: map(), activity :: integer(), resource :: integer()) ::
           {:ok, map(), PlannerMetadata.t()} | {:error, String.t()}
   def c_assign_resource(state, activity, resource) do
@@ -24,10 +25,12 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
         # Return planner metadata - resource assignment is instant
         metadata = MetadataHelpers.instant_metadata("worker", [:disassembly])
         {:ok, new_state, metadata}
+
       error ->
         error
     end
   end
+
   # Private helper functions
   @spec check_resource_not_assigned(map(), integer(), integer()) :: :ok | {:error, String.t()}
   defp check_resource_not_assigned(state, activity, resource) do
@@ -35,4 +38,6 @@ defmodule AriaPlanner.Domains.AircraftDisassembly.Commands.AssignResource do
       {:error, "Resource #{resource} is already assigned to activity #{activity}"}
     else
       :ok
+    end
+  end
 end

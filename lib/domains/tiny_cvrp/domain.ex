@@ -171,5 +171,4 @@ defmodule AriaPlanner.Domains.TinyCvrp do
     |> Map.values()
     |> Enum.all?(& &1)
   end
-
 end

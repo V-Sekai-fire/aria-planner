@@ -148,7 +148,7 @@ The system maintains two perspectives:
 
 **Ego-centric (Persona Perspective):**
 
-- Each persona has their own beliefs about others
+- Each persona plans from their own perspective, with beliefs about others
 - Plans are created from the persona's perspective
 - Internal states are hidden from other personas
 - Beliefs may be incomplete, incorrect, or outdated
@@ -162,67 +162,65 @@ The system maintains two perspectives:
 
 ### Information Asymmetry
 
-Personas cannot directly access each other's internal states:
+Personas cannot directly access each other's internal states. Instead, personas form beliefs through observation and communication, which are stored as facts in the allocentric facts system.
+
+### Belief Storage as Facts
+
+**Beliefs are stored as facts** where the persona is the subject of the fact. This eliminates the need for a separate belief management system:
 
 ```elixir
-# This will return {:error, :hidden}
-AriaCore.Persona.get_planner_state(target_persona_id, requesting_persona_id)
+# Persona A's belief about Persona B being trustworthy
+FactsAllocentric.create(%{
+  fact_id: UUIDv7.generate(),
+  fact_type: "agent_observable",
+  subject_id: persona_a.id,       # The believer
+  subject_type: "persona",
+  predicate: "believes_trustworthy",
+  object_value: persona_b.id,     # The target of belief
+  object_type: "entity_ref",
+  confidence: 0.8                 # Belief confidence
+})
+
+# Persona A's belief about weather conditions
+FactsAllocentric.create(%{
+  fact_id: UUIDv7.generate(),
+  fact_type: "environmental",
+  subject_id: persona_a.id,
+  subject_type: "persona",
+  predicate: "believes_weather",
+  object_value: "stormy",
+  object_type: "string",
+  confidence: 0.9
+})
 ```
 
-Instead, personas form beliefs through:
+### Retrieving Beliefs
 
-- **Observation**: Watching actions and outcomes
-- **Communication**: Receiving messages from other personas
-- **Allocentric Facts**: Observing shared reality
+Beliefs are retrieved using the standard facts querying interface:
+
+```elixir
+# Get all beliefs held by persona A
+{:ok, persona_a_beliefs} = FactsAllocentric.get_facts_about(persona_a.id)
+
+# Filter for specific belief types
+trust_beliefs = Enum.filter(persona_a_beliefs, &(&1.predicate == "believes_trustworthy"))
+weather_beliefs = Enum.filter(persona_a_beliefs, &(&1.predicate == "believes_weather"))
+```
 
 ### Belief Formation
 
-Beliefs are stored in the persona's `beliefs_about_others` field:
-
-```elixir
-# Get what persona_a believes about persona_b
-beliefs = AriaCore.Persona.get_beliefs_about(persona_a, persona_b_id)
-
-# Beliefs include:
-# - Observed actions and patterns
-# - Communication history
-# - Success/failure patterns
-# - Confidence levels
-```
-
-### Observation and Communication
-
-Personas update beliefs through observation:
-
-```elixir
-# Process an observation
-observation = %{
-  entity: "persona_b",
-  action: "movement",
-  confidence: 0.8
-}
-{:ok, updated_persona} = AriaCore.Persona.process_observation(persona_a, observation)
-
-# Process communication
-communication = %{
-  sender: persona_b,
-  content: "I'll coordinate the attack",
-  type: :cooperative
-}
-{:ok, updated_persona} = AriaCore.Persona.process_communication(persona_a, communication)
-```
+Beliefs are formed through observation and communication, stored as facts with confidence levels. The belief system emerges naturally from the facts storage rather than requiring hardcoded belief management functions.
 
 ### Belief Confidence
 
-Each belief has an associated confidence level (0.0 to 1.0):
+Each belief fact has an associated confidence level (0.0 to 1.0) stored in the `confidence` field. Confidence can be updated by modifying the fact:
 
 ```elixir
-# Access belief confidence
-confidence = persona.belief_confidence["persona_b"]["movement"]
+# Update belief confidence based on new evidence
+FactsAllocentric.update(belief_fact, %{confidence: 0.95})
 ```
 
 Confidence increases with:
-
 - Consistent observations
 - Successful predictions
 - Reliable communication patterns
@@ -668,24 +666,25 @@ metadata.end_time      # "2025-01-01T12:00:00Z" - ISO 8601 datetime
 ### Belief Updates
 
 ```elixir
-# Persona A observes Persona B
-observation = %{
-  entity: persona_b.id,
-  action: "movement",
+# Persona A observes Persona B and forms/updates a belief
+belief_fact = %{
+  fact_id: UUIDv7.generate(),
+  fact_type: "agent_observable",
+  subject_id: persona_a.id,       # The believer
+  subject_type: "persona",
+  predicate: "believes_mobile",   # Belief about mobility
+  object_value: persona_b.id,     # The target of belief
+  object_type: "entity_ref",
   confidence: 0.9
 }
 
-{:ok, updated_persona_a} = AriaCore.Persona.process_observation(persona_a, observation)
+{:ok, _} = FactsAllocentric.create(belief_fact)
 
-# Check beliefs
-beliefs = AriaCore.Persona.get_beliefs_about(updated_persona_a, persona_b.id)
-# %{
-#   "observed_movement" => %{
-#     "observed_at" => ~U[2025-01-01 10:00:00Z],
-#     "confidence" => 0.9,
-#     "pattern" => "mobile"
-#   }
-# }
+# Check beliefs - retrieve all facts about persona A
+{:ok, beliefs} = FactsAllocentric.get_facts_about(persona_a.id)
+
+# Filter for beliefs about persona B
+beliefs_about_b = Enum.filter(beliefs, &(&1.object_value == persona_b.id))
 ```
 
 ### Domain Examples
@@ -839,9 +838,9 @@ All core data models are plain structs (not Ecto schemas):
 The aria-planner system is **persona-centric**, not agent-centric. Personas are the core abstraction, with AI personas (agents) being just one type. The system uses:
 
 - **Unified Persona Model**: Human and AI personas share the same structure
-- **Belief-Immersed Architecture**: Ego-centric planning with allocentric execution
+- **Belief-Immersed Architecture**: Ego-centric planning with allocentric execution where beliefs are stored as facts
 - **HTN Planning**: Hierarchical task network with lazy refinement
-- **Information Asymmetry**: Personas form beliefs through observation, not direct state access
+- **Information Asymmetry**: Personas form beliefs through observation, stored as facts in the allocentric system
 - **Domain-Driven Design**: Extensible domain system with predicates, commands, tasks, and goals
 - **ISO 8601 Temporal System**: All planning times use ISO 8601 strings (not integers)
 - **Temporal Constraint Networks**: STN-based temporal constraint solving

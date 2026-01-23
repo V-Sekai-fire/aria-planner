@@ -69,7 +69,7 @@ defmodule AriaPlanner.MixProject do
       maintainers: ["K. S. Ernest (iFire) Lee"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/V-Sekai-fire/aria-hybrid-planner"},
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE.md priv)
+      files: ~w(lib .formatter.exs mix.exs README.md LICENSE.md)
     ]
   end
 end

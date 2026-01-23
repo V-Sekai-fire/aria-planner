@@ -190,5 +190,4 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn do
   def calculate_objective(state) do
     state.east_fox * state.pf + state.east_geese * state.pg + state.east_corn * state.pc
   end
-
 end

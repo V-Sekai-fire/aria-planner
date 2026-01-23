@@ -16,6 +16,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossWest do
   - Boat moves to west side
   """
   alias AriaPlanner.Domains.FoxGeeseCorn
+
   alias AriaPlanner.Domains.FoxGeeseCorn.Predicates.{
     BoatLocation,
     EastCorn,
@@ -25,7 +26,9 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossWest do
     WestFox,
     WestGeese
   }
+
   defstruct fox: 0, geese: 0, corn: 0
+
   @spec c_cross_west(state :: map(), fox_count :: integer(), geese_count :: integer(), corn_count :: integer()) ::
           {:ok, map()} | {:error, String.t()}
   def c_cross_west(state, fox_count, geese_count, corn_count) do
@@ -43,6 +46,7 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossWest do
         |> WestGeese.set(WestGeese.get(state) + geese_count)
         |> WestCorn.set(WestCorn.get(state) + corn_count)
         |> BoatLocation.set("west")
+
       # Check safety constraints
       if FoxGeeseCorn.safe?(new_state) do
         {:ok, new_state}
@@ -53,29 +57,54 @@ defmodule AriaPlanner.Domains.FoxGeeseCorn.Commands.CrossWest do
       error -> error
     end
   end
+
   # Convenience function that takes a map
   @spec c_cross_west(state :: map(), items :: map()) :: {:ok, map()} | {:error, String.t()}
   def c_cross_west(state, %{fox: fox, geese: geese, corn: corn}) do
     c_cross_west(state, fox, geese, corn)
+  end
+
   def c_cross_west(state, items) when is_map(items) do
     c_cross_west(state, Map.get(items, :fox, 0), Map.get(items, :geese, 0), Map.get(items, :corn, 0))
+  end
+
   # Private helper functions
   defp check_boat_location(state) do
     if BoatLocation.get(state) == "east" do
       :ok
+    else
       {:error, "Boat must be on east side to cross west"}
+    end
+  end
+
   defp check_capacity(state, fox_count, geese_count, corn_count) do
     total = fox_count + geese_count + corn_count
     capacity = Map.get(state, :boat_capacity, 2)
-    if total <= capacity do
+
+    if total > capacity do
       {:error, "Total items (#{total}) exceeds boat capacity (#{capacity})"}
+    else
+      :ok
+    end
+  end
+
   defp check_sufficient_items(state, fox_count, geese_count, corn_count) do
     if EastFox.get(state) >= fox_count and
          EastGeese.get(state) >= geese_count and
          EastCorn.get(state) >= corn_count do
+      :ok
+    else
       {:error, "Insufficient items on east side"}
+    end
+  end
+
   defp check_at_least_one_item_or_empty_return(fox_count, geese_count, corn_count) do
-    # Allow empty return (total == 0) or at least one item
-    if total == 0 or total > 0 do
-      {:error, "Must transport at least one item or return empty"}
+    total = fox_count + geese_count + corn_count
+
+    if total >= 0 do
+      :ok
+    else
+      {:error, "Invalid item counts"}
+    end
+  end
 end

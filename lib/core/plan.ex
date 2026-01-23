@@ -11,6 +11,7 @@ defmodule AriaCore.Plan do
   """
   require Logger
   alias AriaPlanner.Storage.EtsStorage
+
   @type t :: %__MODULE__{
           id: String.t(),
           name: String.t(),
@@ -57,25 +58,49 @@ defmodule AriaCore.Plan do
     risk_assessment: %{},
     performance_metrics: %{}
   ]
+
   @doc """
   Validates plan attributes and returns {:ok, plan} or {:error, reason}.
+  """
   @spec validate(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def validate(attrs) do
     errors = []
+
     errors =
       if Map.has_key?(attrs, :id) and not valid_uuid_v7?(attrs.id) do
         ["id must be a valid RFC 9562 UUIDv7" | errors]
       else
         errors
       end
+
+    errors =
       if not Map.has_key?(attrs, :id) or attrs.id == nil do
         ["id is required" | errors]
+      else
+        errors
+      end
+
+    errors =
       if not Map.has_key?(attrs, :name) or attrs.name == nil or String.length(attrs.name) < 1 do
         ["name is required and must be at least 1 character" | errors]
+      else
+        errors
+      end
+
+    errors =
       if not Map.has_key?(attrs, :persona_id) or attrs.persona_id == nil do
         ["persona_id is required" | errors]
+      else
+        errors
+      end
+
+    errors =
       if not Map.has_key?(attrs, :domain_type) or attrs.domain_type == nil do
         ["domain_type is required" | errors]
+      else
+        errors
+      end
+
     valid_domain_types = [
       "tactical",
       "navigation",
@@ -95,18 +120,41 @@ defmodule AriaCore.Plan do
       "backtrack_domain",
       "locomotion"
     ]
+
+    errors =
       if Map.has_key?(attrs, :domain_type) and attrs.domain_type not in valid_domain_types do
         ["domain_type must be one of: #{Enum.join(valid_domain_types, ", ")}" | errors]
+      else
+        errors
+      end
+
     valid_statuses = ["planned", "executing", "completed", "failed"]
+
+    errors =
       if Map.has_key?(attrs, :execution_status) and attrs.execution_status not in valid_statuses do
         ["execution_status must be one of: #{Enum.join(valid_statuses, ", ")}" | errors]
+      else
+        errors
+      end
+
+    errors =
       if Map.has_key?(attrs, :success_probability) and
            (attrs.success_probability < 0.0 or attrs.success_probability > 1.0) do
         ["success_probability must be between 0.0 and 1.0" | errors]
+      else
+        errors
+      end
+
+    errors =
       if Map.has_key?(attrs, :planning_duration_ms) and attrs.planning_duration_ms <= 0 do
         ["planning_duration_ms must be greater than 0" | errors]
+      else
+        errors
+      end
+
     if Enum.empty?(errors) do
       now = NaiveDateTime.utc_now()
+
       plan = %__MODULE__{
         id: Map.get(attrs, :id),
         name: Map.get(attrs, :name),
@@ -130,31 +178,47 @@ defmodule AriaCore.Plan do
         inserted_at: Map.get(attrs, :inserted_at, now),
         updated_at: now
       }
+
       {:ok, plan}
     else
       {:error, Enum.join(errors, "; ")}
     end
   end
+
   defp valid_uuid_v7?(value) when is_binary(value) do
     String.match?(value, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+  end
+
   defp valid_uuid_v7?(_), do: false
+
+  @doc """
   Creates new plan with UUIDv7 ID.
+  """
   @spec create(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def create(attrs) do
     attrs =
       if Map.has_key?(attrs, :id) or Map.has_key?(attrs, "id") do
         attrs
+      else
         id = UUIDv7.generate()
         Map.put(attrs, :id, id)
+      end
+
     case validate(attrs) do
       {:ok, plan} ->
         case EtsStorage.insert(:plans, plan.id, plan) do
           {:ok, _} -> {:ok, plan}
           error -> error
         end
+
       error ->
         error
+    end
+  end
+
+  @doc """
   Updates existing plan.
+  """
   @spec update(plan :: %__MODULE__{}, attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def update(plan, attrs) do
     # Merge existing plan with new attrs
@@ -164,20 +228,37 @@ defmodule AriaCore.Plan do
       |> Map.merge(attrs)
       |> Map.put(:id, plan.id)
       |> Map.put(:inserted_at, plan.inserted_at)
+
     case validate(merged_attrs) do
       {:ok, updated_plan} ->
         case EtsStorage.insert(:plans, updated_plan.id, updated_plan) do
           {:ok, _} -> {:ok, updated_plan}
-  Gets a plan by ID.
+          error -> error
+        end
+
+      error ->
+        error
+    end
+  end
+
   @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) do
     EtsStorage.get(:plans, id)
+  end
+
+  @doc """
   Gets all plans.
+  """
   @spec all() :: [%__MODULE__{}]
   def all do
     EtsStorage.all(:plans)
+  end
+
+  @doc """
   Deletes a plan by ID.
+  """
   @spec delete(String.t()) :: :ok | {:error, :not_found}
   def delete(id) do
     EtsStorage.delete(:plans, id)
+  end
 end
