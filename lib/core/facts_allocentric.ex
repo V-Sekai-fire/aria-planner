@@ -20,8 +20,9 @@ defmodule AriaCore.FactsAllocentric do
   # True entity states (allocentric - definitive)
   entity_truth = FactsAllocentric.get_entity_state(entity_id)
   # Includes: position, capabilities, ownership, observable effects
-  # Ego projections (persona beliefs - may differ)
-  ego_belief = Persona.get_belief_about(persona_a, entity_id)
+  # Ego projections (persona beliefs stored as facts - may differ)
+  {:ok, belief_facts} = FactsAllocentric.get_facts_about(persona_a.id)
+  ego_beliefs = Enum.filter(belief_facts, &(&1.predicate =~ "believes"))
   # May be: misrepresented, incomplete, or wrong
   ```
   ### Communication as Observable Events
@@ -83,6 +84,7 @@ defmodule AriaCore.FactsAllocentric do
   Stored in ETS (Elixir Term Storage) for in-memory persistence.
   """
   alias AriaPlanner.Storage.EtsStorage
+
   @type t :: %__MODULE__{
           id: String.t(),
           fact_id: String.t(),
@@ -115,17 +117,21 @@ defmodule AriaCore.FactsAllocentric do
     confidence: 1.0,
     metadata: %{}
   ]
+
   @doc """
   Validates fact attributes and returns {:ok, fact} or {:error, reason}.
+  """
   @spec validate(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def validate(attrs) do
     errors = []
+
     errors =
       if Map.has_key?(attrs, :id) and not valid_uuid_v7?(attrs.id) do
         ["id must be a valid RFC 9562 UUIDv7" | errors]
       else
         errors
       end
+
     required_fields = [
       :id,
       :fact_id,
@@ -136,6 +142,8 @@ defmodule AriaCore.FactsAllocentric do
       :object_value,
       :object_type
     ]
+
+    errors =
       Enum.reduce(required_fields, errors, fn field, acc ->
         if not Map.has_key?(attrs, field) or Map.get(attrs, field) == nil do
           ["#{field} is required" | acc]
@@ -143,20 +151,45 @@ defmodule AriaCore.FactsAllocentric do
           acc
         end
       end)
+
     valid_fact_types = ["terrain", "object", "environmental", "event", "agent_observable"]
+
+    errors =
       if Map.has_key?(attrs, :fact_type) and attrs.fact_type not in valid_fact_types do
         ["fact_type must be one of: #{Enum.join(valid_fact_types, ", ")}" | errors]
+      else
+        errors
+      end
+
     valid_subject_types = ["persona", "item", "location", "environmental"]
+
+    errors =
       if Map.has_key?(attrs, :subject_type) and attrs.subject_type not in valid_subject_types do
         ["subject_type must be one of: #{Enum.join(valid_subject_types, ", ")}" | errors]
+      else
+        errors
+      end
+
     valid_object_types = ["string", "number", "boolean", "location", "entity_ref"]
+
+    errors =
       if Map.has_key?(attrs, :object_type) and attrs.object_type not in valid_object_types do
         ["object_type must be one of: #{Enum.join(valid_object_types, ", ")}" | errors]
+      else
+        errors
+      end
+
+    errors =
       if Map.has_key?(attrs, :confidence) and
            (attrs.confidence < 0.0 or attrs.confidence > 1.0) do
         ["confidence must be between 0.0 and 1.0" | errors]
+      else
+        errors
+      end
+
     if Enum.empty?(errors) do
       now = DateTime.utc_now()
+
       fact = %__MODULE__{
         id: Map.get(attrs, :id),
         fact_id: Map.get(attrs, :fact_id),
@@ -173,30 +206,44 @@ defmodule AriaCore.FactsAllocentric do
         inserted_at: Map.get(attrs, :inserted_at, now),
         updated_at: now
       }
+
       {:ok, fact}
     else
       {:error, Enum.join(errors, "; ")}
     end
   end
+
   defp valid_uuid_v7?(value) when is_binary(value) do
     String.match?(value, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+  end
+
   defp valid_uuid_v7?(_), do: false
+
+  @doc """
   Creates new allocentric fact.
+  """
   @spec create(attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def create(attrs) do
     attrs =
       if Map.has_key?(attrs, :id) or Map.has_key?(attrs, "id") do
         attrs
+      else
         id = UUIDv7.generate()
         Map.put(attrs, :id, id)
+      end
+
     case validate(attrs) do
       {:ok, fact} ->
         case EtsStorage.insert(:facts_allocentric, fact.id, fact) do
           {:ok, _} -> {:ok, fact}
           error -> error
+        end
+
       error ->
         error
-  Updates existing allocentric fact.
+    end
+  end
+
   @spec update(fact :: %__MODULE__{}, attrs :: map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def update(fact, attrs) do
     # Merge existing fact with new attrs
@@ -206,32 +253,54 @@ defmodule AriaCore.FactsAllocentric do
       |> Map.merge(attrs)
       |> Map.put(:id, fact.id)
       |> Map.put(:inserted_at, fact.inserted_at)
+
     case validate(merged_attrs) do
       {:ok, updated_fact} ->
         case EtsStorage.insert(:facts_allocentric, updated_fact.id, updated_fact) do
           {:ok, _} -> {:ok, updated_fact}
-  Gets a fact by ID.
+          error -> error
+        end
+
+      error ->
+        error
+    end
+  end
+
   @spec get(String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) do
     EtsStorage.get(:facts_allocentric, id)
+  end
+
+  @doc """
   Gets all facts.
+  """
   @spec all() :: [%__MODULE__{}]
   def all do
     EtsStorage.all(:facts_allocentric)
+  end
+
+  @doc """
   Deletes a fact by ID.
+  """
   @spec delete(String.t()) :: :ok | {:error, :not_found}
   def delete(id) do
     EtsStorage.delete(:facts_allocentric, id)
-  Record communication as an allocentric fact.
+  end
+
+  @doc """
   Some communications become observable facts that all personas can observe,
   serving as temporal bridges for belief updating.
+  """
   @spec record_communication(map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def record_communication(message) do
     # Create allocentric fact from communication
     sender_id =
       if is_map(message.sender) and Map.has_key?(message.sender, :id) do
         message.sender.id
+      else
         message.sender
+      end
+
     fact_attrs = %{
       fact_id: UUIDv7.generate(),
       fact_type: "event",
@@ -245,35 +314,60 @@ defmodule AriaCore.FactsAllocentric do
       metadata: Map.take(message, [:recipients, :message_type]),
       game_session_id: "believer_ego_session"
     }
+
     create(fact_attrs)
+  end
+
+  @doc """
   Get all allocentric facts for observation.
   Allows personas to observe the shared allocentric reality,
   creating the foundation for ego belief formation.
+  """
   @spec get_all_facts() :: {:ok, [%__MODULE__{}]}
   def get_all_facts do
     now = DateTime.utc_now()
+
     facts =
       all()
       |> Enum.filter(fn fact ->
         fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt
-      |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
+      end)
+
     {:ok, facts}
+  end
+
+  @doc """
   Get facts related to specific entity for observation.
   Enables ego-centric observation of allocentric reality,
   allowing personas to build beliefs about specific other entities.
   Returns facts where entity is subject or mentioned in object.
+  """
   @spec get_facts_about(String.t()) :: {:ok, [%__MODULE__{}]}
   def get_facts_about(entity_id) when is_binary(entity_id) do
+    all_facts = all()
+    now = DateTime.utc_now()
+
+    facts =
+      all_facts
+      |> Enum.filter(fn fact ->
         (fact.subject_id == entity_id or
            (fact.object_type == "entity_ref" and fact.object_value == entity_id)) and
           (fact.expires_at == nil or DateTime.compare(fact.expires_at, now) == :gt)
+      end)
+
+    {:ok, facts}
+  end
+
   def get_facts_about(_), do: {:error, "Invalid entity_id"}
+
+  @doc """
   Get complete entity state from allocentric facts.
   Returns all observable facts about an entity including:
   - Position (located_at facts)
   - Capabilities (has_capability facts)
   - Ownership (owns/has facts)
   - Observable effects (agent_observable facts)
+  """
   @spec get_entity_state(String.t()) :: {:ok, map()} | {:error, String.t()}
   def get_entity_state(entity_id) when is_binary(entity_id) do
     case get_facts_about(entity_id) do
@@ -290,67 +384,123 @@ defmodule AriaCore.FactsAllocentric do
           end)
           |> Map.put(:entity_id, entity_id)
           |> Map.put(:fact_count, length(facts))
+
         {:ok, state}
+
+      error ->
+        error
+    end
+  end
+
   def get_entity_state(_), do: {:error, "Invalid entity_id"}
+
+  @doc """
   Query what a persona can observe about another entity.
   Returns facts compatible with persona's observation capabilities.
   Filters facts based on fact_type (agent_observable, event, environmental are always observable).
+  """
   @spec query_observable(String.t(), String.t()) :: {:ok, [%__MODULE__{}]}
   def query_observable(observer_persona_id, target_entity_id)
       when is_binary(observer_persona_id) and is_binary(target_entity_id) do
     # Observable fact types: agent_observable, event, environmental are always observable
     # Terrain and object facts are observable by all
     observable_types = ["agent_observable", "event", "environmental", "terrain", "object"]
-        fact.subject_id == target_entity_id and fact.fact_type in observable_types and
+
+    case get_facts_about(target_entity_id) do
+      {:ok, facts} ->
+        observable_facts = facts |> Enum.filter(fn fact -> fact.fact_type in observable_types end)
+        {:ok, observable_facts}
+
+      error ->
+        error
+    end
+  end
+
   def query_observable(_, _), do: {:error, "Invalid persona_id or entity_id"}
+
+  @doc """
   Validate world state consistency.
   Checks for:
   - No conflicting facts about the same subject with same predicate
   - All facts have valid confidence values
   - No expired facts are considered active
+  """
   @spec validate_world_state() :: :consistent | {:inconsistent, String.t()}
   def validate_world_state do
     # Check for conflicting facts (same subject + predicate with different values)
     active_facts =
+      all()
+      |> Enum.filter(fn fact ->
+        fact.expires_at == nil or DateTime.compare(fact.expires_at, DateTime.utc_now()) == :gt
+      end)
+
     conflicts =
       active_facts
       |> Enum.group_by(fn fact -> {fact.subject_id, fact.predicate} end)
       |> Enum.filter(fn {_key, facts} -> length(facts) > 1 end)
       |> Enum.map(fn {{subject_id, predicate}, facts} ->
         {subject_id, predicate, length(facts)}
+      end)
+
     if Enum.empty?(conflicts) do
       :consistent
+    else
       {:inconsistent, "Found conflicting facts: #{inspect(conflicts)}"}
+    end
+  end
+
+  @doc """
   Find conflicting facts about a specific subject.
   Returns list of facts that conflict (same predicate, different values).
+  """
   @spec conflicting_facts(String.t()) :: [%__MODULE__{}]
   def conflicting_facts(subject_id) when is_binary(subject_id) do
-    # Find predicates with multiple values for the same subject
-        fact.subject_id == subject_id and
-    predicates_with_conflicts =
-      |> Enum.group_by(& &1.predicate)
-      |> Enum.filter(fn {_predicate, facts} -> length(facts) > 1 end)
-      |> Enum.map(fn {predicate, _facts} -> predicate end)
-    # Get all facts for those predicates
-    if Enum.empty?(predicates_with_conflicts) do
-      []
-      |> Enum.filter(fn fact -> fact.predicate in predicates_with_conflicts end)
+    case get_facts_about(subject_id) do
+      {:ok, facts} ->
+        # Find predicates with multiple values for the same subject
+        predicates_with_conflicts =
+          facts
+          |> Enum.group_by(& &1.predicate)
+          |> Enum.filter(fn {_predicate, facts} -> length(facts) > 1 end)
+          |> Enum.map(fn {predicate, _facts} -> predicate end)
+
+        # Get all facts for those predicates
+        facts
+        |> Enum.filter(fn fact -> fact.predicate in predicates_with_conflicts end)
+
+      {:error, _} ->
+        []
+    end
+  end
+
   def conflicting_facts(_), do: []
+
+  @doc """
   Record environmental event as an allocentric fact.
   Environmental events are observable by all personas and serve as
   temporal bridges for belief updating.
+  """
   @spec record_event(map()) :: {:ok, %__MODULE__{}} | {:error, String.t()}
   def record_event(event) when is_map(event) do
     region = Map.get(event, :region, "unknown")
     event_type = Map.get(event, :type, "environmental_change")
     new_condition = Map.get(event, :new_condition, "")
+
+    fact_attrs = %{
+      fact_id: UUIDv7.generate(),
       fact_type: "environmental",
       subject_id: to_string(region),
       subject_type: "environmental",
       predicate: "environmental_event",
       object_value: Jason.encode!(%{type: event_type, condition: new_condition}),
+      object_type: "string",
       metadata: Map.take(event, [:region, :type, :new_condition]),
       game_session_id: Map.get(event, :game_session_id, "default_session")
+    }
+
+    create(fact_attrs)
+  end
+
   def record_event(_), do: {:error, "Invalid event format"}
   # Helper function to parse object values based on type
   defp parse_object_value(value, "string"), do: value
@@ -359,15 +509,23 @@ defmodule AriaCore.FactsAllocentric do
   defp parse_object_value(value, "location"), do: value
   defp parse_object_value(value, "entity_ref"), do: value
   defp parse_object_value(value, _), do: value
+
   defp parse_number(value) when is_binary(value) do
     case Float.parse(value) do
       {float, _} -> float
       :error -> value
+    end
+  end
+
   defp parse_number(value), do: value
+
   defp parse_boolean(value) when is_binary(value) do
     case String.downcase(value) do
       "true" -> true
       "false" -> false
       _ -> value
+    end
+  end
+
   defp parse_boolean(value), do: value
 end

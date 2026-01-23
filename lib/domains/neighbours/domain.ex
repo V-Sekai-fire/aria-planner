@@ -195,5 +195,4 @@ defmodule AriaPlanner.Domains.Neighbours do
     |> Map.values()
     |> Enum.all?(fn value -> value > 0 end)
   end
-
 end

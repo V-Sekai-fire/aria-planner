@@ -130,7 +130,6 @@ defmodule AriaPlanner.Domains.AircraftDisassembly do
     StateInitialization.initialize_state(params)
   end
 
-
   @doc """
   Checks if all activities are completed.
   """

@@ -159,5 +159,4 @@ defmodule AriaCore.Persona do
   def delete(id) do
     EtsStorage.delete(:personas, id)
   end
-
 end
