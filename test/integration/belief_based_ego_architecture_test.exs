@@ -3,11 +3,10 @@
 
 defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
   @moduledoc """
-  Integration tests for Belief-Based Ego Architecture with Hidden Information.
+  Integration tests for Persona and Plan Architecture.
 
-  Tests the complete system where personas form beliefs through observation,
-  create ego-centric plans, execute through allocentric coordination, and update
-  beliefs based on outcomes while maintaining information asymmetry.
+  Tests the complete system where personas create plans and execute through
+  allocentric coordination. Belief system has been removed to simplify the codebase.
   """
 
   use ExUnit.Case, async: false
@@ -28,23 +27,18 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
       {:ok, persona_a} =
         Persona.create(%{
           name: "Alpha",
-          capabilities: ["planning", "communication", "movable"],
-          beliefs_about_others: %{},
-          belief_confidence: %{}
+          capabilities: ["planning", "communication", "movable"]
         })
 
       {:ok, persona_b} =
         Persona.create(%{
           name: "Bravo",
-          capabilities: ["combat", "communication", "movable"],
-          beliefs_about_others: %{},
-          belief_confidence: %{}
+          capabilities: ["combat", "communication", "movable"]
         })
 
-      # 2. Verify personas maintain hidden information
-      # No persona can access another's internal planning state
-      assert Persona.get_beliefs_about(persona_a, persona_b.id) == %{}
-      assert Persona.get_beliefs_about(persona_b, persona_a.id) == %{}
+      # 2. Verify personas are created correctly
+      assert persona_a.name == "Alpha"
+      assert persona_b.name == "Bravo"
 
       # 3. Create ego-centric plans
       {:ok, plan_a} =
@@ -96,19 +90,13 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
       {:ok, persona_x} =
         Persona.create(%{
           name: "Persona X",
-          capabilities: ["planning", "movable"],
-          beliefs_about_others: %{},
-          belief_confidence: %{},
-          last_observations: %{}
+          capabilities: ["planning", "movable"]
         })
 
       {:ok, persona_y} =
         Persona.create(%{
           name: "Persona Y",
-          capabilities: ["combat", "movable"],
-          beliefs_about_others: %{},
-          belief_confidence: %{},
-          last_observations: %{}
+          capabilities: ["combat", "movable"]
         })
 
       # Create plans for each
@@ -137,12 +125,8 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
       assert plan_x.persona_id != plan_y.persona_id
       assert plan_x.objectives != plan_y.objectives
 
-      # Beliefs about others start empty (no access to internal states)
-      beliefs_x_about_y = Persona.get_beliefs_about(persona_x, persona_y.id)
-      beliefs_y_about_x = Persona.get_beliefs_about(persona_y, persona_x.id)
-
-      assert beliefs_x_about_y == %{}
-      assert beliefs_y_about_x == %{}
+      # Personas are independent entities
+      assert persona_x.id != persona_y.id
 
       # Plans execute allocentrically (in shared reality)
       combined_tasks = [
@@ -157,27 +141,23 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
     end
 
     @tag :integration
-    test "belief evolution through observation sequences" do
+    test "plan execution and allocentric facts" do
       # Create personas
       {:ok, observer} =
         Persona.create(%{
           name: "Observer",
-          capabilities: ["observation", "communication"],
-          beliefs_about_others: %{},
-          belief_confidence: %{},
-          last_observations: %{}
+          capabilities: ["observation", "communication"]
         })
 
       {:ok, actor} =
         Persona.create(%{
           name: "Actor",
-          capabilities: ["actions", "movable"],
-          beliefs_about_others: %{}
+          capabilities: ["actions", "movable"]
         })
 
-      # Initial empty beliefs
-      initial_beliefs = Persona.get_beliefs_about(observer, actor.id)
-      assert initial_beliefs == %{}
+      # Verify personas created
+      assert observer.name == "Observer"
+      assert actor.name == "Actor"
 
       # Actor creates plan (ego-centric, hidden from observer)
       {:ok, _actor_plan} =
@@ -189,19 +169,8 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
           success_probability: 0.5
         })
 
-      # Observer cannot see actor's plan (information asymmetry)
-      # But can observe actions/behaviors
-      observed_behavior = %{
-        entity: actor.id,
-        action: "sneak_movement",
-        timestamp: DateTime.utc_now(),
-        confidence: 0.8
-      }
-
-      # Process observation (would update beliefs in real implementation)
-      # For now, verify observation structure
-      assert observed_behavior.entity == actor.id
-      assert observed_behavior.confidence > 0
+      # Plans execute in allocentric space
+      # Actions create observable facts
 
       # Plan execution creates allocentric facts that can be observed
       _execution_result = %{success: true, method: "stealth", outcome: "surprise_attack"}
@@ -225,8 +194,7 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
       assert recorded_fact.confidence == 1.0
       assert recorded_fact.fact_type == "event"
 
-      # These facts can be observed by all personas for belief updates
-      # (would trigger belief evolution in complete system)
+      # These facts are observable by all personas
       assert recorded_fact.predicate == "executed_stealth_attack"
     end
   end
@@ -262,35 +230,26 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
       assert fact.confidence == 1.0
       assert fact.game_session_id == "multiagent_session_456"
 
-      # Multiple personas can observe this fact and update beliefs accordingly
-      # (would trigger belief formation about sender's intentions)
+      # Multiple personas can observe this fact
       assert Map.has_key?(fact.metadata, :recipients)
       assert length(fact.metadata.recipients) == 2
     end
 
-    test "beliefs are ego-centric while facts are allocentric" do
+    test "facts are allocentric and observable by all personas" do
       # Create two personas
       {:ok, persona1} =
         Persona.create(%{
-          name: "Persona 1",
-          # Ego-centric: beliefs about others
-          beliefs_about_others: %{},
-          # Ego-centric: confidence in beliefs
-          belief_confidence: %{}
+          name: "Persona 1"
         })
 
       {:ok, persona2} =
         Persona.create(%{
-          name: "Persona 2",
-          # Different ego perspective
-          beliefs_about_others: %{},
-          belief_confidence: %{}
+          name: "Persona 2"
         })
 
-      # Both start with empty beliefs (no observations yet) - this is expected
-      # Ego beliefs would become different after observations
-      assert persona1.beliefs_about_others == %{}
-      assert persona2.beliefs_about_others == %{}
+      # Verify personas created
+      assert persona1.name == "Persona 1"
+      assert persona2.name == "Persona 2"
 
       # Create allocentric fact that both could observe in theory
       allocentric_fact = %{
@@ -307,22 +266,13 @@ defmodule AriaPlanner.BeliefBasedEgoArchitectureTest do
 
       {:ok, fact} = FactsAllocentric.create(allocentric_fact)
 
-      # Fact is allocentric - same truth for both personas
-      # But each persona may form different ego-centric beliefs about it
+      # Fact is allocentric - same truth for all personas
       # Allocentric ground truth
       assert fact.confidence == 1.0
       # Shared reality
       assert fact.subject_type == "environmental"
-      # Same world for both
+      # Same world for all
       assert fact.game_session_id == "shared_world"
-
-      # Ego beliefs would be different interpretations of this allocentric fact
-      # (e.g., persona1 might believe it provides good cover, persona2 might disagree)
-      ego_interpretation1 = %{belief: "provides_cover", confidence: 0.8}
-      ego_interpretation2 = %{belief: "poor_visibility", confidence: 0.3}
-
-      # Different ego interpretations of same allocentric truth
-      assert ego_interpretation1 != ego_interpretation2
     end
   end
 

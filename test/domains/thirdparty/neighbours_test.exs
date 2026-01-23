@@ -45,17 +45,12 @@ defmodule AriaPlanner.Domains.NeighboursTest do
       assert GridValue.get(state, 4, 2) == 0
     end
 
-    test "parses MiniZinc data file" do
-      data_file =
-        Path.join([
-          __DIR__,
-          "../../../thirdparty/mznc2024_probs/neighbours/neightbours-new-2.dzn"
-        ])
-
-      {:ok, params} = Neighbours.parse_dzn_file(data_file)
-
-      assert params.n == 4
-      assert params.m == 2
+    # parse_dzn_file test removed - .dzn parser functionality has been removed
+    # to simplify the codebase as it was only used for test fixture generation
+    test "domain can initialize with direct parameters" do
+      {:ok, state} = Neighbours.initialize_state(4, 2)
+      assert state.n == 4
+      assert state.m == 2
     end
   end
 

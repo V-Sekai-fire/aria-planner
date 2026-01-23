@@ -57,23 +57,8 @@ defmodule AriaPlanner.Domains.FoxGeeseCornTest do
       assert state.boat_capacity == 2
     end
 
-    test "parses MiniZinc data file" do
-      data_file =
-        Path.join([
-          __DIR__,
-          "../../../thirdparty/mznc2024_probs/fox-geese-corn/fgc_06_26_08_00.dzn"
-        ])
-
-      {:ok, params} = FoxGeeseCorn.parse_dzn_file(data_file)
-
-      assert params.f == 6
-      assert params.g == 26
-      assert params.c == 8
-      assert params.k == 2
-      assert params.pf == 4
-      assert params.pg == 4
-      assert params.pc == 3
-    end
+    # parse_dzn_file test removed - .dzn parser functionality has been removed
+    # to simplify the codebase as it was only used for test fixture generation
   end
 
   describe "safety constraints" do
