@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-present K. S. Ernest (iFire) Lee
+
+defmodule AriaPlanner.Domains.Interactivity.Commands.EventOnTick do
+  @moduledoc """
+  Command: c_event_on_tick(node_id, ...)
+
+  Executes event/onTick operation.
+
+  Preconditions:
+  - Graph must be active
+  - Required input sockets must have values
+
+  Effects:
+  - Output socket values are computed
+  - Node is marked as executed
+  """
+
+  alias AriaPlanner.Domains.Interactivity.Predicates.{
+    NodeExecuted
+  }
+
+  alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
+
+  @spec c_event_on_tick(state :: map(), node_id :: String.t(), a_socket :: String.t(), value_socket :: String.t()) ::
+          {:ok, map()} | {:error, String.t()}
+  def c_event_on_tick(state, node_id, _a_socket, _value_socket) do
+    case MathHelpers.check_graph_active(state) do
+      :ok ->
+        # Event triggered on each tick
+        alias AriaPlanner.Domains.Interactivity.Predicates.EventTriggered
+        state = EventTriggered.set(state, node_id, "onTick", true)
+        state = NodeExecuted.set(state, node_id, true)
+        {:ok, state}
+
+      error ->
+        error
+    end
+  end
+end
