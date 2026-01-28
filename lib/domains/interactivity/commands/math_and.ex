@@ -50,7 +50,10 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathAnd do
     end
   end
 end
+<<<<<<< HEAD
 
 # TODO: a_socket parameter for future implementation
 # TODO: b_socket parameter for future implementation
 # TODO: value_socket parameter for future implementation
+=======
+>>>>>>> 23d7f9f (Complete interactivity domain implementation with glTF support)

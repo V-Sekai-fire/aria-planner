@@ -48,9 +48,14 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathXor do
     end
   end
 
+<<<<<<< HEAD
   # FIXME: implement xor operation
   defp xor_op(a, b), do: Bitwise.bxor(a, b)
 end
 
 # TODO: b_socket parameter for future implementation
 # TODO: value_socket parameter for future implementation
+=======
+  defp xor_op(a, b), do: Bitwise.bxor(a, b)
+end
+>>>>>>> 23d7f9f (Complete interactivity domain implementation with glTF support)

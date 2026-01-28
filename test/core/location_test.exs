@@ -112,7 +112,11 @@ defmodule AriaCore.LocationTest do
 
       spo = Location.to_spo(location)
       assert is_list(spo)
+<<<<<<< HEAD
       assert length(spo) > 0
+=======
+      assert spo != []
+>>>>>>> 23d7f9f (Complete interactivity domain implementation with glTF support)
     end
   end
 end

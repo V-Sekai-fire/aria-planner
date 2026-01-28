@@ -9,8 +9,13 @@ defmodule AriaPlanner.Planner.Application do
   use Application
 
   alias AriaPlanner.Planner.DomainRegistry
+<<<<<<< HEAD
   alias AriaPlanner.Storage.EtsStorage
   alias AriaPlanner.Repo
+=======
+  alias AriaPlanner.Repo
+  alias AriaPlanner.Storage.EtsStorage
+>>>>>>> 23d7f9f (Complete interactivity domain implementation with glTF support)
 
   @impl true
   @spec start(Application.start_type(), term()) :: {:ok, pid()} | {:ok, pid(), term()} | {:error, term()}

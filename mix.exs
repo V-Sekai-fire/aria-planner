@@ -60,7 +60,8 @@ defmodule AriaPlanner.MixProject do
       # Dev/test dependencies
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.40", only: :dev}
+      {:ex_doc, "~> 0.40", only: :dev},
+      {:aria_gltf, git: "https://github.com/V-Sekai-fire/aria-gltf.git", branch: "main", runtime: false}
     ]
   end
 

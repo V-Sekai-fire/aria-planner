@@ -22,7 +22,10 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathCombine3x3 do
     SocketValue
   }
 
+<<<<<<< HEAD
   # Fixme disconnected arguments
+=======
+>>>>>>> 23d7f9f (Complete interactivity domain implementation with glTF support)
   alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
 
   @spec c_math_combine3x3(

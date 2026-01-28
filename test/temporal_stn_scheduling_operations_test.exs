@@ -139,7 +139,7 @@ defmodule TemporalSTNSchedulingOperationsTest do
       assert is_list(free_slots)
 
       # First slot should start immediately if available
-      if length(free_slots) > 0 do
+      if free_slots != [] do
         first_slot = hd(free_slots)
         # Within first 10 minutes
         assert first_slot.start_time <= 600

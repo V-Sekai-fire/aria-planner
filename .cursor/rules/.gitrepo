@@ -6,7 +6,12 @@
 [subrepo]
 	remote = https://github.com/fire/.clinerules
 	branch = main
+<<<<<<< HEAD
 	commit = 45e38fa332fc7a108d460faac2246594cbeefa35
 	parent = b62f4b60a3ac581618c99114f3f0a81a92acde8f
+=======
+	commit = 3a17b1848f6dada2b9791685203251a9a57f6cf0
+	parent = 33d2d16ad9e9dd9e6666293d55b23e15d7e6fca8
+>>>>>>> 23d7f9f (Complete interactivity domain implementation with glTF support)
 	method = merge
 	cmdver = 0.4.9

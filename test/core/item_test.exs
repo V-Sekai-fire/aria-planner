@@ -137,7 +137,10 @@ defmodule AriaCore.ItemTest do
       try do
         spo = Item.to_spo(item)
         assert is_list(spo)
+<<<<<<< HEAD
         assert length(spo) >= 0
+=======
+>>>>>>> 23d7f9f (Complete interactivity domain implementation with glTF support)
       rescue
         BadMapError ->
           # Expected if AriaCore.Predicate/Subject/Object modules don't exist
