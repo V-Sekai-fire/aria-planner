@@ -11,9 +11,6 @@ defmodule AriaPlanner.Domains.Interactivity do
   - Sockets (input/output value sockets, input/output flow sockets)
   - Custom events and variables
   - Node execution and flow control
-
-  Supports PDDL/HDDL interoperability for converting behavior graphs
-  to planning domain representations.
   """
 
   @doc """
@@ -64,6 +61,14 @@ defmodule AriaPlanner.Domains.Interactivity do
   end
 
   defp build_action_list do
+    # List of known-broken operations that should not be registered
+    # These operations require configuration-driven dynamic sockets which are not yet implemented
+    broken_operations = [
+      "c_math_switch",
+      "c_flow_switch",
+      "c_variable_set"
+    ]
+
     # Core graph operations
     core_actions = [
       %{name: "c_activate_graph", arity: 1, preconditions: [], effects: ["graph_active = true"]},
@@ -141,7 +146,8 @@ defmodule AriaPlanner.Domains.Interactivity do
       "lsl"
     ]
 
-    math_ternary = ["select", "switch"]
+    # Note: "switch" is broken (requires config-driven sockets) - filtered out below
+    math_ternary = ["select"]
     math_combine = ["combine2", "combine3", "combine4", "combine2x2", "combine3x3", "combine4x4"]
     math_extract = ["extract2", "extract3", "extract4", "extract2x2", "extract3x3", "extract4x4"]
     math_matrix = ["transpose", "determinant", "inverse", "mat_mul", "mat_compose", "mat_decompose"]
@@ -279,12 +285,12 @@ defmodule AriaPlanner.Domains.Interactivity do
       )
 
     # Flow control operations
+    # Note: "switch" is broken (requires config-driven sockets) - filtered out below
     flow_actions =
       [
         "branch",
         "sequence",
         "multi_gate",
-        "switch",
         "while",
         "for",
         "do_n",
@@ -303,8 +309,9 @@ defmodule AriaPlanner.Domains.Interactivity do
       )
 
     # Variable and pointer operations
+    # Note: "set" for variable is broken (requires config-driven sockets) - filtered out below
     var_actions =
-      ["get", "set", "interpolate"]
+      ["get", "interpolate"]
       |> Enum.flat_map(fn op ->
         [
           %{
@@ -321,6 +328,18 @@ defmodule AriaPlanner.Domains.Interactivity do
           }
         ]
       end)
+
+    var_actions =
+      var_actions ++
+        [
+          # pointer/set is fine (doesn't require config-driven sockets)
+          %{
+            name: "c_pointer_set",
+            arity: 3,
+            preconditions: ["graph_active == true"],
+            effects: ["pointer accessed", "node_executed = true"]
+          }
+        ]
 
     # Animation control
     anim_actions =
@@ -356,8 +375,12 @@ defmodule AriaPlanner.Domains.Interactivity do
       }
     ]
 
-    core_actions ++
-      math_actions ++ type_actions ++ flow_actions ++ var_actions ++ anim_actions ++ event_actions ++ debug_actions
+    all_actions =
+      core_actions ++
+        math_actions ++ type_actions ++ flow_actions ++ var_actions ++ anim_actions ++ event_actions ++ debug_actions
+
+    # Filter out known-broken operations
+    Enum.reject(all_actions, fn action -> action.name in broken_operations end)
   end
 
   defp register_task_methods(domain) do

@@ -36,14 +36,15 @@ defmodule AriaPlanner.MixProject do
   def application do
     [
       extra_applications: [:logger, :sasl, :tools, :xmerl, :tzdata],
-      mod: {AriaPlanner.Planner.Application, []}
+      mod: {AriaPlanner.Planner.Application, []},
+      env: [ecto_repos: [AriaPlanner.Repo]]
     ]
   end
 
   defp deps do
     [
       {:jason, "~> 1.4"},
-      {:axon, "~> 0.7.0"},
+      {:axon, "~> 0.8"},
       {:timex, "~> 3.7.13"},
       {:uuidv7, "~> 1.0"},
       {:nx, "~> 0.10"},
@@ -52,16 +53,23 @@ defmodule AriaPlanner.MixProject do
       {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
       {:abnf_parsec, "~> 2.1"},
       {:sourceror, "~> 1.10"},
+      {:fun_with_flags, "~> 1.13"},
+      {:ecto_sql, "~> 3.13"},
+      {:postgrex, "~> 0.22"},
       # Using built-in :zstd module from Erlang/OTP 28+ (no external dependency needed)
       # Dev/test dependencies
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.30", only: :dev}
+      {:ex_doc, "~> 0.40", only: :dev}
     ]
   end
 
   defp aliases do
-    []
+    [
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+    ]
   end
 
   defp package do

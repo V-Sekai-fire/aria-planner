@@ -14,6 +14,21 @@ jobs:
     name: Test (Elixir 1.19, OTP 28)
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aria_planner_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v4
 
@@ -43,10 +58,31 @@ jobs:
       - name: Compile
         run: mix compile --warnings-as-errors
 
+      - name: Setup database
+        run: |
+          mix ecto.create
+          mix ecto.migrate
+        env:
+          MIX_ENV: test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          DB_HOSTNAME: localhost
+          DB_PORT: 5432
+          DB_NAME: aria_planner_test
+          DB_POOL_SIZE: 10
+          DB_SSL: "false"
+
       - name: Run tests
         run: mix test --exclude minizinc_solver
         env:
           MIX_ENV: test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          DB_HOSTNAME: localhost
+          DB_PORT: 5432
+          DB_NAME: aria_planner_test
+          DB_POOL_SIZE: 10
+          DB_SSL: "false"
 
       - name: Run formatter check
         run: mix format --check-formatted

@@ -1,4 +1,14 @@
 [tools]
 erlang = "25"
 elixir = "1.14.0"
-sqlite3 = "3.45.2"
+postgres = "16"
+
+[env]
+# PostgreSQL connection for dev/test
+DB_USERNAME = "postgres"
+DB_PASSWORD = "postgres"
+DB_HOSTNAME = "localhost"
+DB_PORT = "5432"
+DB_NAME = "aria_planner_dev"
+DB_POOL_SIZE = "10"
+DB_SSL = "false"

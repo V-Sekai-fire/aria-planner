@@ -135,7 +135,7 @@ defmodule AriaPlanner.Domains.BlocksWorldTest do
       decomposition = MoveBlocks.t_move_blocks(state, %{})
 
       assert is_list(decomposition)
-      assert length(decomposition) == 0
+      assert Enum.empty?(decomposition)
     end
   end
 

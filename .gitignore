@@ -69,3 +69,8 @@ priv/**/*.dll
 # Escript executables
 aria_dungeon_optimizer
 thirdparty/aria_planner/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local

@@ -1,0 +1,46 @@
+---
+alwaysApply: true
+description: GitHub Pull Request Preferences
+---
+
+## GitHub Pull Request Preferences
+
+### Title Format
+- Use clear, descriptive titles (not conventional commits)
+- Start with action verb (Integrate, Add, Update, Fix, etc.)
+- Keep under 72 characters
+- No trailing periods
+
+### Description Structure
+- Start with overview paragraph
+- Use section titles without markdown headers
+- Bold section titles with **
+- Use bullet points for lists
+- Include technical details but avoid promotional language
+- End with related issues/links
+
+### Content Requirements
+- Describe what was changed, not just what was added
+- Include dependency version changes with before/after
+- Mention breaking changes (if any)
+- Reference file counts and change statistics
+- Include testing status and verification steps
+
+### Review Process
+- Ensure all changes are backward compatible
+- Verify CI/CD passes
+- Check that dependencies are up-to-date
+- Confirm no linting errors remain
+- Test in development environment
+
+### Branch Management
+- Use descriptive branch names (feature/, fix/, refactor/)
+- Keep branches focused on single feature/area
+- Delete branches after merge
+- Rebase before merging (avoid merge commits)
+
+### Commit Strategy
+- Multiple focused commits within PR
+- Clear commit messages for each change
+- Logical grouping of related changes
+- Amend commits to fix issues rather than new commits

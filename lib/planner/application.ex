@@ -10,6 +10,7 @@ defmodule AriaPlanner.Planner.Application do
 
   alias AriaPlanner.Planner.DomainRegistry
   alias AriaPlanner.Storage.EtsStorage
+  alias AriaPlanner.Repo
 
   @impl true
   @spec start(Application.start_type(), term()) :: {:ok, pid()} | {:ok, pid(), term()} | {:error, term()}
@@ -18,8 +19,12 @@ defmodule AriaPlanner.Planner.Application do
     EtsStorage.start_link()
 
     children = [
+      # Ecto repository for database connections
+      Repo,
       # Domain Registry for dynamic domain discovery
       DomainRegistry
+      # FunWithFlags starts automatically as an OTP application
+      # It uses ETS for caching and Ecto for persistence
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

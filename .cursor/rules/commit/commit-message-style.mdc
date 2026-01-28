@@ -1,17 +1,21 @@
 ---
 alwaysApply: true
-description: Commit message style
+description: Commit message and PR description style
 ---
 
-## Commit message style
+## Commit Message and PR Description Style
 
-Use descriptive, complete commit messages that communicate the full scope of changes with natural language. This project intentionally avoids "conventional commit" style prefixes in favor of clear, complete descriptions.
+Use descriptive, complete messages that communicate the full scope of changes with natural language. This project intentionally avoids "conventional commit" style prefixes and emojis in favor of clear, complete, professional descriptions.
 
-### Critical Rule
+### Critical Rules
 
 **Absolutely no conventional commit prefixes (e.g., `feat:`, `fix:`, `docs:`, `refactor:`, etc.) are allowed.** Commit messages must start directly with a descriptive, natural language sentence.
 
-### Style Guidelines
+**No emojis are allowed in PR descriptions.** PR descriptions must use professional language without emoji decorations.
+
+**No markdown headers are allowed in PR descriptions.** PR descriptions must use plain text section titles without `##` or `###` prefixes.
+
+### Commit Message Guidelines
 
 **Preferred approach:**
 
@@ -25,3 +29,20 @@ Use descriptive, complete commit messages that communicate the full scope of cha
 - Do not use prefixes like `feat:`, `fix:`, `docs:`, `refactor:`, etc.
 - Do not use scope notation like `feat(auth):` or `fix(engine):`
 - These formats are too rigid and don't capture the complete context needed for this project
+
+### PR Description Guidelines
+
+**Professional tone:**
+
+- Use clear, technical language without decorative elements
+- Focus on functionality, architecture, and implementation details
+- Avoid marketing-style language or excessive enthusiasm
+- Include concrete details about what changed and why
+
+**Avoid:**
+
+- Emojis (🚀, ✅, 🎉, etc.)
+- Markdown headers (`##`, `###`, etc.)
+- Excessive exclamation points or informal language
+- Marketing buzzwords or hype
+- Personal opinions or emotional language
