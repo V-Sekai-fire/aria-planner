@@ -170,7 +170,7 @@ defmodule AriaCore.FactsAllocentricTest do
         })
 
       {:ok, facts} = FactsAllocentric.get_facts_about(entity_id)
-      assert length(facts) >= 1
+      assert facts != []
       assert Enum.all?(facts, &(&1.subject_id == entity_id))
     end
   end

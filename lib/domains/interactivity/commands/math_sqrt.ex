@@ -3,21 +3,44 @@
 
 defmodule AriaPlanner.Domains.Interactivity.Commands.MathSqrt do
   @moduledoc """
-  Command: c_math_sqrt(node_id, ...)
+  Command: c_math_sqrt(node_id, a_socket, value_socket)
 
-  Executes math/sqrt operation.
+  Executes math/sqrt operation: value = sqrt(a)
+  Computes square root of a using Elixir's :math.sqrt.
 
   Preconditions:
   - Graph must be active
-  - Required input sockets must have values
+  - Input socket a must have a value
 
   Effects:
-  - Output socket values are computed
+  - Output socket value is set to √a
   - Node is marked as executed
   """
 
+  alias AriaPlanner.Domains.Interactivity.Predicates.{
+    NodeExecuted,
+    SocketValue
+  }
+
+  alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
+
   @spec c_math_sqrt(state :: map(), node_id :: String.t(), a_socket :: String.t(), value_socket :: String.t()) ::
           {:ok, map()} | {:error, String.t()}
-  def c_math_sqrt(_state, _node_id, _a_socket, _value_socket) do
+  def c_math_sqrt(state, node_id, a_socket, value_socket) do
+    with :ok <- MathHelpers.check_graph_active(state),
+         {:ok, a} <- MathHelpers.get_socket_value(state, node_id, a_socket) do
+      # Compute square root using Elixir's :math.sqrt for component-wise operation
+      result = MathHelpers.apply_unary_op(a, &:math.sqrt/1)
+
+      # Set output socket value
+      state = SocketValue.set(state, node_id, value_socket, result)
+
+      # Mark node as executed
+      state = NodeExecuted.set(state, node_id, true)
+
+      {:ok, state}
+    else
+      error -> error
+    end
   end
 end

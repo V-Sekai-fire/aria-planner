@@ -3,21 +3,44 @@
 
 defmodule AriaPlanner.Domains.Interactivity.Commands.MathLog10 do
   @moduledoc """
-  Command: c_math_log10(node_id, ...)
+  Command: c_math_log10(node_id, a_socket, value_socket)
 
-  Executes math/log10 operation.
+  Executes math/log10 operation: value = log10(a)
+  Computes base-10 logarithm of a using MathHelpers.log10_op.
 
   Preconditions:
   - Graph must be active
-  - Required input sockets must have values
+  - Input socket a must have a value
 
   Effects:
-  - Output socket values are computed
+  - Output socket value is set to log10(a)
   - Node is marked as executed
   """
 
+  alias AriaPlanner.Domains.Interactivity.Predicates.{
+    NodeExecuted,
+    SocketValue
+  }
+
+  alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
+
   @spec c_math_log10(state :: map(), node_id :: String.t(), a_socket :: String.t(), value_socket :: String.t()) ::
           {:ok, map()} | {:error, String.t()}
-  def c_math_log10(_state, _node_id, _a_socket, _value_socket) do
+  def c_math_log10(state, node_id, a_socket, value_socket) do
+    with :ok <- MathHelpers.check_graph_active(state),
+         {:ok, a} <- MathHelpers.get_socket_value(state, node_id, a_socket) do
+      # Compute base-10 logarithm using MathHelpers for component-wise operation
+      result = MathHelpers.apply_unary_op(a, &MathHelpers.log10_op/1)
+
+      # Set output socket value
+      state = SocketValue.set(state, node_id, value_socket, result)
+
+      # Mark node as executed
+      state = NodeExecuted.set(state, node_id, true)
+
+      {:ok, state}
+    else
+      error -> error
+    end
   end
 end

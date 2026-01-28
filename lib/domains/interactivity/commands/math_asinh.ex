@@ -3,21 +3,44 @@
 
 defmodule AriaPlanner.Domains.Interactivity.Commands.MathAsinh do
   @moduledoc """
-  Command: c_math_asinh(node_id, ...)
+  Command: c_math_asinh(node_id, a_socket, value_socket)
 
-  Executes math/asinh operation.
+  Executes math/asinh operation: value = asinh(a)
+  Computes inverse hyperbolic sine of a using Elixir's :math.asinh.
 
   Preconditions:
   - Graph must be active
-  - Required input sockets must have values
+  - Input socket a must have a value
 
   Effects:
-  - Output socket values are computed
+  - Output socket value is set to asinh(a)
   - Node is marked as executed
   """
 
+  alias AriaPlanner.Domains.Interactivity.Predicates.{
+    NodeExecuted,
+    SocketValue
+  }
+
+  alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
+
   @spec c_math_asinh(state :: map(), node_id :: String.t(), a_socket :: String.t(), value_socket :: String.t()) ::
           {:ok, map()} | {:error, String.t()}
-  def c_math_asinh(_state, _node_id, _a_socket, _value_socket) do
+  def c_math_asinh(state, node_id, a_socket, value_socket) do
+    with :ok <- MathHelpers.check_graph_active(state),
+         {:ok, a} <- MathHelpers.get_socket_value(state, node_id, a_socket) do
+      # Compute inverse hyperbolic sine using Elixir's :math.asinh for component-wise operation
+      result = MathHelpers.apply_unary_op(a, &:math.asinh/1)
+
+      # Set output socket value
+      state = SocketValue.set(state, node_id, value_socket, result)
+
+      # Mark node as executed
+      state = NodeExecuted.set(state, node_id, true)
+
+      {:ok, state}
+    else
+      error -> error
+    end
   end
 end

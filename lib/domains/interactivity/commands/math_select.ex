@@ -52,8 +52,3 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathSelect do
     end
   end
 end
-
-# TODO: condition_socket parameter for future implementation
-# TODO: a_socket parameter for future implementation
-# TODO: b_socket parameter for future implementation
-# TODO: value_socket parameter for future implementation

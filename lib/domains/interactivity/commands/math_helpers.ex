@@ -6,7 +6,13 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   Helper functions for math command operations.
 
   Provides common functionality for component-wise operations on floatN and floatNxM types.
+  Uses aria_math library for vector, matrix, and quaternion operations.
   """
+
+  alias AriaMath.Matrix4.Core, as: Matrix4
+  alias AriaMath.Matrix4.Transformations
+  alias AriaMath.Quaternion.Core, as: Quaternion
+  alias AriaMath.Vector3.Core, as: Vector3
 
   @doc """
   Applies a binary operation component-wise to two values.
@@ -57,7 +63,6 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   """
   @spec get_socket_value(map(), String.t(), String.t()) :: {:ok, any()} | {:error, String.t()}
   def get_socket_value(state, node_id, socket_id) do
-    # TODO: Keep alias for readability, prefix with underscore if unused
     alias AriaPlanner.Domains.Interactivity.Predicates.SocketValue
 
     value = SocketValue.get(state, node_id, socket_id)
@@ -74,7 +79,6 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   """
   @spec check_graph_active(map()) :: :ok | {:error, String.t()}
   def check_graph_active(state) do
-    # TODO: Keep alias for readability, prefix with underscore if unused
     alias AriaPlanner.Domains.Interactivity.Predicates.GraphActive
 
     if GraphActive.active?(state) do
@@ -198,7 +202,13 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   end
 
   @spec length_op(tuple()) :: number()
+  def length_op({a1, a2, a3}) when is_number(a1) and is_number(a2) and is_number(a3) do
+    # Use aria_math for 3D vectors
+    Vector3.length({a1, a2, a3})
+  end
+
   def length_op(a) when is_tuple(a) do
+    # For float2, float4, or other sizes, use component-wise operation
     a
     |> Tuple.to_list()
     |> Enum.map(fn x -> x * x end)
@@ -207,8 +217,14 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   end
 
   @spec normalize_op(tuple()) :: {tuple(), boolean()}
+  def normalize_op({a1, a2, a3}) when is_number(a1) and is_number(a2) and is_number(a3) do
+    # Use aria_math for 3D vectors (glTF spec compliant)
+    Vector3.normalize({a1, a2, a3})
+  end
+
   def normalize_op(a) when is_tuple(a) do
     # glTF spec: math/normalize - returns {value, isValid}
+    # For float2, float4, or other sizes, use custom implementation
     length = length_op(a)
 
     # Step 2: If length is zero, NaN, or positive infinity, isValid = false and value = vector of zeros
@@ -264,7 +280,13 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   end
 
   @spec dot_op(tuple(), tuple()) :: number()
+  def dot_op({a1, a2, a3}, {b1, b2, b3}) when is_number(a1) and is_number(a2) and is_number(a3) do
+    # Use aria_math for 3D vectors
+    Vector3.dot({a1, a2, a3}, {b1, b2, b3})
+  end
+
   def dot_op(a, b) when is_tuple(a) and is_tuple(b) do
+    # For float2, float4, or other sizes, use component-wise operation
     a
     |> Tuple.to_list()
     |> Enum.zip(Tuple.to_list(b))
@@ -275,7 +297,8 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   @spec cross_op({number(), number(), number()}, {number(), number(), number()}) ::
           {number(), number(), number()}
   def cross_op({a1, a2, a3}, {b1, b2, b3}) do
-    {a2 * b3 - a3 * b2, a3 * b1 - a1 * b3, a1 * b2 - a2 * b1}
+    # Use aria_math for 3D cross product
+    Vector3.cross({a1, a2, a3}, {b1, b2, b3})
   end
 
   @spec clamp_op(number(), number(), number()) :: number()
@@ -304,8 +327,35 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   def select_op(condition, a, _b) when condition == true, do: a
   def select_op(condition, _a, b) when condition == false, do: b
 
+  # Matrix conversion helpers (glTF uses column-major, aria_math uses row-major)
+  @spec matrix_column_major_to_row_major(tuple()) :: Nx.Tensor.t()
+  defp matrix_column_major_to_row_major(matrix) when is_tuple(matrix) do
+    # Convert column-major tuple to row-major Nx tensor
+    size = trunc(:math.sqrt(tuple_size(matrix)))
+    cols = matrix |> Tuple.to_list() |> Enum.chunk_every(size)
+    rows = Enum.zip_with(cols, fn col -> col end)
+    rows |> Nx.tensor(type: :f32)
+  end
+
+  @spec matrix_row_major_to_column_major(Nx.Tensor.t()) :: tuple()
+  defp matrix_row_major_to_column_major(tensor) do
+    # Convert row-major Nx tensor to column-major tuple
+    rows = Nx.to_list(tensor)
+    # Transpose to get columns, then flatten
+    cols = rows |> Enum.zip() |> Enum.map(fn col -> Tuple.to_list(col) end)
+    cols |> List.flatten() |> List.to_tuple()
+  end
+
   # Matrix operations (glTF uses column-major order: [c0r0, c0r1, c1r0, c1r1] for 2x2)
   @spec transpose_op(tuple()) :: tuple()
+  def transpose_op(matrix) when is_tuple(matrix) and tuple_size(matrix) == 16 do
+    # Use aria_math for 4x4 matrices
+    matrix
+    |> matrix_column_major_to_row_major()
+    |> Matrix4.transpose()
+    |> matrix_row_major_to_column_major()
+  end
+
   def transpose_op(matrix) when is_tuple(matrix) do
     # Matrix is stored in column-major order: [c0r0, c0r1, c1r0, c1r1] for 2x2
     # Input {1,3,2,4} means: col0=[1,3], col1=[2,4], so matrix = [[1,2],[3,4]]
@@ -327,9 +377,15 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   end
 
   @spec determinant_op(tuple()) :: number()
+  def determinant_op(matrix) when is_tuple(matrix) and tuple_size(matrix) == 16 do
+    # Use aria_math for 4x4 matrices
+    matrix
+    |> matrix_column_major_to_row_major()
+    |> Matrix4.determinant()
+  end
+
   def determinant_op(matrix) when is_tuple(matrix) do
-    # Matrix is stored in column-major order: chunking by size gives columns
-    # Determinant needs rows, so transpose to interpretation
+    # For 2x2, 3x3, or other sizes, use custom implementation
     size = trunc(:math.sqrt(tuple_size(matrix)))
     cols = matrix |> Tuple.to_list() |> Enum.chunk_every(size)
     rows = Enum.zip_with(cols, fn col -> col end)
@@ -359,7 +415,19 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   end
 
   @spec inverse_op(tuple()) :: {tuple(), boolean()}
+  def inverse_op(matrix) when is_tuple(matrix) and tuple_size(matrix) == 16 do
+    # Use aria_math for 4x4 matrices (glTF spec compliant)
+    {inverse_tensor, is_valid} =
+      matrix
+      |> matrix_column_major_to_row_major()
+      |> Matrix4.invert()
+
+    inverse_tuple = matrix_row_major_to_column_major(inverse_tensor)
+    {inverse_tuple, is_valid}
+  end
+
   def inverse_op(matrix) when is_tuple(matrix) do
+    # For 2x2, 3x3, or other sizes, use custom implementation
     # glTF spec: math/inverse - returns {value, isValid}
     det = determinant_op(matrix)
 
@@ -381,14 +449,16 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
     size = trunc(:math.sqrt(tuple_size(matrix)))
     cols = matrix |> Tuple.to_list() |> Enum.chunk_every(size)
     rows = Enum.zip_with(cols, fn col -> col end)
-    adj = adjugate(rows, size)
-    # Convert adjugate (in row-major) back to column-major
-    adj
-    |> Enum.zip()
-    |> Enum.map(fn row -> Tuple.to_list(row) end)
-    |> List.flatten()
-    |> Enum.map(fn x -> x / det end)
-    |> List.to_tuple()
+    cofactor = adjugate(rows, size)
+    # Adjugate is transpose of cofactor matrix
+    # Cofactor is in row-major: [[a,b],[c,d]], adjugate = [[a,c],[b,d]]
+    adjugate_rows = cofactor |> Enum.zip() |> Enum.map(fn col -> Tuple.to_list(col) end)
+    # Calculate inverse: (1/det) * adjugate
+    inverse_rows = adjugate_rows |> Enum.map(fn row -> Enum.map(row, fn x -> x / det end) end)
+    # Convert inverse (in row-major) back to column-major
+    # Row-major: [[a,b],[c,d]] -> Column-major: {a,c,b,d}
+    inverse_cols = inverse_rows |> Enum.zip() |> Enum.map(fn col -> Tuple.to_list(col) end)
+    inverse_cols |> List.flatten() |> List.to_tuple()
   end
 
   defp adjugate(rows, size) do
@@ -411,6 +481,14 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   end
 
   @spec mat_mul_op(tuple(), tuple()) :: tuple()
+  def mat_mul_op(a, b) when is_tuple(a) and is_tuple(b) and tuple_size(a) == 16 and tuple_size(b) == 16 do
+    # Use aria_math for 4x4 matrices
+    a_tensor = matrix_column_major_to_row_major(a)
+    b_tensor = matrix_column_major_to_row_major(b)
+    result_tensor = Matrix4.multiply(a_tensor, b_tensor)
+    matrix_row_major_to_column_major(result_tensor)
+  end
+
   def mat_mul_op(a, b) when is_tuple(a) and is_tuple(b) do
     size_a = trunc(:math.sqrt(tuple_size(a)))
     size_b = trunc(:math.sqrt(tuple_size(b)))
@@ -650,91 +728,43 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
 
   # Quaternion operations (glTF uses {x, y, z, w} order)
   @spec quat_conjugate_op(tuple()) :: tuple()
-  def quat_conjugate_op({x, y, z, w}), do: {-x, -y, -z, w}
+  def quat_conjugate_op({x, y, z, w}) do
+    # Use aria_math for quaternion conjugation (glTF spec compliant)
+    Quaternion.conjugate({x, y, z, w})
+  end
 
   @spec quat_mul_op(tuple(), tuple()) :: tuple()
   def quat_mul_op({a_x, a_y, a_z, a_w}, {b_x, b_y, b_z, b_w}) do
-    # glTF spec formula: quatMul
-    {
-      a_w * b_x + a_x * b_w + a_y * b_z - a_z * b_y,
-      a_w * b_y + a_y * b_w + a_z * b_x - a_x * b_z,
-      a_w * b_z + a_z * b_w + a_x * b_y - a_y * b_x,
-      a_w * b_w - a_x * b_x - a_y * b_y - a_z * b_z
-    }
+    # Use aria_math for quaternion multiplication (glTF spec compliant)
+    Quaternion.multiply({a_x, a_y, a_z, a_w}, {b_x, b_y, b_z, b_w})
   end
 
   @spec quat_angle_between_op(tuple(), tuple()) :: number()
   def quat_angle_between_op(q1, q2) do
-    # glTF spec: 2 * arccos(a_x * b_x + a_y * b_y + a_z * b_z + a_w * b_w)
-    # Note: spec does NOT use absolute value
-    dot = quat_dot(q1, q2)
-    2.0 * :math.acos(min(max(dot, -1.0), 1.0))
+    # Use aria_math for quaternion angle between
+    alias AriaMath.Quaternion
+    Quaternion.angle_between(q1, q2)
   end
-
-  defp quat_dot({a_x, a_y, a_z, a_w}, {b_x, b_y, b_z, b_w}), do: a_x * b_x + a_y * b_y + a_z * b_z + a_w * b_w
 
   @spec quat_from_axis_angle_op(tuple(), number()) :: tuple()
   def quat_from_axis_angle_op(axis, angle) when is_tuple(axis) and is_number(angle) do
-    # glTF spec: x = axis_x * sin(0.5 * angle), y = axis_y * sin(0.5 * angle),
-    # z = axis_z * sin(0.5 * angle), w = cos(0.5 * angle)
-    [axis_x, axis_y, axis_z] = axis |> Tuple.to_list()
-    norm = :math.sqrt(axis_x * axis_x + axis_y * axis_y + axis_z * axis_z)
-
-    if norm < 1.0e-10 do
-      {0.0, 0.0, 0.0, 1.0}
-    else
-      half_angle = angle / 2.0
-      s = :math.sin(half_angle)
-      c = :math.cos(half_angle)
-      {axis_x / norm * s, axis_y / norm * s, axis_z / norm * s, c}
-    end
+    # Use aria_math for quaternion from axis-angle (glTF spec compliant)
+    alias AriaMath.Quaternion
+    Quaternion.from_axis_angle(axis, angle)
   end
 
   @spec quat_to_axis_angle_op(tuple()) :: {tuple(), number()}
   def quat_to_axis_angle_op({a_x, a_y, a_z, a_w}) do
-    # glTF spec: if |a_w| is close to 1, return zero angle and axis-aligned unit vector
-    # else: axis_x = a_x / s, axis_y = a_y / s, axis_z = a_z / s, angle = 2 * arccos(a_w)
-    # where s = sqrt(1 - a_w^2)
-    threshold = 1.0e-6
-
-    if abs(a_w) >= 1.0 - threshold do
-      # Return zero angle and axis-aligned unit vector (e.g., {1, 0, 0})
-      {{1.0, 0.0, 0.0}, 0.0}
-    else
-      s = :math.sqrt(1.0 - a_w * a_w)
-
-      if s < 1.0e-10 do
-        {{1.0, 0.0, 0.0}, 0.0}
-      else
-        axis = {a_x / s, a_y / s, a_z / s}
-        angle = 2.0 * :math.acos(min(max(a_w, -1.0), 1.0))
-        {axis, angle}
-      end
-    end
+    # Use aria_math for quaternion to axis-angle (glTF spec compliant)
+    alias AriaMath.Quaternion
+    Quaternion.to_axis_angle({a_x, a_y, a_z, a_w})
   end
 
   @spec quat_from_directions_op(tuple(), tuple()) :: tuple()
   def quat_from_directions_op(from, to) when is_tuple(from) and is_tuple(to) do
-    # Create quaternion that rotates from direction 'from' to direction 'to'
-    {from_norm, _} = normalize_op(from)
-    {to_norm, _} = normalize_op(to)
-    dot = dot_op(from_norm, to_norm)
-
-    if dot > 0.9999 do
-      # Directions are nearly parallel - return identity quaternion {0, 0, 0, 1}
-      {0.0, 0.0, 0.0, 1.0}
-    else
-      if dot < -0.9999 do
-        # Directions are opposite, use perpendicular axis
-        perp = if abs(elem(from_norm, 0)) < 0.9, do: {1.0, 0.0, 0.0}, else: {0.0, 1.0, 0.0}
-        {axis, _} = normalize_op(cross_op(from_norm, perp))
-        quat_from_axis_angle_op(axis, :math.pi())
-      else
-        {axis, _} = normalize_op(cross_op(from_norm, to_norm))
-        angle = :math.acos(dot)
-        quat_from_axis_angle_op(axis, angle)
-      end
-    end
+    # Use aria_math for quaternion from directions (glTF spec compliant)
+    alias AriaMath.Quaternion
+    Quaternion.from_directions(from, to)
   end
 
   @spec quat_from_up_forward_op(tuple(), tuple()) :: tuple()
@@ -754,42 +784,9 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
 
   @spec quat_slerp_op(tuple(), tuple(), number()) :: tuple()
   def quat_slerp_op(a, b, c) when is_tuple(a) and is_tuple(b) and is_number(c) do
-    # glTF spec: quatSlerp explicit steps
-    # Step 1: Let a_x, a_y, a_z, a_w and b_x, b_y, b_z, b_w be components
-    {a_x, a_y, a_z, a_w} = a
-    {b_x, b_y, b_z, b_w} = b
-
-    # Step 2: Let d = a_x * b_x + a_y * b_y + a_z * b_z + a_w * b_w
-    d = a_x * b_x + a_y * b_y + a_z * b_z + a_w * b_w
-
-    # Step 3: If d is negative, set d to -d and negate all components of b
-    {b_x, b_y, b_z, b_w, d} =
-      if d < 0.0 do
-        {-b_x, -b_y, -b_z, -b_w, -d}
-      else
-        {b_x, b_y, b_z, b_w, d}
-      end
-
-    # Step 4: If d is close to 1, let k_a = 1 - c, k_b = c
-    # Step 5: Else let omega = arccos(d), k_a = sin((1-c)*omega)/sin(omega), k_b = sin(c*omega)/sin(omega)
-    threshold = 1.0e-6
-
-    {k_a, k_b} =
-      if abs(d - 1.0) < threshold do
-        {1.0 - c, c}
-      else
-        omega = :math.acos(min(max(d, -1.0), 1.0))
-        sin_omega = :math.sin(omega)
-
-        if sin_omega < 1.0e-10 do
-          {1.0 - c, c}
-        else
-          {:math.sin((1.0 - c) * omega) / sin_omega, :math.sin(c * omega) / sin_omega}
-        end
-      end
-
-    # Step 6: Set value = a * k_a + b * k_b
-    {a_x * k_a + b_x * k_b, a_y * k_a + b_y * k_b, a_z * k_a + b_z * k_b, a_w * k_a + b_w * k_b}
+    # Use aria_math for quaternion slerp (glTF spec compliant)
+    alias AriaMath.Quaternion
+    Quaternion.slerp(a, b, c)
   end
 
   # Transform operations
@@ -801,33 +798,35 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathHelpers do
   end
 
   @spec rotate3d_op(tuple(), tuple()) :: tuple()
-  def rotate3d_op(vector, quaternion) when is_tuple(vector) and is_tuple(quaternion) do
-    # Rotate vector by quaternion: q * v * q^-1
-    # For efficiency, convert quaternion to matrix and multiply
-    rot_matrix = quaternion_to_matrix(quaternion)
-    # Extract 3x3 rotation part and multiply vector
-    {m00, m01, m02, _m03, m10, m11, m12, _m13, m20, m21, m22, _m23, _m30, _m31, _m32, _m33} = rot_matrix
-    {vx, vy, vz} = vector
+  def rotate3d_op({vx, vy, vz}, {qx, qy, qz, qw}) do
+    # Implement quaternion rotation per glTF spec formula:
+    # v' = v + 2 * (qv × (qv × v) + qw * (qv × v))
+    # where qv = {qx, qy, qz} is the vector part of the quaternion
+    # Using cross product for vector operations
+    qv = {qx, qy, qz}
+    v = {vx, vy, vz}
 
-    {
-      m00 * vx + m01 * vy + m02 * vz,
-      m10 * vx + m11 * vy + m12 * vz,
-      m20 * vx + m21 * vy + m22 * vz
-    }
+    # qv × v
+    {cx1, cy1, cz1} = cross_op(qv, v)
+
+    # qv × (qv × v)
+    {cx2, cy2, cz2} = cross_op(qv, {cx1, cy1, cz1})
+
+    # qw * (qv × v)
+    {wx, wy, wz} = {qw * cx1, qw * cy1, qw * cz1}
+
+    # v + 2 * (qv × (qv × v) + qw * (qv × v))
+    {vx + 2.0 * (cx2 + wx), vy + 2.0 * (cy2 + wy), vz + 2.0 * (cz2 + wz)}
   end
 
   @spec transform_op(tuple(), tuple()) :: tuple()
   def transform_op(vector, matrix) when is_tuple(vector) and is_tuple(matrix) and tuple_size(matrix) == 16 do
-    # Transform vector by 4x4 matrix (homogeneous coordinates)
-    {vx, vy, vz} = vector
-    rows = matrix |> Tuple.to_list() |> Enum.chunk_every(4)
-    [[m00, m01, m02, m03], [m10, m11, m12, m13], [m20, m21, m22, m23], [_m30, _m31, _m32, _m33]] = rows
-
-    {
-      m00 * vx + m01 * vy + m02 * vz + m03,
-      m10 * vx + m11 * vy + m12 * vz + m13,
-      m20 * vx + m21 * vy + m22 * vz + m23
-    }
+    # Use aria_math for matrix transformation (with column-major conversion)
+    alias AriaMath.Matrix4.Transformations
+    vector_tensor = Nx.tensor(Tuple.to_list(vector), type: :f32)
+    matrix_tensor = matrix_column_major_to_row_major(matrix)
+    result_tensor = Transformations.transform_point(matrix_tensor, vector_tensor)
+    result_tensor |> Nx.to_list() |> List.to_tuple()
   end
 
   # Bitwise operations

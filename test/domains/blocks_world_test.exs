@@ -2,9 +2,9 @@ defmodule AriaPlanner.Domains.BlocksWorldTest do
   use ExUnit.Case, async: true
 
   alias AriaPlanner.Domains.BlocksWorld
+  alias AriaPlanner.Domains.BlocksWorld.Tasks.Get
   alias AriaPlanner.Domains.BlocksWorld.Tasks.MoveBlocks
   alias AriaPlanner.Domains.BlocksWorld.Tasks.MoveOne
-  alias AriaPlanner.Domains.BlocksWorld.Tasks.Get
   alias AriaPlanner.Domains.BlocksWorld.Tasks.Put
 
   describe "domain creation" do
@@ -245,7 +245,7 @@ defmodule AriaPlanner.Domains.BlocksWorldTest do
       # - To put C on table, B must be moved first (B is on C after step 2)
 
       assert is_list(decomposition)
-      assert length(decomposition) > 0
+      assert decomposition != []
 
       # Verify that all three blocks are in the decomposition
       # The task decomposition doesn't handle ordering - that's the planner's job
@@ -269,9 +269,9 @@ defmodule AriaPlanner.Domains.BlocksWorldTest do
 
       # All three blocks should have operations in the decomposition
       # The planner is responsible for ordering them correctly
-      assert length(c_operations) > 0
-      assert length(b_operations) > 0
-      assert length(a_operations) > 0
+      assert c_operations != []
+      assert b_operations != []
+      assert a_operations != []
     end
   end
 end

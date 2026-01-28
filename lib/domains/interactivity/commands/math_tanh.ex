@@ -3,18 +3,26 @@
 
 defmodule AriaPlanner.Domains.Interactivity.Commands.MathTanh do
   @moduledoc """
-  Command: c_math_tanh(node_id, ...)
+  Command: c_math_tanh(node_id, a_socket, value_socket)
 
-  Executes math/tanh operation.
+  Executes math/tanh operation: value = tanh(a)
+  Computes hyperbolic tangent of a using Elixir's :math.tanh.
 
   Preconditions:
   - Graph must be active
-  - Required input sockets must have values
+  - Input socket a must have a value
 
   Effects:
-  - Output socket values are computed
+  - Output socket value is set to tanh(a)
   - Node is marked as executed
   """
+
+  alias AriaPlanner.Domains.Interactivity.Predicates.{
+    NodeExecuted,
+    SocketValue
+  }
+
+  alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
 
   @spec c_math_tanh(
           state :: map(),
@@ -22,8 +30,21 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathTanh do
           a_socket :: String.t(),
           value_socket :: String.t()
         ) :: {:ok, map()} | {:error, String.t()}
-  def c_math_tanh(_state, _node_id, _a_socket, _value_socket) do
-    # FIXME: implement math/tanh operation
-    {:ok, %{}}
+  def c_math_tanh(state, node_id, a_socket, value_socket) do
+    with :ok <- MathHelpers.check_graph_active(state),
+         {:ok, a} <- MathHelpers.get_socket_value(state, node_id, a_socket) do
+      # Compute hyperbolic tangent using Elixir's :math.tanh for component-wise operation
+      result = MathHelpers.apply_unary_op(a, &:math.tanh/1)
+
+      # Set output socket value
+      state = SocketValue.set(state, node_id, value_socket, result)
+
+      # Mark node as executed
+      state = NodeExecuted.set(state, node_id, true)
+
+      {:ok, state}
+    else
+      error -> error
+    end
   end
 end

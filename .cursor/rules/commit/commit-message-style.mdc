@@ -15,6 +15,8 @@ Use descriptive, complete messages that communicate the full scope of changes wi
 
 **No markdown headers are allowed in PR descriptions.** PR descriptions must use plain text section titles without `##` or `###` prefixes.
 
+**No Cursor ads or promotional language in PR descriptions.** PR descriptions must focus on technical content only. Co-authored-by trailers are acceptable but avoid any marketing or promotional references to Cursor.
+
 ### Commit Message Guidelines
 
 **Preferred approach:**
@@ -46,3 +48,4 @@ Use descriptive, complete messages that communicate the full scope of changes wi
 - Excessive exclamation points or informal language
 - Marketing buzzwords or hype
 - Personal opinions or emotional language
+- Cursor ads or promotional references (except co-authored-by trailers)
