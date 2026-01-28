@@ -9,12 +9,13 @@ defmodule AriaPlanner.Planner.Application do
   use Application
 
   alias AriaPlanner.Planner.DomainRegistry
+  alias AriaPlanner.Storage.EtsStorage
 
   @impl true
   @spec start(Application.start_type(), term()) :: {:ok, pid()} | {:ok, pid(), term()} | {:error, term()}
   def start(_type, _args) do
     # Initialize ETS storage
-    AriaPlanner.Storage.EtsStorage.start_link()
+    EtsStorage.start_link()
 
     children = [
       # Domain Registry for dynamic domain discovery

@@ -17,9 +17,9 @@ defmodule AriaCore.Planner.Methods do
   """
 
   @type t :: %__MODULE__{
-          task_method_dict: %{atom() => [function()]},
-          goal_method_dict: %{atom() => [function()]},
-          multigoal_method_dict: %{atom() => [function()]}
+          task_method_dict: %{(String.t() | atom()) => [function()]},
+          goal_method_dict: %{(String.t() | atom()) => [function()]},
+          multigoal_method_dict: %{(String.t() | atom()) => [function()]}
         }
 
   defstruct [:task_method_dict, :goal_method_dict, :multigoal_method_dict]
