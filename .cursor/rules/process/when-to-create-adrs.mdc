@@ -1,0 +1,69 @@
+---
+alwaysApply: true
+description: When to create ADR files
+---
+
+When addressing maintenance, research, development and other tasks, follow these steps:
+
+1. Start by creating a new Architecture Decision Record (ADR) in the `decisions` directory
+2. Use GitHub tasklist syntax (`- [ ] task` for incomplete tasks, `- [x] task` for completed tasks)
+3. Mark initial tasks as incomplete and update the ADR as tasks are completed
+4. Follow this structure for the ADRs:
+   - Status (Proposed → Active → Completed)
+   - Context (describe the issue)
+   - Decision (outline the approach)
+   - Implementation Plan (with GitHub tasklists)
+   - Consequences/Risks
+   - Success Criteria
+5. Process the tasks defined in the ADR
+   - Before making any code modifications, you must ask for user confirmation using the `ask_followup_question` tool, providing options for approval or cancellation.
+6. When all tasks are complete, update the ADR status to "Completed"
+7. Add a completion date to clearly mark that the ADR is no longer active
+
+This process ensures:
+
+- Documentation of decisions
+- Clear tracking of progress
+- History of completed activities
+- Structured approach to handling technical debt
+
+### When to create ADR files
+
+**Always create systematic breakdowns for:**
+
+- **Multi-file refactoring:** Changes spanning 10+ files across different modules
+- **Large feature implementation:** New systems requiring multiple components
+- **API expansion:** Adding significant operation coverage (50+ new functions)
+- **Architecture migration:** Moving between different patterns or frameworks
+- **Integration projects:** Connecting multiple existing systems
+
+**Essential sections:**
+
+```markdown
+## Overview
+**Current State**: Brief description with metrics
+**Target State**: Clear completion criteria
+
+## Phase Breakdown
+### Phase 1: [Category] (PRIORITY: [LEVEL])
+**File**: `path/to/relevant/file.ex`
+
+**Missing/Required**:
+- [ ] Specific actionable item
+- [ ] Another concrete task
+- [ ] Technical requirement
+
+**Implementation Patterns Needed**:
+- [ ] Code pattern or AST structure
+- [ ] API mapping requirement
+
+### Phase 2: [Next Category]
+[Continue pattern...]
+
+## Implementation Strategy
+### Step 1: [Action Phase]
+1. Concrete implementation steps
+2. Ordered sequence of work
+
+### Current Focus: [Immediate Priority]
+Rationale for starting point selection

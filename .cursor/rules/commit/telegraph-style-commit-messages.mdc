@@ -67,13 +67,7 @@ Remove deprecated auth functions
 - Instead of: "Add new validation logic for workflow states"
 - Telegraph: "Add workflow state validation"
 
-### Integration with existing rules
 
-This telegraph style is the **implementation detail** for the general commit message style (see `commit-message-style.mdc`). It works alongside:
-
-- **Commit message completeness:** Still must cover full scope of changes (see `commit-message-completeness-check.mdc`)
-- **Professional language:** Maintains technical terminology and proper case
-- **Natural language requirement:** Avoids conventional commit prefixes (enforced in `commit-message-style.mdc`)
 
 ### Benefits
 

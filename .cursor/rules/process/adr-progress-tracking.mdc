@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+description: ADR progress tracking
+---
+
+### Progress tracking format
+
+**Checkbox states:**
+
+- `[ ]` Incomplete task
+- `[*]` Completed task
+- `!!!` Uncertain scope or blocked
+
+**Progress indicators:**
+
+- **Phase completion:** Percentage or ratio tracking
+- **File coverage:** Operations mapped vs total available
+- **Priority completion:** High-priority items resolved first
+
+### Benefits
+
+- **Reduced cognitive load:** Complex scope becomes manageable chunks
+- **Clear progress tracking:** Visible completion status at all levels
+- **Dependency management:** Prerequisites and blocking relationships documented
+- **Context preservation:** Technical details captured for future reference
+- **Scope containment:** Prevents feature creep and unplanned expansion

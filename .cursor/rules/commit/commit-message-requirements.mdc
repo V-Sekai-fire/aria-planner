@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+description: Commit Message Requirements
+---
+
+## Commit Message Requirements
+
+All commit messages in this project must adhere to the following standards:
+
+- **Natural Language**: Written in proper sentence case, avoiding formulaic or robotic phrasing
+- **Telegraph Style**: Employ economy of words for conciseness while maintaining clarity
+- **Completeness**: Accurately describe the full scope of all staged changes
+- **Verification**: Undergo completeness check before committing
+
+These requirements are enforced through the detailed guidelines in the related files.
