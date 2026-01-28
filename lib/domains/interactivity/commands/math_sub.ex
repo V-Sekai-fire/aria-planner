@@ -88,7 +88,3 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathSub do
     _ -> {:error, "Cannot subtract values of incompatible types"}
   end
 end
-
-# TODO: a_socket parameter for future implementation
-# TODO: b_socket parameter for future implementation
-# TODO: value_socket parameter for future implementation

@@ -16,9 +16,7 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.EventSend do
   - Node is marked as executed
   """
 
-  alias AriaPlanner.Domains.Interactivity.Predicates.{
-    NodeExecuted
-  }
+  alias AriaPlanner.Domains.Interactivity.Predicates.NodeExecuted
 
   alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
 

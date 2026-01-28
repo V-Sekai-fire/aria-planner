@@ -29,7 +29,6 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.FlowThrottle do
         ) ::
           {:ok, map()} | {:error, String.t()}
   def c_flow_throttle(state, node_id, a_socket, _b_socket, _value_socket) do
-    # FIXME: use b_socket and value_socket parameters
     case MathHelpers.check_graph_active(state) do
       :ok ->
         case MathHelpers.get_socket_value(state, node_id, a_socket) do

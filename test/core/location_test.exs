@@ -112,7 +112,7 @@ defmodule AriaCore.LocationTest do
 
       spo = Location.to_spo(location)
       assert is_list(spo)
-      assert length(spo) > 0
+      assert spo != []
     end
   end
 end

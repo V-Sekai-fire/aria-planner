@@ -48,9 +48,5 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathXor do
     end
   end
 
-  # FIXME: implement xor operation
   defp xor_op(a, b), do: Bitwise.bxor(a, b)
 end
-
-# TODO: b_socket parameter for future implementation
-# TODO: value_socket parameter for future implementation

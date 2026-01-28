@@ -9,8 +9,8 @@ defmodule AriaPlanner.Planner.Application do
   use Application
 
   alias AriaPlanner.Planner.DomainRegistry
-  alias AriaPlanner.Storage.EtsStorage
   alias AriaPlanner.Repo
+  alias AriaPlanner.Storage.EtsStorage
 
   @impl true
   @spec start(Application.start_type(), term()) :: {:ok, pid()} | {:ok, pid(), term()} | {:error, term()}

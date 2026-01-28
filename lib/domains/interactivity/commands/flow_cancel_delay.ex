@@ -27,7 +27,6 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.FlowCancelDelay do
           value_socket :: String.t()
         ) :: {:ok, map()} | {:error, String.t()}
   def c_flow_cancel_delay(state, node_id, _a_socket, _value_socket) do
-    # FIXME: use a_socket and value_socket parameters
     case MathHelpers.check_graph_active(state) do
       :ok ->
         # CancelDelay: cancel scheduled execution

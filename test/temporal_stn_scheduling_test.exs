@@ -81,7 +81,7 @@ defmodule AriaPlanner.Planner.Temporal.STN.SchedulingTest do
       free_slots = Scheduling.find_free_slots(stn, 5, 0, 30)
 
       # Should find slots after the interval (from 10-30)
-      assert length(free_slots) >= 1
+      assert free_slots != []
     end
 
     test "returns empty list when no free slots available" do
@@ -142,7 +142,7 @@ defmodule AriaPlanner.Planner.Temporal.STN.SchedulingTest do
 
       gaps = Scheduling.calculate_interval_gaps(intervals, 20)
 
-      assert length(gaps) >= 1
+      assert gaps != []
       # Should have a gap from 5-10
       gap = Enum.find(gaps, fn g -> g.start_time == 5 end)
       assert gap.end_time == 10

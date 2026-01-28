@@ -16,9 +16,7 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.FlowBranch do
   - Node is marked as executed
   """
 
-  alias AriaPlanner.Domains.Interactivity.Predicates.{
-    NodeExecuted
-  }
+  alias AriaPlanner.Domains.Interactivity.Predicates.NodeExecuted
 
   alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
 

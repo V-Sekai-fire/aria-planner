@@ -118,7 +118,7 @@ defmodule AriaPlanner.Planner.PlannerMetadataTest do
       # Takes from second
       assert merged.duration == "PT2H"
       # Combines entities
-      assert length(merged.requires_entities) >= 1
+      assert merged.requires_entities != []
       # Allen relation merges overlapping intervals to create union
       # metadata1: 10:00-11:00, metadata2: 11:00-13:00 (meets/overlaps)
       # merged should be: min start to max end

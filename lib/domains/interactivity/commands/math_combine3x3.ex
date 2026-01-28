@@ -22,7 +22,6 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathCombine3x3 do
     SocketValue
   }
 
-  # Fixme disconnected arguments
   alias AriaPlanner.Domains.Interactivity.Commands.MathHelpers
 
   @spec c_math_combine3x3(

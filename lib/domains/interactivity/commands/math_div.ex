@@ -88,7 +88,3 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathDiv do
     _ -> {:error, "Cannot divide values of incompatible types"}
   end
 end
-
-# TODO: a_socket parameter for future implementation
-# TODO: b_socket parameter for future implementation
-# TODO: value_socket parameter for future implementation

@@ -137,7 +137,6 @@ defmodule AriaCore.ItemTest do
       try do
         spo = Item.to_spo(item)
         assert is_list(spo)
-        assert length(spo) >= 0
       rescue
         BadMapError ->
           # Expected if AriaCore.Predicate/Subject/Object modules don't exist

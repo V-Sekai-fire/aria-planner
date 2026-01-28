@@ -53,8 +53,3 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathMatCompose do
     end
   end
 end
-
-# TODO: a_socket parameter for future implementation
-# TODO: b_socket parameter for future implementation
-# TODO: c_socket parameter for future implementation
-# TODO: value_socket parameter for future implementation

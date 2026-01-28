@@ -41,6 +41,18 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.MathCtz do
     end
   end
 
-  # FIXME: implement ctz operation
-  defp ctz_op(a), do: Kernel.trunc(:math.log2(Bitwise.band(Bitwise.bnot(a), a - 1)))
+  defp ctz_op(a) when is_number(a) do
+    # Count trailing zeros - convert to integer first
+    int_a = trunc(a)
+
+    if int_a == 0 do
+      32
+    else
+      # Use bitwise operations to count trailing zeros
+      unsigned = if int_a < 0, do: int_a + 0x100000000, else: int_a
+      bits = Integer.digits(unsigned, 2) |> Enum.reverse()
+      # Count trailing zeros (from right)
+      Enum.take_while(bits, &(&1 == 0)) |> length()
+    end
+  end
 end
