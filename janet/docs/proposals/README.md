@@ -1,6 +1,6 @@
 # Janet migration — overview
 
-**Status:** Active (Phase 1 completed; Phases 2–4 proposed)  
+**Status:** Active (Phase 1 completed; Phases 2–5 proposed)  
 **Scope:** aria-planner core planning runtime and `lib/domains/interactivity`  
 **Target runtime:** Janet 1.x (embed in Godot, Elixir NIF, or standalone)
 
@@ -15,7 +15,8 @@ Reimplement aria-planner and the glTF Interactivity Extension domain in **Janet*
 | Phase 1 | [phase1-prototype.md](phase1-prototype.md) | Completed |
 | Phase 2 | [phase2-interactivity-parity.md](phase2-interactivity-parity.md) | Proposed |
 | Phase 3 | [phase3-core-planner-parity.md](phase3-core-planner-parity.md) | Proposed |
-| Phase 4 | [phase4-deprecation-coexistence.md](phase4-deprecation-coexistence.md) | Proposed |
+| Phase 4 | [phase4-unit-tests.md](phase4-unit-tests.md) | Proposed |
+| Phase 5 | [phase5-deprecation-coexistence.md](phase5-deprecation-coexistence.md) | Proposed |
 
 ## Context
 

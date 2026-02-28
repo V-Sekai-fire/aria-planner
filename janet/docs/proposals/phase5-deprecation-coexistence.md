@@ -1,8 +1,8 @@
-# Phase 4: Deprecation / Coexistence
+# Phase 5: Deprecation / Coexistence
 
 **Status:** Proposed  
 **Parent:** [README.md](README.md) (proposals overview)  
-**Depends on:** Phase 1 (completed); Phases 2 and 3 determine scope of migration adoption
+**Depends on:** Phase 1 (completed); Phases 2, 3, and 4 determine scope of migration adoption
 
 ## Objective
 
@@ -10,7 +10,7 @@ Define how the Elixir and Janet codebases coexist or how the Elixir codebase is 
 
 ## Context
 
-The main proposal leaves open whether the Elixir codebase will be deprecated or maintained in parallel. Phase 4 is the decision and execution phase: document deprecation, archive, or define a boundary (e.g. JSON over stdio or HTTP) so Elixir can call the Janet planner or vice versa, with clear ownership of responsibilities.
+The main proposal leaves open whether the Elixir codebase will be deprecated or maintained in parallel. Phase 5 is the decision and execution phase: document deprecation, archive, or define a boundary (e.g. JSON over stdio or HTTP) so Elixir can call the Janet planner or vice versa, with clear ownership of responsibilities.
 
 ## Scope
 
@@ -26,16 +26,16 @@ The main proposal leaves open whether the Elixir codebase will be deprecated or 
 - Define a small boundary between Elixir and Janet:
   - **Option B1:** Elixir calls Janet planner (e.g. subprocess or HTTP): domain/problem in JSON or HDDL, plan/solution back
   - **Option B2:** Janet calls Elixir services (e.g. for ML/Nx or legacy domains)
-- Document which stack owns which responsibilities (e.g. “Janet: planner + interactivity; Elixir: ML pipeline”)
+- Document which stack owns which responsibilities (e.g. "Janet: planner + interactivity; Elixir: ML pipeline")
 - Maintain both codebases; shared contract (e.g. JSON schema for domain/problem/plan) and tests
 
 ### Out of scope
 
-- Forcing a single choice; the proposal can be updated after Phases 2–3 with a go/no-go and then Option A or B
+- Forcing a single choice; the proposal can be updated after Phases 2–4 with a go/no-go and then Option A or B
 
 ## Implementation plan
 
-1. **Decision:** After Phase 2 and/or 3, record go/no-go and chosen option (A or B) in an ADR or the main proposal changelog
+1. **Decision:** After Phase 2 and/or 3 and 4, record go/no-go and chosen option (A or B) in an ADR or the main proposal changelog
 2. **If A (deprecation):**
    - Add deprecation notice to Elixir README and key modules
    - Update project docs to list Janet as primary; add link to `janet/`
@@ -59,4 +59,4 @@ The main proposal leaves open whether the Elixir codebase will be deprecated or 
 ## References
 
 - Overview: [README.md](README.md)
-- Phase 2 / Phase 3: [phase2-interactivity-parity.md](phase2-interactivity-parity.md), [phase3-core-planner-parity.md](phase3-core-planner-parity.md)
+- Phase 2 / Phase 3 / Phase 4: [phase2-interactivity-parity.md](phase2-interactivity-parity.md), [phase3-core-planner-parity.md](phase3-core-planner-parity.md), [phase4-unit-tests.md](phase4-unit-tests.md)

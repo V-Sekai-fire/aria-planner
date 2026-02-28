@@ -15,6 +15,17 @@ Minimal Janet reimplementation of aria-planner core and a small subset of the gl
 
 - [Janet](https://janet-lang.org/) 1.x (e.g. 1.41.2).
 
+## Spork (required for glTF JSON)
+
+The glTF JSON layer uses [spork](https://github.com/janet-lang/spork)’s `spork/json`; there is no fallback. Install spork before running tests or using glTF load/save:
+
+1. Clone spork: `git clone https://github.com/janet-lang/spork.git`
+2. From the spork directory: `janet --install .` (or `sudo janet --install .` on Unix so it installs to `$JANET_PATH`)
+
+Alternatively, if you use [jpm](https://github.com/janet-lang/jpm): `jpm install spork`, or run `jpm deps` from `janet/` (spork is in `project.janet` dependencies).
+
+**Windows:** Spork’s native modules (including `spork/json`) are built with MSVC. You need [Build Tools for Visual Studio](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with the “Desktop development with C++” workload so `vcvarsall.bat` is available. Then run `jpm install spork` (with `jpm` on PATH, e.g. from Janet’s bin).
+
 ## Run tests
 
 From this directory (`janet/`):
@@ -33,7 +44,7 @@ janet test/test_e2e.janet
 
 - `aria/planner.janet` — State, command registry, dispatch.
 - `aria/domains/interactivity.janet` — Predicates, operation mapping, math helper, commands (activate_graph, math_add, flow_sequence).
-- `source/aria/gltf/` — glTF state and JSON load/save; `source/aria/json_minimal.janet` — minimal JSON decode/encode (no external deps).
+- `source/aria/gltf/` — glTF state and JSON load/save via `spork/json` (required).
 - `test/` — Unit tests, E2E test, HDDL round-trip, glTF round-trip.
 
 ## After Phase 1

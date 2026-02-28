@@ -1,6 +1,6 @@
 # Phase 2: Interactivity Domain Parity
 
-**Status:** Proposed  
+**Status:** In progress  
 **Parent:** [README.md](README.md) (proposals overview)  
 **Depends on:** Phase 1 (completed)
 
@@ -70,3 +70,12 @@ Phase 1 delivered a minimal subset: three commands (`c_activate_graph`, `c_math_
 - Elixir source: `lib/domains/interactivity/`
 - glTF Interactivity: `lib/domains/interactivity/README.md`, `thirdparty/specification/`
 - Phase 1 gaps: `janet/PHASE1_GAPS.md`
+- Catalog: [interactivity-catalog.md](interactivity-catalog.md)
+
+## Change Log
+
+### 2025-02-28
+- Added interactivity command catalog (math, flow, variable, pointer, animation, event, type, graph).
+- Extended operation mapping: `is-spec-format?`, `get-domain`, `get-operation` (parity with Elixir OperationMapping).
+- Ported `c_math_sub`, `c_math_mul`, `c_math_div`; added `register-interactivity-commands` for planner registration.
+- Tests: spec round-trip for math/sub, math/mul, math/div; operation mapping helpers; QuickCheck-style properties for c_math_sub, c_math_mul, c_math_div.
