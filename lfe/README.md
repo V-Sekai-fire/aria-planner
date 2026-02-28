@@ -1,6 +1,6 @@
-# aria-planner (LFE) — Phase 1
+# aria-planner (LFE) — Phase 1 (alternative)
 
-LFE (Lisp Flavored Erlang) implementation of the planner core and a subset of the glTF Interactivity domain. This is the **active** migration target; the Janet implementation is deprecated.
+LFE (Lisp Flavored Erlang) implementation of the planner core and a subset of the glTF Interactivity domain. **Janet is the primary migration target** (Godot embed, Elixir NIF); this LFE tree is an alternative BEAM-only path. See [LFE_VS_JANET_GODOT_EVALUATION.md](../docs/proposals/LFE_VS_JANET_GODOT_EVALUATION.md).
 
 ## Requirements
 
