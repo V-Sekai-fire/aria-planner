@@ -68,4 +68,4 @@ Given your stated goal (“easier to port janet to godot engine … run to godot
 - [Janet C API](https://janet-lang.org/capi/) — embedding
 - [janet_nif](https://github.com/leostera/janet_nif) — Elixir NIF for Janet (if still maintained; otherwise similar approach)
 - `docs/proposals/LFE_MIGRATION_PROPOSAL.md` — LFE migration (BEAM-only)
-- `docs/proposals/JANET_MIGRATION_PROPOSAL.md` — Janet migration (if revived)
+- `janet/docs/proposals/README.md` — Janet migration overview and phases

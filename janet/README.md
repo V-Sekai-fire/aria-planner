@@ -2,7 +2,7 @@
 
 Janet is the migration target for the planner: embeddable in Godot (GDExtension or subprocess), callable from Elixir via NIF, single codebase. See [LFE_VS_JANET_GODOT_EVALUATION.md](../docs/proposals/LFE_VS_JANET_GODOT_EVALUATION.md).
 
-Minimal Janet reimplementation of aria-planner core and a small subset of the glTF Interactivity domain, per [docs/proposals/JANET_MIGRATION_PROPOSAL.md](../docs/proposals/JANET_MIGRATION_PROPOSAL.md).
+Minimal Janet reimplementation of aria-planner core and a small subset of the glTF Interactivity domain. Migration overview and phases: [docs/proposals/README.md](docs/proposals/README.md).
 
 ## Phase 1 scope
 

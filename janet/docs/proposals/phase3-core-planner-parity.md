@@ -1,7 +1,7 @@
 # Phase 3: Core Planner Parity
 
 **Status:** Proposed  
-**Parent:** [JANET_MIGRATION_PROPOSAL.md](../proposals/JANET_MIGRATION_PROPOSAL.md)  
+**Parent:** [README.md](README.md) (proposals overview)  
 **Depends on:** Phase 1 (completed); Phase 2 recommended but not strictly required for core planner work
 
 ## Objective
@@ -67,7 +67,7 @@ Phase 1 delivered state table, command dispatch, and a trivial command. The Elix
 
 ## References
 
-- Main proposal: `janet/docs/proposals/JANET_MIGRATION_PROPOSAL.md`
+- Overview: [README.md](README.md)
 - HDDL Aria Extension: `janet/docs/proposals/HDDL_ARIA_EXTENSION.md`
 - Elixir planner: `lib/planner/`, AGENTS.md
 - Phase 1 gaps: `janet/PHASE1_GAPS.md`

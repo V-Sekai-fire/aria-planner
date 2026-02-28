@@ -1,7 +1,7 @@
 # Phase 1: Prototype
 
 **Status:** Completed  
-**Parent:** [JANET_MIGRATION_PROPOSAL.md](../proposals/JANET_MIGRATION_PROPOSAL.md)  
+**Parent:** [README.md](README.md) (proposals overview)  
 **Outcomes:** [PHASE1_GAPS.md](../../PHASE1_GAPS.md)
 
 ## Objective
@@ -52,4 +52,4 @@ Validate the Janet migration approach with a minimal runnable slice: planner cor
 
 ## Change log
 
-- **2025-02:** Phase 1 completed; proposal added to `janet/docs/proposal/`.
+- **2025-02:** Phase 1 completed; phase docs in `janet/docs/proposals/`.

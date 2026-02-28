@@ -1,7 +1,7 @@
 # Phase 4: Deprecation / Coexistence
 
 **Status:** Proposed  
-**Parent:** [JANET_MIGRATION_PROPOSAL.md](../proposals/JANET_MIGRATION_PROPOSAL.md)  
+**Parent:** [README.md](README.md) (proposals overview)  
 **Depends on:** Phase 1 (completed); Phases 2 and 3 determine scope of migration adoption
 
 ## Objective
@@ -58,5 +58,5 @@ The main proposal leaves open whether the Elixir codebase will be deprecated or 
 
 ## References
 
-- Main proposal: `janet/docs/proposals/JANET_MIGRATION_PROPOSAL.md`
-- Phase 2 / Phase 3 proposals in `janet/docs/proposal/`
+- Overview: [README.md](README.md)
+- Phase 2 / Phase 3: [phase2-interactivity-parity.md](phase2-interactivity-parity.md), [phase3-core-planner-parity.md](phase3-core-planner-parity.md)

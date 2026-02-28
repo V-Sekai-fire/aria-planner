@@ -1,7 +1,7 @@
 # Phase 2: Interactivity Domain Parity
 
 **Status:** Proposed  
-**Parent:** [JANET_MIGRATION_PROPOSAL.md](../proposals/JANET_MIGRATION_PROPOSAL.md)  
+**Parent:** [README.md](README.md) (proposals overview)  
 **Depends on:** Phase 1 (completed)
 
 ## Objective
