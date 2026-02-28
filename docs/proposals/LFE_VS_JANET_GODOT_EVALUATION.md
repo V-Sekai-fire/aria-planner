@@ -58,7 +58,7 @@ Given your stated goal (“easier to port janet to godot engine … run to godot
 ## Suggested next steps if you choose Janet
 
 1. **Un-deprecate the Janet prototype** (reverse the “avoid Janet” / deprecation in `janet/README.md`) and treat Janet as the migration target again.
-2. **Keep or remove LFE:** Either keep `lfe/` as an alternative BEAM-only path with a short note in its README, or remove it to avoid maintaining two stacks.
+2. **Done:** LFE code and Mix tasks removed; Janet-only.
 3. **Document the NIF option** in the Janet migration proposal: use [janet_nif](https://github.com/leostera/janet_nif) (or equivalent) so the Elixir app can call the Janet planner without a separate process.
 4. **Document the Godot path** in the same proposal: embed Janet in a GDExtension, or Godot → Janet subprocess, and reference godot-sandbox where relevant.
 
