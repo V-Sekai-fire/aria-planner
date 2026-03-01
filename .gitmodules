@@ -1,0 +1,3 @@
+[submodule "thirdparty/ipc2020-domains"]
+	path = thirdparty/ipc2020-domains
+	url = https://github.com/panda-planner-dev/ipc2020-domains.git

@@ -31,6 +31,10 @@
 
 - Janet/HDDL migration and interchange proposals have been removed (Janet migration, export-to-HDDL, HDDL stdlib conversion, LFE vs Janet, phase docs). Historical HDDL spec reference: `HDDL_ARIA_EXTENSION.md` (if kept) is for reference only.
 
+## Test problems
+
+- [panda-planner-dev/ipc2020-domains](https://github.com/panda-planner-dev/ipc2020-domains): added as git submodule at `thirdparty/ipc2020-domains`. Reference HDDL domains/problems for tests; port to glTF Interactivity as needed (no HDDL ingestion). Helper: `AriaPlanner.TestFixtures.Ipc2020`.
+
 ## References
 
 - `thirdparty/specification/` — glTF 2.0 Interactivity Extension (KHR_interactivity)

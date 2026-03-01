@@ -57,6 +57,13 @@ bench/spmd_scaling.benchee
 
 cover
 
+# C executor (CMake) build output
+c_src/build/
+
+# C runner debug output
+graph_parse_debug.txt
+c_src/err.txt
+
 # Compiled NIF libraries and object files
 c_src/*.o
 priv/**/*.so

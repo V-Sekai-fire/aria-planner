@@ -15,7 +15,11 @@ defmodule AriaPlanner.MixProject do
       package: package(),
       test_coverage: [output: "cover"],
       elixirc_paths: elixirc_paths(Mix.env()),
-      aliases: aliases()
+      aliases: aliases(),
+      # Optional: add :elixir_make to compilers to build c_src on mix compile.
+      # Or run `mix build.native` to build the C executor only when needed.
+      # compilers: [:elixir_make | Mix.compilers()],
+      # make_cwd: "c_src",
     ]
   end
 
@@ -58,8 +62,10 @@ defmodule AriaPlanner.MixProject do
       {:postgrex, "~> 0.22"},
       # Using built-in :zstd module from Erlang/OTP 28+ (no external dependency needed)
       # Dev/test dependencies
+      {:stream_data, "~> 0.6", only: [:test]},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:elixir_make, "~> 0.7", runtime: false},
       {:ex_doc, "~> 0.40", only: :dev},
       {:aria_gltf, git: "https://github.com/V-Sekai-fire/aria-gltf.git", branch: "main", runtime: false}
     ]
