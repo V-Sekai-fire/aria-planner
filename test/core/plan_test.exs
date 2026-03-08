@@ -4,66 +4,81 @@
 defmodule AriaCore.PlanTest do
   use ExUnit.Case, async: true
   alias AriaCore.Plan
+  alias AriaPlanner.FixtureHelpers, as: Fixtures
 
   describe "plan CRUD operations (ego-centric storage)" do
     test "creates plan with UUIDv7 ID when not provided" do
+      data = Fixtures.load_fixture("plan_create", "plan_results")
+      input = data["create_uuidv7"]["input"]
+      expected = data["create_uuidv7"]["expected"]
+
       attrs = %{
-        name: "Tactical Assault Plan",
-        persona_id: "01812345-6789-7abc-def0-123456789abc",
-        domain_type: "tactical",
-        objectives: ["defeat enemy", "minimize casualties"],
-        success_probability: 0.85,
-        planning_duration_ms: 1250
+        name: input["name"],
+        persona_id: input["persona_id"],
+        domain_type: input["domain_type"],
+        objectives: input["objectives"],
+        success_probability: input["success_probability"],
+        planning_duration_ms: input["planning_duration_ms"]
       }
 
       {:ok, plan} = Plan.create(attrs)
 
-      assert plan.name == "Tactical Assault Plan"
-      assert plan.persona_id == "01812345-6789-7abc-def0-123456789abc"
-      assert plan.domain_type == "tactical"
-      assert plan.objectives == ["defeat enemy", "minimize casualties"]
-      assert plan.success_probability == 0.85
-      assert plan.planning_duration_ms == 1250
-      assert String.match?(plan.id, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+      assert plan.name == expected["name"]
+      assert plan.persona_id == expected["persona_id"]
+      assert plan.domain_type == expected["domain_type"]
+      assert plan.objectives == expected["objectives"]
+      assert plan.success_probability == expected["success_probability"]
+      assert plan.planning_duration_ms == expected["planning_duration_ms"]
+      assert String.match?(plan.id, Regex.compile!(expected["id_uuid_pattern"]))
     end
 
     test "creates plan with temporal constraints, entity capabilities, and solution plan" do
-      temporal_constraints = %{"start_time" => "2025-10-26T10:00:00Z", "end_time" => "2025-10-26T11:00:00Z"}
-      entity_capabilities = %{"robot_arm" => %{"lift_capacity" => "10kg"}}
-      solution_plan = Jason.encode!([["move", "a", "b"], ["pick", "b"]])
+      data = Fixtures.load_fixture("plan_create", "plan_results")
+      input = data["create_temporal_constraints"]["input"]
+
+      temporal_constraints = input["temporal_constraints"]
+      entity_capabilities = input["entity_capabilities"]
 
       attrs = %{
-        name: "Complex Temporal Plan",
-        persona_id: "01812345-6789-7abc-def0-123456789abc",
-        domain_type: "tactical",
+        name: input["name"],
+        persona_id: input["persona_id"],
+        domain_type: input["domain_type"],
         temporal_constraints: temporal_constraints,
         entity_capabilities: entity_capabilities,
-        solution_plan: solution_plan
+        solution_plan: input["solution_plan"]
       }
 
       {:ok, plan} = Plan.create(attrs)
 
       assert plan.temporal_constraints == temporal_constraints
       assert plan.entity_capabilities == entity_capabilities
-      assert plan.solution_plan == solution_plan
+      assert plan.solution_plan == input["solution_plan"]
     end
 
     test "validates required fields" do
-      invalid_attrs = %{name: "Test Plan"}
+      data = Fixtures.load_fixture("plan_create_validation", "plan_results")
+      scenario = data["required_fields"]
+      invalid_attrs = %{name: scenario["invalid_attrs"]["name"]}
       {:error, error_message} = Plan.create(invalid_attrs)
 
-      assert String.contains?(error_message, "persona_id is required")
-      assert String.contains?(error_message, "domain_type is required")
+      for sub <- scenario["expected_message_substrings"] do
+        assert String.contains?(error_message, sub)
+      end
     end
 
     test "validates domain_type inclusion" do
+      data = Fixtures.load_fixture("plan_create_validation", "plan_results")
+      sub = data["domain_type_inclusion"]["expected_message_substring"]
       attrs = %{name: "Test", persona_id: UUIDv7.generate(), domain_type: "invalid"}
       {:error, error_message} = Plan.create(attrs)
 
-      assert String.contains?(error_message, "domain_type must be one of")
+      assert String.contains?(error_message, sub)
     end
 
     test "validates execution_status inclusion" do
+      data = Fixtures.load_fixture("plan_create_validation", "plan_results")
+      sub = data["execution_status_inclusion"]["expected_message_substring"]
+
       attrs = %{
         name: "Test",
         persona_id: UUIDv7.generate(),
@@ -73,30 +88,35 @@ defmodule AriaCore.PlanTest do
 
       {:error, error_message} = Plan.create(attrs)
 
-      assert String.contains?(error_message, "execution_status must be one of")
+      assert String.contains?(error_message, sub)
     end
 
     test "validates success_probability range" do
-      # Test upper bound
+      data = Fixtures.load_fixture("plan_create_validation", "plan_results")
+      scenario = data["success_probability_range"]
+      sub = scenario["expected_message_substring"]
+
       attrs = %{
         name: "Test",
         persona_id: UUIDv7.generate(),
         domain_type: "tactical",
-        success_probability: 1.5
+        success_probability: scenario["upper_bound"]
       }
 
       {:error, error_message} = Plan.create(attrs)
-      assert String.contains?(error_message, "success_probability must be between 0.0 and 1.0")
+      assert String.contains?(error_message, sub)
 
-      # Test lower bound
-      attrs = Map.put(attrs, :success_probability, -0.1)
+      attrs = Map.put(attrs, :success_probability, scenario["lower_bound"])
       {:error, error_message} = Plan.create(attrs)
-      assert String.contains?(error_message, "success_probability must be between 0.0 and 1.0")
+      assert String.contains?(error_message, sub)
     end
 
     test "validates UUIDv7 format" do
+      data = Fixtures.load_fixture("plan_create_validation", "plan_results")
+      scenario = data["uuidv7_format"]
+
       attrs = %{
-        id: "invalid-uuid",
+        id: scenario["invalid_id"],
         name: "Test",
         persona_id: UUIDv7.generate(),
         domain_type: "tactical"
@@ -104,10 +124,15 @@ defmodule AriaCore.PlanTest do
 
       {:error, error_message} = Plan.create(attrs)
 
-      assert String.contains?(error_message, "id must be a valid RFC 9562 UUIDv7")
+      assert String.contains?(error_message, scenario["expected_message_substring"])
     end
 
     test "updates existing plan successfully" do
+      data = Fixtures.load_fixture("plan_create", "plan_results")
+      scenario = data["update_success"]
+      update_attrs_fixture = scenario["update_attrs"]
+      expected = scenario["expected"]
+
       {:ok, plan} =
         Plan.create(%{
           name: "Initial Plan",
@@ -116,17 +141,17 @@ defmodule AriaCore.PlanTest do
         })
 
       update_attrs = %{
-        name: "Updated Plan",
-        success_probability: 0.9,
-        execution_status: "completed",
+        name: update_attrs_fixture["name"],
+        success_probability: update_attrs_fixture["success_probability"],
+        execution_status: update_attrs_fixture["execution_status"],
         execution_completed_at: NaiveDateTime.utc_now()
       }
 
       {:ok, updated_plan} = Plan.update(plan, update_attrs)
 
-      assert updated_plan.name == "Updated Plan"
-      assert updated_plan.success_probability == 0.9
-      assert updated_plan.execution_status == "completed"
+      assert updated_plan.name == expected["name"]
+      assert updated_plan.success_probability == expected["success_probability"]
+      assert updated_plan.execution_status == expected["execution_status"]
       assert updated_plan.execution_completed_at != nil
     end
   end
@@ -174,36 +199,43 @@ defmodule AriaCore.PlanTest do
 
   describe "SolutionTensorGraph integration with plans" do
     test "plan stores solution graph data as maps for persistence" do
-      # Mock SolutionTensorGraph export data
+      data = Fixtures.load_fixture("plan_create", "plan_results")
+      scenario = data["solution_graph"]
+      input = scenario["input"]
+      expected = scenario["expected"]
+      graph_input = input["solution_graph_data"]
+
       mock_graph_data = %{
-        num_nodes: 5,
-        num_edges: 4,
-        # [task, method, action, action, goal
-        node_types: [1, 2, 0, 0, 3],
-        primitive_mask: [0, 0, 1, 1, 0],
-        goal_mask: [0, 0, 0, 0, 1],
+        num_nodes: graph_input["num_nodes"],
+        num_edges: graph_input["num_edges"],
+        node_types: graph_input["node_types"],
+        primitive_mask: graph_input["primitive_mask"],
+        goal_mask: graph_input["goal_mask"],
         metadata: %{
           version: "1.0.0",
           created_at: NaiveDateTime.utc_now(),
-          ego_plugin: "tactical_planner_v2"
+          ego_plugin: graph_input["metadata"]["ego_plugin"]
         }
       }
 
       {:ok, plan} =
         Plan.create(%{
-          name: "Graph-Backed Plan",
-          persona_id: "persona-uuid",
-          domain_type: "tactical",
+          name: input["name"],
+          persona_id: input["persona_id"],
+          domain_type: input["domain_type"],
           solution_graph_data: mock_graph_data
         })
 
       assert plan.solution_graph_data == mock_graph_data
-      assert plan.solution_graph_data.num_nodes == 5
-      assert plan.solution_graph_data.node_types == [1, 2, 0, 0, 3]
-      assert plan.solution_graph_data.metadata.ego_plugin == "tactical_planner_v2"
+      assert plan.solution_graph_data.num_nodes == expected["num_nodes"]
+      assert plan.solution_graph_data.node_types == expected["node_types"]
+      assert plan.solution_graph_data.metadata.ego_plugin == expected["metadata_ego_plugin"]
     end
 
     test "plan execution status transitions for allocentric run_lazy" do
+      data = Fixtures.load_fixture("plan_create", "plan_results")
+      expected_ms = data["execution_status_transitions"]["expected_execution_time_ms"]
+
       initial_plan_attrs = %{
         name: "Execution Test Plan",
         persona_id: "persona-uuid",
@@ -233,45 +265,41 @@ defmodule AriaCore.PlanTest do
         Plan.update(executing_plan, %{
           execution_status: "completed",
           execution_completed_at: execution_completed_at_nativetime,
-          performance_metrics: %{"execution_time_ms" => 3210}
+          performance_metrics: %{"execution_time_ms" => expected_ms}
         })
 
       assert completed_plan.execution_status == "completed"
       assert completed_plan.execution_completed_at == execution_completed_at_nativetime
-      assert completed_plan.performance_metrics["execution_time_ms"] == 3210
+      assert completed_plan.performance_metrics["execution_time_ms"] == expected_ms
     end
   end
 
   describe "risk and success assessment" do
     test "plan includes comprehensive risk assessment from ego perspective" do
-      risk_data = %{
-        "position_exposure" => 0.4,
-        "health_risk" => 0.2,
-        "ally_coordination_required" => 0.8,
-        "terrain_difficulty" => 0.3
+      data = Fixtures.load_fixture("plan_create", "plan_results")
+      scenario = data["risk_assessment"]
+      input = scenario["input"]
+      expected = scenario["expected"]
+      risk_data = Map.new(expected["risk_assessment"], fn {k, v} -> {k, v} end)
+
+      attrs = %{
+        name: input["name"],
+        persona_id: input["persona_id"],
+        domain_type: input["domain_type"],
+        success_probability: input["success_probability"],
+        risk_assessment: risk_data
       }
 
-      {:ok, plan} =
-        Plan.create(%{
-          name: "Risk-Assessed Plan",
-          persona_id: "persona-uuid",
-          domain_type: "tactical",
-          success_probability: 0.67,
-          risk_assessment: risk_data
-        })
+      {:ok, plan} = Plan.create(attrs)
 
-      assert plan.success_probability == 0.67
+      assert plan.success_probability == expected["success_probability"]
       assert plan.risk_assessment == risk_data
     end
 
     test "performance metrics capture allocentric execution outcomes" do
-      perf_metrics = %{
-        "total_execution_time_ms" => 5210,
-        "actions_completed" => 7,
-        "actions_failed" => 1,
-        "world_state_changes" => 12,
-        "egocentric_efficiency" => 0.92
-      }
+      data = Fixtures.load_fixture("plan_create", "plan_results")
+      scenario = data["performance_metrics"]
+      perf_metrics = Map.new(scenario["perf_metrics"], fn {k, v} -> {k, v} end)
 
       {:ok, existing_plan} =
         Plan.create(%{
@@ -286,7 +314,7 @@ defmodule AriaCore.PlanTest do
         })
 
       assert plan.performance_metrics == perf_metrics
-      assert plan.performance_metrics["egocentric_efficiency"] == 0.92
+      assert plan.performance_metrics["egocentric_efficiency"] == scenario["expected_egocentric_efficiency"]
     end
   end
 
@@ -335,101 +363,22 @@ defmodule AriaCore.PlanTest do
   end
 
   describe "plan creation with different domain types" do
-    test "creates plan for blocks_world domain" do
-      {:ok, plan} =
-        Plan.create(%{
-          name: "Blocks World Plan",
-          persona_id: UUIDv7.generate(),
-          domain_type: "blocks_world",
-          objectives: ["move_block_a_to_b"]
-        })
+    test "creates plan for each domain type from fixture" do
+      data = Fixtures.load_fixture("plan_create", "plan_results")
+      domain_types = data["domain_types"]
 
-      assert plan.domain_type == "blocks_world"
-      assert plan.objectives == ["move_block_a_to_b"]
-    end
+      for scenario <- domain_types do
+        {:ok, plan} =
+          Plan.create(%{
+            name: scenario["name"],
+            persona_id: UUIDv7.generate(),
+            domain_type: scenario["domain_type"],
+            objectives: scenario["objectives"]
+          })
 
-    test "creates plan for navigation domain" do
-      {:ok, plan} =
-        Plan.create(%{
-          name: "Navigation Plan",
-          persona_id: UUIDv7.generate(),
-          domain_type: "navigation",
-          objectives: ["reach_destination"]
-        })
-
-      assert plan.domain_type == "navigation"
-    end
-
-    test "creates plan for social domain" do
-      {:ok, plan} =
-        Plan.create(%{
-          name: "Social Plan",
-          persona_id: UUIDv7.generate(),
-          domain_type: "social",
-          objectives: ["build_alliance"]
-        })
-
-      assert plan.domain_type == "social"
-    end
-
-    test "creates plan for economic domain" do
-      {:ok, plan} =
-        Plan.create(%{
-          name: "Economic Plan",
-          persona_id: UUIDv7.generate(),
-          domain_type: "economic",
-          objectives: ["maximize_profit"]
-        })
-
-      assert plan.domain_type == "economic"
-    end
-
-    test "creates plan for exploration domain" do
-      {:ok, plan} =
-        Plan.create(%{
-          name: "Exploration Plan",
-          persona_id: UUIDv7.generate(),
-          domain_type: "exploration",
-          objectives: ["discover_new_areas"]
-        })
-
-      assert plan.domain_type == "exploration"
-    end
-
-    test "creates plan for stealth domain" do
-      {:ok, plan} =
-        Plan.create(%{
-          name: "Stealth Plan",
-          persona_id: UUIDv7.generate(),
-          domain_type: "stealth",
-          objectives: ["infiltrate_base"]
-        })
-
-      assert plan.domain_type == "stealth"
-    end
-
-    test "creates plan for pert_planner domain" do
-      {:ok, plan} =
-        Plan.create(%{
-          name: "PERT Plan",
-          persona_id: UUIDv7.generate(),
-          domain_type: "pert_planner",
-          objectives: ["complete_project"]
-        })
-
-      assert plan.domain_type == "pert_planner"
-    end
-
-    test "creates plan for workflow_test_domain" do
-      {:ok, plan} =
-        Plan.create(%{
-          name: "Workflow Plan",
-          persona_id: UUIDv7.generate(),
-          domain_type: "workflow_test_domain",
-          objectives: ["execute_workflow"]
-        })
-
-      assert plan.domain_type == "workflow_test_domain"
+        assert plan.domain_type == scenario["domain_type"]
+        assert plan.objectives == scenario["objectives"]
+      end
     end
   end
 
