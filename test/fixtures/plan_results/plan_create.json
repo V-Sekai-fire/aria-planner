@@ -1,0 +1,115 @@
+{
+  "create_uuidv7": {
+    "input": {
+      "name": "Tactical Assault Plan",
+      "persona_id": "01812345-6789-7abc-def0-123456789abc",
+      "domain_type": "tactical",
+      "objectives": ["defeat enemy", "minimize casualties"],
+      "success_probability": 0.85,
+      "planning_duration_ms": 1250
+    },
+    "expected": {
+      "name": "Tactical Assault Plan",
+      "persona_id": "01812345-6789-7abc-def0-123456789abc",
+      "domain_type": "tactical",
+      "objectives": ["defeat enemy", "minimize casualties"],
+      "success_probability": 0.85,
+      "planning_duration_ms": 1250,
+      "id_uuid_pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    }
+  },
+  "create_temporal_constraints": {
+    "input": {
+      "name": "Complex Temporal Plan",
+      "persona_id": "01812345-6789-7abc-def0-123456789abc",
+      "domain_type": "tactical",
+      "temporal_constraints": {"start_time": "2025-10-26T10:00:00Z", "end_time": "2025-10-26T11:00:00Z"},
+      "entity_capabilities": {"robot_arm": {"lift_capacity": "10kg"}},
+      "solution_plan": "[[\"move\",\"a\",\"b\"],[\"pick\",\"b\"]]"
+    },
+    "expected": {
+      "temporal_constraints": {"start_time": "2025-10-26T10:00:00Z", "end_time": "2025-10-26T11:00:00Z"},
+      "entity_capabilities": {"robot_arm": {"lift_capacity": "10kg"}},
+      "solution_plan": "[[\"move\",\"a\",\"b\"],[\"pick\",\"b\"]]"
+    }
+  },
+  "domain_types": [
+    {"domain_type": "blocks_world", "name": "Blocks World Plan", "objectives": ["move_block_a_to_b"]},
+    {"domain_type": "navigation", "name": "Navigation Plan", "objectives": ["reach_destination"]},
+    {"domain_type": "social", "name": "Social Plan", "objectives": ["build_alliance"]},
+    {"domain_type": "economic", "name": "Economic Plan", "objectives": ["maximize_profit"]},
+    {"domain_type": "exploration", "name": "Exploration Plan", "objectives": ["discover_new_areas"]},
+    {"domain_type": "stealth", "name": "Stealth Plan", "objectives": ["infiltrate_base"]},
+    {"domain_type": "pert_planner", "name": "PERT Plan", "objectives": ["complete_project"]},
+    {"domain_type": "workflow_test_domain", "name": "Workflow Plan", "objectives": ["execute_workflow"]}
+  ],
+  "update_success": {
+    "update_attrs": {
+      "name": "Updated Plan",
+      "success_probability": 0.9,
+      "execution_status": "completed"
+    },
+    "expected": {
+      "name": "Updated Plan",
+      "success_probability": 0.9,
+      "execution_status": "completed",
+      "execution_completed_at_not_nil": true
+    }
+  },
+  "risk_assessment": {
+    "input": {
+      "name": "Risk-Assessed Plan",
+      "persona_id": "persona-uuid",
+      "domain_type": "tactical",
+      "success_probability": 0.67,
+      "risk_assessment": {
+        "position_exposure": 0.4,
+        "health_risk": 0.2,
+        "ally_coordination_required": 0.8,
+        "terrain_difficulty": 0.3
+      }
+    },
+    "expected": {
+      "success_probability": 0.67,
+      "risk_assessment": {
+        "position_exposure": 0.4,
+        "health_risk": 0.2,
+        "ally_coordination_required": 0.8,
+        "terrain_difficulty": 0.3
+      }
+    }
+  },
+  "performance_metrics": {
+    "perf_metrics": {
+      "total_execution_time_ms": 5210,
+      "actions_completed": 7,
+      "actions_failed": 1,
+      "world_state_changes": 12,
+      "egocentric_efficiency": 0.92
+    },
+    "expected_egocentric_efficiency": 0.92
+  },
+  "solution_graph": {
+    "input": {
+      "name": "Graph-Backed Plan",
+      "persona_id": "persona-uuid",
+      "domain_type": "tactical",
+      "solution_graph_data": {
+        "num_nodes": 5,
+        "num_edges": 4,
+        "node_types": [1, 2, 0, 0, 3],
+        "primitive_mask": [0, 0, 1, 1, 0],
+        "goal_mask": [0, 0, 0, 0, 1],
+        "metadata": {"ego_plugin": "tactical_planner_v2"}
+      }
+    },
+    "expected": {
+      "num_nodes": 5,
+      "node_types": [1, 2, 0, 0, 3],
+      "metadata_ego_plugin": "tactical_planner_v2"
+    }
+  },
+  "execution_status_transitions": {
+    "expected_execution_time_ms": 3210
+  }
+}

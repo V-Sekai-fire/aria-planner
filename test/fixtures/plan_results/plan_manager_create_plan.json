@@ -1,0 +1,78 @@
+{
+  "scenarios": [
+    {
+      "description": "required parameters",
+      "input": {
+        "persona_id_dynamic": true,
+        "name": "Test Plan",
+        "domain_type": "tactical"
+      },
+      "expected": {
+        "name": "Test Plan",
+        "domain_type": "tactical",
+        "objectives": [],
+        "success_probability": 0.5
+      }
+    },
+    {
+      "description": "objectives list",
+      "input": {
+        "persona_id_dynamic": true,
+        "name": "Plan with Objectives",
+        "domain_type": "blocks_world",
+        "objectives": ["task1", "task2", "task3"]
+      },
+      "expected": {
+        "objectives": ["task1", "task2", "task3"]
+      }
+    },
+    {
+      "description": "todo list (backward compatibility)",
+      "input": {
+        "persona_id_dynamic": true,
+        "name": "Plan with Todo",
+        "domain_type": "blocks_world",
+        "todo": ["task1", "task2", "task3"]
+      },
+      "expected": {
+        "objectives": ["task1", "task2", "task3"]
+      }
+    },
+    {
+      "description": "custom success probability",
+      "input": {
+        "persona_id_dynamic": true,
+        "name": "High Confidence Plan",
+        "domain_type": "tactical",
+        "success_probability": 0.95
+      },
+      "expected": {
+        "success_probability": 0.95
+      }
+    },
+    {
+      "description": "all options",
+      "input": {
+        "persona_id_dynamic": true,
+        "name": "Complete Plan",
+        "domain_type": "navigation",
+        "objectives": ["step1", "step2"],
+        "success_probability": 0.85
+      },
+      "expected": {
+        "objectives": ["step1", "step2"],
+        "success_probability": 0.85,
+        "planning_timestamp_not_nil": true
+      }
+    }
+  ],
+  "domain_types": [
+    "blocks_world",
+    "tactical",
+    "navigation",
+    "social",
+    "economic",
+    "exploration",
+    "stealth"
+  ]
+}

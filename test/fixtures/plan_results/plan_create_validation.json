@@ -1,0 +1,21 @@
+{
+  "required_fields": {
+    "invalid_attrs": {"name": "Test Plan"},
+    "expected_message_substrings": ["persona_id is required", "domain_type is required"]
+  },
+  "domain_type_inclusion": {
+    "expected_message_substring": "domain_type must be one of"
+  },
+  "execution_status_inclusion": {
+    "expected_message_substring": "execution_status must be one of"
+  },
+  "success_probability_range": {
+    "expected_message_substring": "success_probability must be between 0.0 and 1.0",
+    "upper_bound": 1.5,
+    "lower_bound": -0.1
+  },
+  "uuidv7_format": {
+    "invalid_id": "invalid-uuid",
+    "expected_message_substring": "id must be a valid RFC 9562 UUIDv7"
+  }
+}
