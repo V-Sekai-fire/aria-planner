@@ -3,44 +3,23 @@
 
 defmodule AriaCore.Entity.Types.Persona do
   @moduledoc """
-  Unified Persona entity for both human and AI entities.
+  Persona entity: an entity with capabilities in the ReBAC sense (relationship-based access control).
 
-  A Persona represents an entity's personality expressed through their Avatar in a 3D environment.
-  Personas can be either human-controlled (entities) or autonomous AI (agents), differentiated
-  by their capability sets and metadata.
+  A Persona has a capabilities list that defines what it can do—no special-case factories.
+  Create with explicit capabilities via `new(id, name, capabilities: [...])` or
+  grant/revoke via `AriaCore.Entity.update_capability/3`.
 
-  ## Design Decisions
+  ## Design
 
-  - Implements Entity behaviour for polymorphic entity handling
-  - Struct-based with enforced field types for type safety
-  - Capability-based differentiation between human and AI personas
-  - All persona data stored in metadata for maximum flexibility
-  - Unified Avatar/Character system for 3D representation
+  - Implements Entity behaviour; capabilities are a first-class attribute.
+  - ReBAC: capabilities express relationship-based access (what this entity can do), not "human" vs "AI" bundles.
+  - No factory methods (no enable_human_capabilities, new_human_player, etc.); set capabilities when creating or via update_capability.
 
-  ## Persona Types
+  ## Example
 
-  ### Human Personas (Entities)
-  - Capabilities: `[:movable, :inventory, :craft, :mine, :build, :interact]`
-  - Metadata: `{character: Character.t(), position: {x,y,z}, inventory: [...], identity: %{...}}`
-
-  ### AI Personas (Agents)
-  - Capabilities: `[:movable, :compute, :optimize, :predict, :learn, :navigate]`
-  - Metadata: `{character: Character.t(), movable: Movable.t(), intelligence: %{...}, autonomy: %{...}}`
-
-  ## Example Usage
-
-      # Create human entity persona
-      persona = Persona.new_human_player("entity_001", "Alex")
-      persona = AriaCore.Entity.move_to(persona, {10.5, 5.2, -3.8})
-      can_craft = AriaCore.Entity.has_capability?(persona, :craft)
-
-      # Create AI agent persona
-      persona = Persona.new_ai_agent("agent_001", "GuardianBot")
-      persona = AriaCore.Entity.move_to(persona, {15.0, 8.0, 2.1})
-      can_optimize = AriaCore.Entity.has_capability?(persona, :optimize)
-
-      # Generic capability management
-      persona = AriaCore.Entity.update_capability(persona, :craft, enabled_state)
+      persona = Persona.new("e1", "Alex", capabilities: [:movable, :inventory, :craft])
+      AriaCore.Entity.has_capability?(persona, :craft)
+      persona = AriaCore.Entity.update_capability(persona, :mine, %{})
       capabilities = AriaCore.Entity.capabilities(persona)
   """
 
@@ -77,37 +56,46 @@ defmodule AriaCore.Entity.Types.Persona do
         }
 
   @doc """
-  Creates a new basic persona with minimal capabilities.
+  Creates a new persona with explicit capabilities (ReBAC: relationship-based access control).
 
   ## Parameters
   - `id`: Unique identifier for the persona
   - `name`: Human-readable name for the persona
+  - `opts`: Keyword options; `:capabilities` (list of atoms) — no default bundles; pass the capabilities this entity has.
 
   ## Returns
-  Basic persona that can have capabilities added dynamically
+  Persona with the given capabilities; add or remove later via `AriaCore.Entity.update_capability/3`.
   """
-  @spec new(String.t(), String.t()) :: t()
-  def new(id, name) when is_binary(id) and is_binary(name) do
-    base_entity = AriaCore.Entity.new(id, name, :persona)
+  @spec new(String.t(), String.t(), keyword()) :: t()
+  def new(id, name, opts \\ []) when is_binary(id) and is_binary(name) do
+    capabilities = Keyword.get(opts, :capabilities, []) |> List.wrap() |> Enum.uniq()
+    base_entity = AriaCore.Entity.new(id, name, :persona, %{}, capabilities: capabilities)
 
-    # Create basic human character (can be upgraded to AI later)
-    character = Character.new_human_player(id <> "_char", name)
+    character = Character.new(id <> "_char", name)
 
-    # Basic persona metadata - minimal to start
     persona_metadata = %{
-      # Character/avatar for 3D representation
       character: character,
-      # Position always needed for movement
       position: {0.0, 0.0, 0.0},
-      # Identity/authentication data (no explicit type - derived from capabilities)
-      identity: %{
-        verified: false,
-        last_login: nil
-      }
+      identity: %{verified: false, last_login: nil}
     }
 
+    # Ensure metadata has inventory when :inventory capability is present
+    persona_metadata =
+      if :inventory in capabilities do
+        Map.put(persona_metadata, :inventory, [])
+      else
+        persona_metadata
+      end
+
+    # Add Movable when :movable in capabilities (for position/move_to)
+    persona_metadata =
+      if :movable in capabilities do
+        Map.put(persona_metadata, :movable, Movable.new())
+      else
+        Map.put(persona_metadata, :position, {0.0, 0.0, 0.0})
+      end
+
     %__MODULE__{
-      # Base entity fields
       id: base_entity.id,
       name: base_entity.name,
       type: base_entity.type,
@@ -115,135 +103,8 @@ defmodule AriaCore.Entity.Types.Persona do
       metadata: Map.merge(base_entity.metadata, persona_metadata),
       created_at: base_entity.created_at,
       updated_at: base_entity.updated_at,
-      # Start with minimal capabilities - can add more dynamically
-      capabilities: [:movable]
+      capabilities: capabilities
     }
-  end
-
-  @doc """
-  Enables human entity capabilities for a persona.
-
-  ## Parameters
-  - `persona`: Base persona to enable human capabilities on
-
-  ## Returns
-  Persona with human entity capabilities (inventory, crafting, etc.)
-  """
-  @spec enable_human_capabilities(t()) :: t()
-  def enable_human_capabilities(%__MODULE__{} = persona) do
-    updated_capabilities = Enum.uniq(persona.capabilities ++ [:inventory, :craft, :mine, :build, :interact])
-
-    # Add inventory if not present
-    updated_metadata =
-      if Map.has_key?(persona.metadata, :inventory) do
-        persona.metadata
-      else
-        Map.put(persona.metadata, :inventory, [])
-      end
-
-    %{persona | capabilities: updated_capabilities, metadata: updated_metadata}
-    |> AriaCore.Entity.touch()
-  end
-
-  @doc """
-  Enables AI agent capabilities for a persona.
-
-  ## Parameters
-  - `persona`: Base persona to enable AI capabilities on
-
-  ## Returns
-  Persona with AI agent capabilities (compute, optimize, predict, learn, navigate)
-  """
-  @spec enable_ai_capabilities(t()) :: t()
-  def enable_ai_capabilities(%__MODULE__{} = persona) do
-    updated_capabilities = Enum.uniq(persona.capabilities ++ [:compute, :optimize, :predict, :learn, :navigate])
-
-    # Add AI-specific metadata if not present
-    updated_metadata = persona.metadata
-    updated_metadata = Map.update(updated_metadata, :movable, Movable.new(), & &1)
-
-    updated_metadata =
-      Map.update(updated_metadata, :intelligence, %{level: 1, experience_points: 0, learning_rate: 0.1}, & &1)
-
-    updated_metadata =
-      Map.update(updated_metadata, :autonomy, %{enabled: true, goal_oriented: true, decision_making: :reactive}, & &1)
-
-    # Upgrade character to AI
-    ai_character = Character.new_ai_agent(persona.id <> "_char", persona.name)
-    updated_metadata = Map.put(updated_metadata, :character, ai_character)
-
-    %{persona | capabilities: updated_capabilities, metadata: updated_metadata}
-    |> AriaCore.Entity.touch()
-  end
-
-  @doc """
-  Removes human player capabilities from a persona.
-
-  ## Parameters
-  - `persona`: Persona to remove human capabilities from
-
-  ## Returns
-  Persona without human player capabilities
-  """
-  @spec disable_human_capabilities(t()) :: t()
-  def disable_human_capabilities(%__MODULE__{} = persona) do
-    updated_capabilities = persona.capabilities -- [:inventory, :craft, :mine, :build, :interact]
-
-    %{persona | capabilities: updated_capabilities}
-    |> AriaCore.Entity.touch()
-  end
-
-  @doc """
-  Removes AI agent capabilities from a persona.
-
-  ## Parameters
-  - `persona`: Persona to remove AI capabilities from
-
-  ## Returns
-  Persona without AI agent capabilities
-  """
-  @spec disable_ai_capabilities(t()) :: t()
-  def disable_ai_capabilities(%__MODULE__{} = persona) do
-    updated_capabilities = persona.capabilities -- [:compute, :optimize, :predict, :learn, :navigate]
-
-    %{persona | capabilities: updated_capabilities}
-    |> AriaCore.Entity.touch()
-  end
-
-  @doc """
-  Creates a new human entity persona (convenience function).
-
-  ## Parameters
-  - `id`: Unique identifier for the persona
-  - `name`: Human-readable name for the persona
-
-  ## Returns
-  Human entity persona with inventory and movement capabilities
-
-  ## Note
-  This is equivalent to calling `Persona.new(id, name) |> Persona.enable_human_capabilities()`
-  """
-  @spec new_human_player(String.t(), String.t()) :: t()
-  def new_human_player(id, name) when is_binary(id) and is_binary(name) do
-    new(id, name) |> enable_human_capabilities()
-  end
-
-  @doc """
-  Creates a new AI agent persona (convenience function).
-
-  ## Parameters
-  - `id`: Unique identifier for the persona
-  - `name`: Human-readable name for the persona
-
-  ## Returns
-  AI agent persona with intelligence and movement capabilities
-
-  ## Note
-  This is equivalent to calling `Persona.new(id, name) |> Persona.enable_ai_capabilities()`
-  """
-  @spec new_ai_agent(String.t(), String.t()) :: t()
-  def new_ai_agent(id, name) when is_binary(id) and is_binary(name) do
-    new(id, name) |> enable_ai_capabilities()
   end
 
   @doc """
@@ -287,28 +148,6 @@ defmodule AriaCore.Entity.Types.Persona do
       Map.get(metadata, :inventory, [])
     else
       []
-    end
-  end
-
-  @doc """
-  Computes the identity type based on capabilities.
-
-  ## Parameters
-  - `persona`: Persona to analyze
-
-  ## Returns
-  Identity type: :basic, :human, :ai, or :human_and_ai
-  """
-  @spec identity_type(t()) :: :basic | :human | :ai | :human_and_ai
-  def identity_type(%__MODULE__{capabilities: capabilities}) do
-    has_human_caps = Enum.any?(capabilities, &Enum.member?([:inventory, :craft, :mine, :build, :interact], &1))
-    has_ai_caps = Enum.any?(capabilities, &Enum.member?([:compute, :optimize, :predict, :learn, :navigate], &1))
-
-    cond do
-      has_human_caps and has_ai_caps -> :human_and_ai
-      has_human_caps -> :human
-      has_ai_caps -> :ai
-      true -> :basic
     end
   end
 

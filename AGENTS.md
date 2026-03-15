@@ -20,13 +20,13 @@ This document explains the persona system, belief-immersed planning architecture
 
 ### What are Personas?
 
-Personas are the fundamental entities in the aria-planner system. A persona represents an entity's personality and capabilities expressed through their Avatar in a 3D environment. Personas can be:
+Personas are the fundamental entities in the aria-planner system. A persona is an entity with **capabilities in the ReBAC sense** (relationship-based access control): a list of capability atoms that define what it can do. There is no separate "type" or identity label—only the capability set. Examples of capability sets:
 
-- **Human Personas**: Entities controlled by human players with capabilities like inventory, crafting, mining, building, and interaction
-- **AI Personas**: Autonomous entities (sometimes called "agents") with capabilities like compute, optimize, predict, learn, and navigate
-- **Hybrid Personas**: Entities with both human and AI capabilities
+- **Movement + interaction**: `:movable`, `:inventory`, `:craft`, `:mine`, `:build`, `:interact` (e.g. player-like)
+- **Movement + reasoning**: `:movable`, `:compute`, `:optimize`, `:predict`, `:learn`, `:navigate` (e.g. agent-like)
+- **Hybrid**: any combination of the above
 
-The system uses a **unified persona model** where the distinction between human and AI is based on capabilities, not separate types.
+Create with `Persona.new(id, name, capabilities: [...])`; grant or revoke via `AriaCore.Entity.update_capability/3`. No factory methods (no "human" or "AI" bundles).
 
 ### Architecture Overview
 
@@ -39,7 +39,7 @@ This creates **information asymmetry** - personas cannot directly access each ot
 
 ### Key Concepts
 
-- **Personas**: Unified entities (human or AI) with capabilities
+- **Personas**: Entities with ReBAC capabilities (no separate type/identity label)
 - **Beliefs**: Ego-centric models each persona maintains about others
 - **Planning Domains**: HTN-style planning with predicates, actions, commands, methods, and multigoals
 - **Allocentric Facts**: Shared ground truth observable by all personas
@@ -60,19 +60,19 @@ defmodule AriaCore.Entity.Types.Persona do
     :name,
     :type,
     :active,
-    :metadata,  # Stores character, position, capabilities data
+    :metadata,  # Stores character, position, etc.
     :created_at,
     :updated_at,
-    :capabilities  # Determines persona type
+    :capabilities  # ReBAC: list of capability atoms (what this entity can do)
   ]
 end
 ```
 
-### Capability-Based Differentiation
+### Capabilities (ReBAC)
 
-Personas are differentiated by their capabilities, not by separate types:
+Each entity has a capabilities list; there is no separate type or identity. Example capability sets:
 
-**Human Persona Capabilities:**
+**Example set (player-like):**
 
 - `:movable` - Can move in 3D space
 - `:inventory` - Can carry items
@@ -81,7 +81,7 @@ Personas are differentiated by their capabilities, not by separate types:
 - `:build` - Can build structures
 - `:interact` - Can interact with objects
 
-**AI Persona Capabilities:**
+**Example set (agent-like):**
 
 - `:movable` - Can move in 3D space
 - `:compute` - Can perform computations
@@ -92,26 +92,26 @@ Personas are differentiated by their capabilities, not by separate types:
 
 ### Creating Personas
 
+Capabilities are ReBAC-style (relationship-based access control). Each entity has a capabilities list; set them explicitly at creation or via `AriaCore.Entity.update_capability/3`. No special-case factories.
+
 ```elixir
 alias AriaCore.Entity.Types.Persona
 
-# Create a basic persona
-persona = Persona.new("persona_001", "Alex")
+# Create with explicit capabilities
+persona = Persona.new("persona_001", "Alex", capabilities: [:movable])
 
-# Enable human capabilities
-human_persona = Persona.enable_human_capabilities(persona)
-# Or use convenience function
-human_persona = Persona.new_human_player("persona_001", "Alex")
+# Human-like capabilities (inventory, craft, etc.)
+human_persona = Persona.new("persona_001", "Alex", capabilities: [:movable, :inventory, :craft, :mine, :build, :interact])
 
-# Enable AI capabilities (creates an AI persona)
-ai_persona = Persona.enable_ai_capabilities(persona)
-# Or use convenience function
-ai_persona = Persona.new_ai_agent("persona_002", "GuardianBot")
+# AI-like capabilities (compute, optimize, etc.)
+ai_persona = Persona.new("persona_002", "GuardianBot", capabilities: [:movable, :compute, :optimize, :predict, :learn, :navigate])
 
-# Hybrid persona with both capabilities
-hybrid_persona = persona
-  |> Persona.enable_human_capabilities()
-  |> Persona.enable_ai_capabilities()
+# Hybrid: pass both capability sets
+hybrid_persona = Persona.new("persona_003", "Cyborg", capabilities: [:movable, :inventory, :craft, :mine, :build, :interact, :compute, :optimize, :predict, :learn, :navigate])
+
+# Grant or revoke capabilities later
+persona = AriaCore.Entity.update_capability(persona, :inventory, [])
+persona = AriaCore.Entity.update_capability(persona, :craft, nil)  # revoke
 ```
 
 ### Entity Behaviour Interface
@@ -129,15 +129,6 @@ position = AriaCore.Entity.position(persona)
 
 # Metadata access
 metadata = AriaCore.Entity.metadata(persona)
-```
-
-### Persona Identity Types
-
-The system automatically determines persona identity based on capabilities:
-
-```elixir
-Persona.identity_type(persona)
-# Returns: :basic, :human, :ai, or :human_and_ai
 ```
 
 ## Belief-Immersed Architecture
@@ -586,21 +577,19 @@ goals = AriaPlanner.Domains.BlocksWorld.Multigoals.MoveBlocks.m_move_blocks(goal
 
 ### Creating Personas
 
+Entities have capabilities in the ReBAC sense (relationship-based access control). No factory methods—create with explicit capabilities.
+
 ```elixir
 alias AriaCore.Entity.Types.Persona
 
-# Human persona
-human = Persona.new_human_player("human_001", "Alice")
-# Capabilities: [:movable, :inventory, :craft, :mine, :build, :interact]
+# Human-like persona (explicit capabilities)
+human = Persona.new("human_001", "Alice", capabilities: [:movable, :inventory, :craft, :mine, :build, :interact])
 
 # AI persona (agent)
-ai = Persona.new_ai_agent("ai_001", "HelperBot")
-# Capabilities: [:movable, :compute, :optimize, :predict, :learn, :navigate]
+ai = Persona.new("ai_001", "HelperBot", capabilities: [:movable, :compute, :optimize, :predict, :learn, :navigate])
 
-# Hybrid persona
-hybrid = Persona.new("hybrid_001", "Cyborg")
-  |> Persona.enable_human_capabilities()
-  |> Persona.enable_ai_capabilities()
+# Hybrid: both capability sets
+hybrid = Persona.new("hybrid_001", "Cyborg", capabilities: [:movable, :inventory, :craft, :mine, :build, :interact, :compute, :optimize, :predict, :learn, :navigate])
 ```
 
 ### Planning with Personas

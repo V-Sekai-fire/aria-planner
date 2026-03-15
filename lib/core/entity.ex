@@ -39,7 +39,8 @@ defmodule AriaCore.Entity do
 
   """
 
-  # Define the base entity struct that all implementations must extend
+  # Define the base entity struct that all implementations must extend.
+  # Capabilities are ReBAC-style: relationship-based access control (what this entity can do).
   defstruct [
     # Unique entity identifier
     :id,
@@ -54,7 +55,9 @@ defmodule AriaCore.Entity do
     # Creation timestamp
     :created_at,
     # Last update timestamp
-    :updated_at
+    :updated_at,
+    # ReBAC: list of capability atoms (relationship-based access; no special-case factories)
+    capabilities: []
   ]
 
   @typedoc """
@@ -67,7 +70,8 @@ defmodule AriaCore.Entity do
           active: boolean(),
           metadata: map(),
           created_at: DateTime.t(),
-          updated_at: DateTime.t()
+          updated_at: DateTime.t(),
+          capabilities: [capability()]
         }
 
   @typedoc """
@@ -94,21 +98,24 @@ defmodule AriaCore.Entity do
   @doc """
   Creates a new entity with base fields initialized.
 
-  This function creates the base entity struct that concrete implementations
-  can extend with their specific fields.
+  Capabilities are ReBAC-style (relationship-based access control); pass them
+  explicitly. No special-case factories—each entity has a capabilities list.
 
   ## Parameters
   - `id`: Unique entity identifier
   - `name`: Human-readable entity name
   - `type`: Entity type atom
   - `metadata`: Optional initial metadata (default: %{})
+  - `opts`: Optional keyword list with `:capabilities` (list of atoms, default: [])
 
   ## Returns
   Base entity struct with initialized fields
   """
-  @spec new(String.t(), String.t(), atom(), map()) :: struct()
-  def new(id, name, type, metadata \\ %{}) when is_binary(id) and is_binary(name) and is_atom(type) do
+  @spec new(String.t(), String.t(), atom(), map(), keyword()) :: struct()
+  def new(id, name, type, metadata \\ %{}, opts \\ [])
+      when is_binary(id) and is_binary(name) and is_atom(type) do
     now = DateTime.utc_now()
+    capabilities = Keyword.get(opts, :capabilities, [])
 
     %__MODULE__{
       id: id,
@@ -117,7 +124,8 @@ defmodule AriaCore.Entity do
       active: true,
       metadata: metadata,
       created_at: now,
-      updated_at: now
+      updated_at: now,
+      capabilities: List.wrap(capabilities)
     }
   end
 
