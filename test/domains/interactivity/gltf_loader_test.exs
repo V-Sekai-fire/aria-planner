@@ -10,17 +10,6 @@ defmodule AriaPlanner.Domains.Interactivity.GltfLoaderTest do
 
   alias AriaPlanner.Domains.Interactivity.GltfLoader
 
-  setup do
-    # Enable feature flags needed for glTF loader functionality
-    FunWithFlags.enable(:gltf_loader_support)
-
-    on_exit(fn ->
-      FunWithFlags.disable(:gltf_loader_support)
-    end)
-
-    :ok
-  end
-
   describe "load_gltf_json" do
     test "loads valid glTF JSON with behavior graph" do
       gltf_json = """

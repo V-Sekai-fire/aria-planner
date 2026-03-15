@@ -8,19 +8,6 @@ defmodule AriaPlanner.Domains.Interactivity.Commands.PointerOperationsTest do
 
   use AriaPlanner.Domains.Interactivity.Commands.TestHelper
 
-  setup do
-    # Enable feature flags needed for pointer operations
-    FunWithFlags.enable(:gltf_asset_support)
-    FunWithFlags.enable(:pointer_template_support)
-
-    on_exit(fn ->
-      FunWithFlags.disable(:gltf_asset_support)
-      FunWithFlags.disable(:pointer_template_support)
-    end)
-
-    :ok
-  end
-
   alias AriaPlanner.Domains.Interactivity.Commands.{
     PointerGet,
     PointerInterpolate,

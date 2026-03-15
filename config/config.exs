@@ -12,21 +12,8 @@ import Config
 # Configure Ecto repositories
 config :aria_planner, ecto_repos: [AriaPlanner.Repo]
 
-# Configure FunWithFlags with Ecto persistence
-config :fun_with_flags, :cache,
-  enabled: true,
-  ttl: 900
-
-# Configure FunWithFlags to use Ecto adapter with UUID primary keys
-# The repo will be configured in runtime.exs
-config :fun_with_flags, :persistence,
-  adapter: FunWithFlags.Store.Persistent.Ecto,
-  repo: AriaPlanner.Repo,
-  ecto_primary_key_type: :binary_id
-
-# Disable cache-bust notifications for single-node setup
-# Enable Phoenix.PubSub if you need multi-node synchronization
-config :fun_with_flags, :cache_bust_notifications, enabled: false
+# Optional: override feature flags (defaults all true)
+# config :aria_planner, :feature_flags, [gltf_asset: true, pointer_template: true, gltf_loader: true]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

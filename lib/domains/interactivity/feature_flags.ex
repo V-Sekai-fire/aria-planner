@@ -7,38 +7,38 @@ defmodule AriaPlanner.Domains.Interactivity.FeatureFlags do
 
   New and untested features are gated behind feature flags to allow
   gradual rollout and easy rollback if issues are discovered.
+
+  FunWithFlags removed; all flags default to true. Use application config
+  :aria_planner, :feature_flags, [gltf_asset: true, pointer_template: true, gltf_loader: true]
+  to override.
   """
 
   @doc """
   Checks if glTF asset support is enabled.
-
-  This flag gates the new glTF asset loading and JSON pointer resolution
-  functionality. When disabled, pointer operations fall back to VariableValue.
   """
   @spec gltf_asset_enabled?() :: boolean()
   def gltf_asset_enabled? do
-    FunWithFlags.enabled?(:gltf_asset_support)
+    get_flag(:gltf_asset, true)
   end
 
   @doc """
   Checks if JSON pointer template parsing is enabled.
-
-  This flag gates the new JSON pointer template parsing functionality
-  that supports parameterized pointers like "/nodes/{nodeId}/scale".
   """
   @spec pointer_template_enabled?() :: boolean()
   def pointer_template_enabled? do
-    FunWithFlags.enabled?(:pointer_template_support)
+    get_flag(:pointer_template, true)
   end
 
   @doc """
   Checks if glTF loader functionality is enabled.
-
-  This flag gates the glTF file loading and behavior graph extraction
-  functionality.
   """
   @spec gltf_loader_enabled?() :: boolean()
   def gltf_loader_enabled? do
-    FunWithFlags.enabled?(:gltf_loader_support)
+    get_flag(:gltf_loader, true)
+  end
+
+  defp get_flag(key, default) do
+    Application.get_env(:aria_planner, :feature_flags, [])
+    |> Keyword.get(key, default)
   end
 end

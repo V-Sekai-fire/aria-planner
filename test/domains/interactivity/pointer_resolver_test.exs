@@ -10,19 +10,6 @@ defmodule AriaPlanner.Domains.Interactivity.PointerResolverTest do
 
   alias AriaPlanner.Domains.Interactivity.PointerResolver
 
-  setup do
-    # Enable feature flags needed for pointer template functionality
-    FunWithFlags.enable(:pointer_template_support)
-    FunWithFlags.enable(:gltf_asset_support)
-
-    on_exit(fn ->
-      FunWithFlags.disable(:pointer_template_support)
-      FunWithFlags.disable(:gltf_asset_support)
-    end)
-
-    :ok
-  end
-
   describe "parse_template" do
     test "parses simple pointer without parameters" do
       assert {:ok, []} = PointerResolver.parse_template("/nodes/0/translation")
