@@ -53,7 +53,6 @@ defmodule AriaPlanner.MixProject do
       {:aria_core, git: "https://github.com/V-Sekai-fire/aria-core.git"},
       {:abnf_parsec, "~> 2.1"},
       {:sourceror, "~> 1.10"},
-      {:fun_with_flags, "~> 1.13"},
       {:ecto_sql, "~> 3.13"},
       {:postgrex, "~> 0.22"},
       # Using built-in :zstd module from Erlang/OTP 28+ (no external dependency needed)
